@@ -1,0 +1,13 @@
+{
+  "name": "firetv-dashboard",
+  "version": "1.0.0",
+  "description": "Kiosk-Dashboard für Fire TV Stick – mit Admin-Interface",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

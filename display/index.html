@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>satis&amp;fy Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="https://satis-fy.com/favicon.svg">
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    body { overflow: hidden; }
+
+    /* ── Weather Widget ── */
+    .weather-widget {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+    }
+    .weather-icon { font-size: clamp(2rem, 4vw, 3rem); line-height: 1; }
+    .weather-info { display: flex; flex-direction: column; }
+    .weather-temp {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1;
+    }
+    .weather-desc {
+      font-size: clamp(0.75rem, 1.3vw, 1rem);
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .weather-city {
+      font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+      color: var(--muted);
+    }
+
+    /* ── Animal Parade ── */
+    .animal-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      overflow: hidden;
+    }
+
+    .animal {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      will-change: transform;
+    }
+
+    .animal-emoji { display: block; line-height: 1; }
+
+    .animal-logo {
+      height: 1em;
+      filter: brightness(0) invert(1);
+      opacity: 0.85;
+      display: block;
+    }
+
+    /* running right → left */
+    @keyframes run-rtl {
+      from { transform: translateX(110vw) scaleX(1); }
+      to   { transform: translateX(-30vw) scaleX(1); }
+    }
+    /* running left → right (mirrored) */
+    @keyframes run-ltr {
+      from { transform: translateX(-30vw) scaleX(-1); }
+      to   { transform: translateX(110vw) scaleX(-1); }
+    }
+
+    /* Bounce animation for the logo trail */
+    @keyframes logo-bounce {
+      0%, 100% { transform: translateY(0) rotate(-5deg); }
+      50%       { transform: translateY(-6px) rotate(5deg); }
+    }
+  </style>
+</head>
+<body class="display-body">
+
+  <!-- Header: Clock & Date + Weather -->
+  <header class="display-header" id="displayHeader">
+    <div id="clockBlock">
+      <div class="clock" id="clock">00:00:00</div>
+    </div>
+    <div id="dateBlock">
+      <div class="date" id="date">–</div>
+    </div>
+    <div class="weather-widget" id="weatherWidget" style="display:none">
+      <div class="weather-icon" id="weatherIcon">–</div>
+      <div class="weather-info">
+        <div class="weather-temp" id="weatherTemp">–</div>
+        <div class="weather-desc" id="weatherDesc">–</div>
+        <div class="weather-city" id="weatherCity">–</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI Row -->
+  <section class="kpi-row" id="kpiRow"></section>
+
+  <!-- Info Board -->
+  <section class="info-board">
+    <span class="info-icon">📋</span>
+    <div class="info-text" id="infoText">...</div>
+    <span class="info-counter" id="infoCounter"></span>
+  </section>
+
+  <!-- Calendar -->
+  <section class="calendar-section">
+    <span style="font-size:1.5rem">📅</span>
+    <span class="calendar-placeholder" id="calendarPlaceholder"></span>
+  </section>
+
+  <!-- Animal Parade Layer -->
+  <div class="animal-layer" id="animalLayer"></div>
+
+  <!-- Reconnect Overlay -->
+  <div class="reconnect-overlay" id="reconnectOverlay"></div>
+
+  <script src="../shared/data.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script>
+    // ── Clock & Date ─────────────────────────────────────────────────────
+    const DAYS_DE   = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    const DAYS_EN   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS_DE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function updateClock() {
+      const now = new Date();
+      const lang = I18n.getLang();
+      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
+      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
+
+      document.getElementById('clock').textContent =
+        now.getHours().toString().padStart(2,'0') + ':' +
+        now.getMinutes().toString().padStart(2,'0') + ':' +
+        now.getSeconds().toString().padStart(2,'0');
+
+      document.getElementById('date').innerHTML = lang === 'en'
+        ? days[now.getDay()] + '<br>' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
+        : days[now.getDay()] + '<br>' + now.getDate() + '. ' + months[now.getMonth()] + ' ' + now.getFullYear();
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ── Weather ──────────────────────────────────────────────────────────
+    const WEATHER_ICONS = {
+      0:'☀️', 1:'🌤️', 2:'⛅', 3:'🌥️',
+      45:'🌫️', 48:'🌫️',
+      51:'🌦️', 53:'🌦️', 55:'🌧️',
+      61:'🌧️', 63:'🌧️', 65:'🌧️',
+      71:'❄️', 73:'❄️', 75:'❄️', 77:'❄️',
+      80:'🌦️', 81:'🌧️', 82:'⛈️',
+      85:'❄️', 86:'❄️',
+      95:'⛈️', 96:'⛈️', 99:'⛈️'
+    };
+    const WEATHER_DESC_DE = {
+      0:'Klarer Himmel', 1:'Überwiegend klar', 2:'Teilweise bewölkt', 3:'Bedeckt',
+      45:'Nebel', 48:'Nebel', 51:'Leichter Nieselregen', 53:'Nieselregen', 55:'Starker Nieselregen',
+      61:'Leichter Regen', 63:'Regen', 65:'Starker Regen',
+      71:'Leichter Schnee', 73:'Schnee', 75:'Starker Schnee', 77:'Schneekörner',
+      80:'Regenschauer', 81:'Starke Schauer', 82:'Heftige Schauer',
+      85:'Schneeschauer', 86:'Starke Schneeschauer',
+      95:'Gewitter', 96:'Gewitter', 99:'Starkes Gewitter'
+    };
+    const WEATHER_DESC_EN = {
+      0:'Clear sky', 1:'Mainly clear', 2:'Partly cloudy', 3:'Overcast',
+      45:'Fog', 48:'Fog', 51:'Light drizzle', 53:'Drizzle', 55:'Heavy drizzle',
+      61:'Light rain', 63:'Rain', 65:'Heavy rain',
+      71:'Light snow', 73:'Snow', 75:'Heavy snow', 77:'Snow grains',
+      80:'Rain showers', 81:'Heavy showers', 82:'Violent showers',
+      85:'Snow showers', 86:'Heavy snow showers',
+      95:'Thunderstorm', 96:'Thunderstorm', 99:'Heavy thunderstorm'
+    };
+
+    let weatherCache = null;
+    let weatherCacheTime = 0;
+
+    async function fetchWeather(lat, lon) {
+      const now = Date.now();
+      if (weatherCache && now - weatherCacheTime < 10 * 60 * 1000) return weatherCache;
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        weatherCache = data.current;
+        weatherCacheTime = now;
+        return weatherCache;
+      } catch { return null; }
+    }
+
+    async function updateWeather(widgets) {
+      const w = widgets?.weather;
+      const el = document.getElementById('weatherWidget');
+      if (!w?.enabled || !w.lat) { el.style.display = 'none'; return; }
+
+      el.style.display = 'flex';
+      const current = await fetchWeather(w.lat, w.lon);
+      if (!current) { el.style.display = 'none'; return; }
+
+      const code = current.weather_code;
+      const lang = I18n.getLang();
+      const desc = lang === 'en' ? WEATHER_DESC_EN[code] : WEATHER_DESC_DE[code];
+
+      document.getElementById('weatherIcon').textContent  = WEATHER_ICONS[code] || '🌡️';
+      document.getElementById('weatherTemp').textContent  = Math.round(current.temperature_2m) + '°F';
+      document.getElementById('weatherDesc').textContent  = desc || '';
+      document.getElementById('weatherCity').textContent  = w.city || '';
+    }
+
+    // Refresh weather every 10 min
+    setInterval(() => { if (_lastWidgets) updateWeather(_lastWidgets); }, 10 * 60 * 1000);
+
+    // ── KPI Rendering ─────────────────────────────────────────────────────
+    function renderKPIs(kpis) {
+      const active = (kpis || []).filter(k => k.active && k.label);
+      const row    = document.getElementById('kpiRow');
+      row.innerHTML = '';
+      const shown = active.slice(0, 3);
+      while (shown.length < 3) shown.push(null);
+      shown.forEach(kpi => {
+        const card = document.createElement('div');
+        if (!kpi) {
+          card.className = 'kpi-card empty';
+          const lbl = document.createElement('div'); lbl.className = 'kpi-label'; lbl.textContent = '–';
+          const val = document.createElement('div'); val.className = 'kpi-value'; val.textContent = '–';
+          card.appendChild(lbl); card.appendChild(val);
+        } else {
+          card.className = 'kpi-card';
+          const lbl  = document.createElement('div'); lbl.className  = 'kpi-label'; lbl.textContent  = kpi.label;
+          const val  = document.createElement('div'); val.className  = 'kpi-value'; val.textContent  = kpi.value;
+          card.appendChild(lbl); card.appendChild(val);
+          if (kpi.unit) {
+            const unit = document.createElement('div'); unit.className = 'kpi-unit'; unit.textContent = kpi.unit;
+            card.appendChild(unit);
+          }
+        }
+        row.appendChild(card);
+      });
+    }
+
+    // ── Messages ──────────────────────────────────────────────────────────
+    let messages = [];
+    let msgIndex  = 0;
+
+    function renderNextMessage() {
+      if (!messages.length) {
+        document.getElementById('infoText').textContent = I18n.t('display.no.messages');
+        document.getElementById('infoCounter').textContent = '';
+        return;
+      }
+      const msg = messages[msgIndex % messages.length];
+      document.getElementById('infoText').textContent = msg.text;
+      document.getElementById('infoCounter').textContent =
+        messages.length > 1 ? `${(msgIndex % messages.length) + 1} / ${messages.length}` : '';
+      msgIndex++;
+    }
+
+    // ── Clock Visibility ──────────────────────────────────────────────────
+    function applyClockVisibility(widgets) {
+      const show = widgets?.clock !== false;
+      document.getElementById('clockBlock').style.display = show ? '' : 'none';
+      document.getElementById('dateBlock').style.display  = show ? '' : 'none';
+    }
+
+    // ── Animal Parade 🐾 ──────────────────────────────────────────────────
+    const ANIMALS = ['🐱','🐶','🦊','🐰','🐻','🦁','🐯','🐸','🦄','🐮','🐼','🐨','🦘','🐺','🦝','🐙','🦋','🦔','🦭','🐧'];
+    let animalTimer = null;
+
+    function spawnAnimal() {
+      const layer = document.getElementById('animalLayer');
+      const goRTL = Math.random() > 0.4; // 60% run right→left
+      const emoji = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+      const size  = 2.5 + Math.random() * 2.5;   // 2.5–5rem
+      const top   = 10 + Math.random() * 70;       // 10–80% from top
+      const dur   = 4 + Math.random() * 6;         // 4–10s
+
+      const el = document.createElement('div');
+      el.className = 'animal';
+      el.style.cssText = `top:${top}%; font-size:${size}rem;`;
+      el.style.animation = `${goRTL ? 'run-rtl' : 'run-ltr'} ${dur}s linear forwards`;
+
+      // Emoji
+      const emojiEl = document.createElement('span');
+      emojiEl.className = 'animal-emoji';
+      emojiEl.textContent = emoji;
+
+      // Logo trail – bounces behind the animal
+      const logoEl = document.createElement('img');
+      logoEl.src = 'https://satis-fy.com/satis-fy-logo-full-black.jpg';
+      logoEl.className = 'animal-logo';
+      logoEl.alt = '';
+      logoEl.style.cssText = `height:${size * 0.45}rem; animation: logo-bounce ${0.4 + Math.random()*0.3}s ease-in-out infinite;`;
+      logoEl.onerror = () => { logoEl.style.display = 'none'; };
+
+      // If RTL: emoji first, then logo behind (logo appears to the right = trailing)
+      // If LTR (mirrored): logo appears before emoji in DOM but visually trails
+      if (goRTL) {
+        el.appendChild(emojiEl);
+        el.appendChild(logoEl);
+      } else {
+        el.appendChild(logoEl);
+        el.appendChild(emojiEl);
+      }
+
+      layer.appendChild(el);
+      // Remove after animation
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    function startAnimals() {
+      if (animalTimer) return;
+      // Spawn first animal quickly, then every 2-4s
+      spawnAnimal();
+      animalTimer = setInterval(spawnAnimal, 2000 + Math.random() * 2000);
+    }
+
+    function stopAnimals() {
+      if (animalTimer) { clearInterval(animalTimer); animalTimer = null; }
+      document.getElementById('animalLayer').innerHTML = '';
+    }
+
+    // Randomize interval to feel natural
+    setInterval(() => {
+      if (animalTimer) {
+        clearInterval(animalTimer);
+        animalTimer = setInterval(spawnAnimal, 2000 + Math.random() * 2000);
+      }
+    }, 10000);
+
+    function applyAnimals(widgets) {
+      if (widgets?.animals) startAnimals();
+      else stopAnimals();
+    }
+
+    // ── Static Labels ─────────────────────────────────────────────────────
+    function applyStaticLabels() {
+      document.getElementById('calendarPlaceholder').textContent = I18n.t('display.calendar.placeholder');
+      document.getElementById('reconnectOverlay').textContent =
+        I18n.getLang() === 'en' ? '⚠ Connection lost – Reconnecting...' : '⚠ Verbindung unterbrochen – Verbinde neu...';
+    }
+
+    // ── Main Load ────────────────────────────────────────────────────────
+    let _lastWidgets = null;
+
+    async function loadContent() {
+      try {
+        const data = await DataStore.get();
+        _lastWidgets = data.widgets || {};
+
+        applyClockVisibility(_lastWidgets);
+        renderKPIs(data.kpis || []);
+        messages = (data.messages || []).filter(m => m.active && m.text);
+        renderNextMessage();
+        applyStaticLabels();
+        await updateWeather(_lastWidgets);
+        applyAnimals(_lastWidgets);
+        hideReconnectOverlay();
+      } catch {
+        showReconnectOverlay();
+      }
+    }
+
+    setInterval(renderNextMessage, 10000);
+    setInterval(loadContent, 60000);
+    loadContent();
+
+    // ── Auto-Reconnect ────────────────────────────────────────────────────
+    const overlay = document.getElementById('reconnectOverlay');
+    let reconnectTimer = null;
+
+    function showReconnectOverlay() {
+      applyStaticLabels();
+      overlay.classList.add('visible');
+      if (!reconnectTimer) {
+        reconnectTimer = setInterval(() => { DataStore.resetServerCheck(); loadContent(); }, 10000);
+      }
+    }
+
+    function hideReconnectOverlay() {
+      overlay.classList.remove('visible');
+      if (reconnectTimer) { clearInterval(reconnectTimer); reconnectTimer = null; }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') { DataStore.resetServerCheck(); loadContent(); }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>satis&amp;fy – Dashboard Admin</title>
+  <link rel="icon" type="image/svg+xml" href="https://satis-fy.com/favicon.svg">
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    body { overflow: auto; }
+    .admin-body { overflow: auto; }
+
+    /* satis&fy branding */
+    .sf-nav-logo {
+      height: 28px;
+      filter: brightness(0) invert(1);
+      display: block;
+    }
+    .sf-nav-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .sf-nav-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+    }
+    .nav-title-text {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* Language toggle */
+    .lang-toggle {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+    .lang-toggle:hover { background: var(--border); }
+
+    /* Widget rows */
+    .widget-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .widget-row:last-child { border-bottom: none; }
+    .widget-info { flex: 1; }
+    .widget-label { font-weight: 600; font-size: 0.95rem; }
+    .widget-desc  { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .widget-extra {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .widget-extra input[type="text"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.9rem;
+      padding: 7px 12px;
+      width: 200px;
+      outline: none;
+    }
+    .widget-extra input:focus { border-color: var(--accent); }
+    .widget-found { font-size: 0.8rem; color: var(--success); margin-top: 4px; }
+
+    /* Footer */
+    .admin-footer {
+      text-align: center;
+      padding: 24px 0 32px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+    .admin-footer img {
+      height: 20px;
+      filter: brightness(0) invert(1);
+      opacity: 0.4;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body class="admin-body">
+
+  <!-- Nav -->
+  <nav class="admin-nav">
+    <div class="sf-nav-logo-wrap">
+      <img
+        src="https://satis-fy.com/satis-fy-logo-full-black.jpg"
+        alt="satis&amp;fy"
+        class="sf-nav-logo"
+        onerror="this.outerHTML='<span style=\'font-weight:700;font-size:1rem\'>satis&amp;fy</span>'"
+      >
+      <div class="sf-nav-divider"></div>
+      <span class="nav-title-text">Dashboard Admin</span>
+      <span class="badge-mode" id="modeBadge">...</span>
+    </div>
+    <div class="admin-nav-user">
+      <span id="userLabel"></span>
+      <button class="lang-toggle" onclick="I18n.toggle()">EN</button>
+      <a href="../display/index.html" target="_blank" class="btn btn-primary"
+         style="width:auto;padding:7px 18px;font-size:0.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
+         data-i18n="nav.open.display">▶ Anzeige öffnen</a>
+      <button class="btn btn-secondary" style="width:auto;padding:6px 14px;font-size:0.85rem"
+              id="logoutBtn" data-i18n="nav.logout">Abmelden</button>
+    </div>
+  </nav>
+
+  <main class="admin-content">
+
+    <!-- Widgets -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        🎛️ <span data-i18n="section.widgets">Widgets</span>
+      </h2>
+
+      <!-- Clock -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label" data-i18n="widget.clock.label">Uhr &amp; Datum</div>
+          <div class="widget-desc" data-i18n="widget.clock.desc">Große Uhr oben links im Display</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetClock" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Weather -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label" data-i18n="widget.weather.label">Wetter</div>
+          <div class="widget-desc" data-i18n="widget.weather.desc">Aktuelles Wetter (Open-Meteo)</div>
+          <div class="widget-extra" id="weatherExtra" style="display:none">
+            <input type="text" id="weatherCity" placeholder="New York" maxlength="80">
+            <button class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.85rem"
+                    onclick="searchCity()" data-i18n="widget.weather.search">Suchen</button>
+            <div class="widget-found" id="weatherFound"></div>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetWeather">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Animals -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label" data-i18n="widget.animals.label">Tier-Parade 🐾</div>
+          <div class="widget-desc" data-i18n="widget.animals.desc">Lustige Tiere rennen über das Display</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetAnimals">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        📊 <span data-i18n="section.kpis">KPI-Kacheln</span>
+      </h2>
+      <div class="kpi-grid" id="kpiGrid"></div>
+    </section>
+
+    <!-- Info Board -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        📋 <span data-i18n="section.info">Info-Tafel</span>
+      </h2>
+      <div class="message-list" id="messageList"></div>
+      <div class="add-message-row">
+        <input type="text" id="newMsgInput" data-i18n-placeholder="msg.placeholder" placeholder="Neue Nachricht eingeben..." maxlength="200">
+        <select id="newMsgPriority" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:0.9rem;outline:none">
+          <option value="normal"    data-i18n="msg.priority.normal">Normal</option>
+          <option value="important" data-i18n="msg.priority.important">Wichtig</option>
+          <option value="urgent"    data-i18n="msg.priority.urgent">Dringend</option>
+        </select>
+        <button class="btn btn-primary" style="width:auto;padding:10px 20px" onclick="addMessage()" data-i18n="msg.add">+ Hinzufügen</button>
+      </div>
+    </section>
+
+    <!-- Calendar -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        📅 <span data-i18n="section.calendar">Kalender</span>
+      </h2>
+      <div class="calendar-coming-soon">
+        <div class="icon">🚧</div>
+        <div data-i18n="calendar.soon">Kalender-Integration folgt in einer späteren Version.</div>
+      </div>
+    </section>
+
+    <!-- Account Settings -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        👤 <span data-i18n="section.account">Konto-Einstellungen</span>
+      </h2>
+      <p id="accountSubtitle" style="color:var(--muted);font-size:0.9rem;margin-bottom:20px"></p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:600px">
+        <div class="form-group" style="margin:0">
+          <label data-i18n="account.current.pin">Aktueller PIN</label>
+          <input type="password" id="currentPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label data-i18n="account.new.pin">Neuer PIN</label>
+          <input type="password" id="newPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label data-i18n="account.confirm.pin">PIN bestätigen</label>
+          <input type="password" id="confirmPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+        <button class="btn btn-primary" style="width:auto;padding:10px 24px" onclick="changePin()" data-i18n="account.btn.change">PIN ändern</button>
+        <span id="pinStatus" style="font-size:0.85rem"></span>
+      </div>
+    </section>
+
+    <!-- Save Bar -->
+    <div class="save-bar">
+      <button class="btn btn-primary" style="width:auto;padding:12px 32px" onclick="saveAll()" data-i18n="save.btn">💾 Speichern</button>
+      <span class="save-status" id="saveStatus"></span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="admin-footer">
+      <img src="https://satis-fy.com/satis-fy-logo-full-black.jpg" alt="satis&amp;fy"
+           onerror="this.style.display='none'">
+      satis&amp;fy LLC &nbsp;·&nbsp; Dashboard v1.0
+    </footer>
+
+  </main>
+
+  <script src="../shared/data.js"></script>
+  <script src="../shared/auth.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script>
+    // ── Auth Guard ──
+    Auth.requireLogin();
+    const user = Auth.getCurrentUser();
+    document.getElementById('userLabel').textContent = '👤 ' + user.name;
+    document.getElementById('logoutBtn').onclick = () => Auth.logout();
+
+    // ── Mode Badge ──
+    DataStore.checkServer().then(ok => {
+      const badge = document.getElementById('modeBadge');
+      if (ok) {
+        badge.textContent = I18n.t('nav.mode.local');
+        badge.className = 'badge-mode badge-local';
+      } else {
+        badge.textContent = I18n.t('nav.mode.static');
+        badge.className = 'badge-mode badge-static';
+      }
+    });
+
+    // ── i18n apply & account subtitle ──
+    function applyLang() {
+      I18n.applyToDOM();
+      document.getElementById('accountSubtitle').textContent =
+        I18n.t('account.subtitle', { user: user.name });
+      // Re-render dynamic content with new language
+      renderKPIs();
+      renderMessages();
+      // Re-translate priority select in add-row
+      const sel = document.getElementById('newMsgPriority');
+      sel.querySelectorAll('option[data-i18n]').forEach(opt => {
+        opt.textContent = I18n.t(opt.dataset.i18n);
+      });
+    }
+
+    // Override I18n.applyToDOM to also update dynamic content
+    const _origApply = I18n.applyToDOM.bind(I18n);
+    I18n.applyToDOM = applyLang;
+
+    // ── State ──
+    let state = { kpis: [], messages: [] };
+
+    // ── Load ──
+    async function loadData() {
+      state = await DataStore.get();
+      if (!state.widgets) state.widgets = { clock: true, weather: { enabled: false, city: 'New York', lat: 40.71, lon: -74.01 }, animals: false };
+      applyLang();
+      initWidgets();
+    }
+
+    // ── XSS-safe DOM helper ──
+    function makeInput(type, value, placeholderKey, style) {
+      const el = document.createElement('input');
+      el.type = type;
+      el.value = value;
+      el.placeholder = I18n.t(placeholderKey);
+      if (style) el.style.cssText = style;
+      return el;
+    }
+
+    // ── KPIs ──
+    function renderKPIs() {
+      const grid = document.getElementById('kpiGrid');
+      grid.innerHTML = '';
+      (state.kpis || []).forEach(kpi => {
+        const card = document.createElement('div');
+        card.className = 'kpi-edit-card';
+
+        const labelInp = makeInput('text', kpi.label, 'kpi.placeholder.label', null);
+        const valueInp = makeInput('text', kpi.value, 'kpi.placeholder.value', null);
+        const unitInp  = makeInput('text', kpi.unit,  'kpi.placeholder.unit',  'width:60px');
+
+        [['label', labelInp], ['value', valueInp], ['unit', unitInp]].forEach(([field, inp]) => {
+          inp.addEventListener('input', () => {
+            const item = state.kpis.find(k => k.id === kpi.id);
+            if (item) item[field] = inp.value;
+          });
+        });
+
+        const toggleLabel = document.createElement('label');
+        toggleLabel.className = 'toggle';
+        const toggleInp = document.createElement('input');
+        toggleInp.type = 'checkbox';
+        toggleInp.checked = !!kpi.active;
+        toggleInp.addEventListener('change', () => {
+          const item = state.kpis.find(k => k.id === kpi.id);
+          if (item) item.active = toggleInp.checked;
+        });
+        const toggleSpan = document.createElement('span');
+        toggleSpan.className = 'toggle-slider';
+        toggleLabel.appendChild(toggleInp);
+        toggleLabel.appendChild(toggleSpan);
+
+        card.appendChild(labelInp);
+        card.appendChild(valueInp);
+        card.appendChild(unitInp);
+        card.appendChild(toggleLabel);
+        grid.appendChild(card);
+      });
+    }
+
+    // ── Messages ──
+    function renderMessages() {
+      const list = document.getElementById('messageList');
+      list.innerHTML = '';
+      (state.messages || []).forEach(msg => {
+        const item = document.createElement('div');
+        item.className = 'message-item';
+
+        const textInp = makeInput('text', msg.text, 'msg.placeholder', null);
+        textInp.style.flex = '1';
+        textInp.addEventListener('input', e => {
+          const m = state.messages.find(m => m.id === msg.id);
+          if (m) m.text = e.target.value;
+        });
+
+        const sel = document.createElement('select');
+        sel.style.cssText = 'background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem;outline:none';
+        ['normal','important','urgent'].forEach(val => {
+          const opt = document.createElement('option');
+          opt.value = val;
+          opt.textContent = I18n.t('msg.priority.' + val);
+          opt.selected = msg.priority === val;
+          sel.appendChild(opt);
+        });
+        sel.addEventListener('change', e => {
+          const m = state.messages.find(m => m.id === msg.id);
+          if (m) m.priority = e.target.value;
+        });
+
+        const toggleLabel = document.createElement('label');
+        toggleLabel.className = 'toggle';
+        const toggleInp = document.createElement('input');
+        toggleInp.type = 'checkbox';
+        toggleInp.checked = !!msg.active;
+        toggleInp.addEventListener('change', e => {
+          const m = state.messages.find(m => m.id === msg.id);
+          if (m) m.active = e.target.checked;
+        });
+        const toggleSpan = document.createElement('span');
+        toggleSpan.className = 'toggle-slider';
+        toggleLabel.appendChild(toggleInp);
+        toggleLabel.appendChild(toggleSpan);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'icon-btn';
+        delBtn.title = I18n.t('msg.delete');
+        delBtn.textContent = '🗑';
+        delBtn.addEventListener('click', () => deleteMessage(msg.id));
+
+        item.appendChild(textInp);
+        item.appendChild(sel);
+        item.appendChild(toggleLabel);
+        item.appendChild(delBtn);
+        list.appendChild(item);
+      });
+    }
+
+    function addMessage() {
+      const input    = document.getElementById('newMsgInput');
+      const priority = document.getElementById('newMsgPriority').value;
+      const text     = input.value.trim();
+      if (!text) return;
+      const maxId = (state.messages || []).reduce((m, msg) => Math.max(m, msg.id), 0);
+      state.messages.push({ id: maxId + 1, text, priority, active: true });
+      input.value = '';
+      renderMessages();
+    }
+
+    function deleteMessage(id) {
+      state.messages = state.messages.filter(m => m.id !== id);
+      renderMessages();
+    }
+
+    // ── Save ──
+    async function saveAll() {
+      const ok = await DataStore.save(state);
+      const status = document.getElementById('saveStatus');
+      status.textContent = I18n.t(ok ? 'save.ok' : 'save.error');
+      status.style.color  = ok ? 'var(--success)' : 'var(--danger)';
+      status.classList.add('visible');
+      setTimeout(() => status.classList.remove('visible'), 3000);
+    }
+
+    // ── PIN Change ──
+    ['currentPin','newPin','confirmPin'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g,'').slice(0,4);
+      });
+    });
+
+    async function changePin() {
+      const current = document.getElementById('currentPin').value;
+      const next    = document.getElementById('newPin').value;
+      const confirm = document.getElementById('confirmPin').value;
+      const status  = document.getElementById('pinStatus');
+
+      if (current.length !== 4 || next.length !== 4 || confirm.length !== 4) {
+        status.textContent = I18n.t('account.err.length');
+        status.style.color = 'var(--danger)';
+        return;
+      }
+      if (next !== confirm) {
+        status.textContent = I18n.t('account.err.match');
+        status.style.color = 'var(--danger)';
+        return;
+      }
+
+      const ok = await Auth.changePin(user.name, current, next);
+      status.textContent = I18n.t(ok ? 'account.ok' : 'account.err.wrong');
+      status.style.color  = ok ? 'var(--success)' : 'var(--danger)';
+      if (ok) {
+        document.getElementById('currentPin').value = '';
+        document.getElementById('newPin').value     = '';
+        document.getElementById('confirmPin').value = '';
+      }
+    }
+
+    // ── Widgets ──
+    function initWidgets() {
+      const w = state.widgets || {};
+      const wClock   = document.getElementById('widgetClock');
+      const wWeather = document.getElementById('widgetWeather');
+      const wAnimals = document.getElementById('widgetAnimals');
+
+      wClock.checked   = w.clock   !== false;
+      wWeather.checked = !!(w.weather?.enabled);
+      wAnimals.checked = !!(w.animals);
+
+      document.getElementById('weatherCity').value = w.weather?.city || 'New York';
+      toggleWeatherExtra(wWeather.checked);
+
+      wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
+      wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; toggleWeatherExtra(wWeather.checked); });
+      wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
+    }
+
+    function toggleWeatherExtra(show) {
+      document.getElementById('weatherExtra').style.display = show ? 'flex' : 'none';
+      document.getElementById('weatherExtra').style.flexWrap = 'wrap';
+    }
+
+    async function searchCity() {
+      const city = document.getElementById('weatherCity').value.trim();
+      const found = document.getElementById('weatherFound');
+      if (!city) return;
+      found.textContent = '🔍 ...';
+      found.style.color = 'var(--muted)';
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en`);
+        const data = await res.json();
+        if (data.results?.length) {
+          const r = data.results[0];
+          if (!state.widgets) state.widgets = {};
+          if (!state.widgets.weather) state.widgets.weather = {};
+          state.widgets.weather.city = r.name + (r.admin1 ? ', ' + r.admin1 : '');
+          state.widgets.weather.lat  = r.latitude;
+          state.widgets.weather.lon  = r.longitude;
+          document.getElementById('weatherCity').value = state.widgets.weather.city;
+          found.textContent = I18n.t('widget.weather.found', { city: state.widgets.weather.city, lat: r.latitude.toFixed(2), lon: r.longitude.toFixed(2) });
+          found.style.color = 'var(--success)';
+        } else {
+          found.textContent = I18n.t('widget.weather.not.found');
+          found.style.color = 'var(--danger)';
+        }
+      } catch {
+        found.textContent = '⚠ API error';
+        found.style.color = 'var(--danger)';
+      }
+    }
+
+    // ── Init ──
+    loadData();
+
+    document.getElementById('newMsgInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addMessage();
+    });
+  </script>
+</body>
+</html>

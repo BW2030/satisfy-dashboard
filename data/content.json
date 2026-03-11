@@ -1,0 +1,71 @@
+{
+  "users": [
+    {
+      "name": "admin",
+      "pin": "dd97c4cdacf559fa802ef47ee3a0122e:c9d87482a49b5185449ba90a0f7f020e07d252708adc6dbd434e2cb9ff6c89cf"
+    }
+  ],
+  "widgets": {
+    "clock": true,
+    "weather": {
+      "enabled": false,
+      "city": "New York",
+      "lat": 40.7128,
+      "lon": -74.006
+    },
+    "animals": false
+  },
+  "kpis": [
+    {
+      "id": 1,
+      "label": "Umsatz",
+      "value": "12.450",
+      "unit": "€",
+      "active": true
+    },
+    {
+      "id": 2,
+      "label": "Auftraege",
+      "value": "37",
+      "unit": "Stk.",
+      "active": true
+    },
+    {
+      "id": 3,
+      "label": "Mitarbeiter",
+      "value": "8",
+      "unit": "",
+      "active": true
+    },
+    {
+      "id": 4,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    },
+    {
+      "id": 5,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    },
+    {
+      "id": 6,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    }
+  ],
+  "messages": [
+    {
+      "id": 1,
+      "text": "Alles OK\\! Sonderzeichen funktionieren.",
+      "priority": "normal",
+      "active": true
+    }
+  ],
+  "calendar": []
+}

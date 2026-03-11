@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>satis&amp;fy – Dashboard Login</title>
+  <link rel="icon" type="image/svg+xml" href="https://satis-fy.com/favicon.svg">
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    .sf-logo {
+      height: 36px;
+      /* invert white so logo is visible on dark background */
+      filter: brightness(0) invert(1);
+    }
+    .sf-logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .lang-toggle {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+    .lang-toggle:hover { background: var(--border); }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0 0;
+    }
+    .powered-by {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body class="login-body">
+
+  <!-- Language toggle -->
+  <button class="lang-toggle" onclick="I18n.toggle()">EN</button>
+
+  <div class="login-card">
+    <!-- satis&fy Logo -->
+    <div class="sf-logo-wrap">
+      <img
+        src="https://satis-fy.com/satis-fy-logo-full-black.jpg"
+        alt="satis&amp;fy"
+        class="sf-logo"
+        onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block'"
+      >
+      <span id="logoFallback" style="display:none; font-size:1.4rem; font-weight:700; letter-spacing:1px;">satis&amp;fy</span>
+    </div>
+
+    <h1 class="login-title">Dashboard</h1>
+    <p class="login-subtitle" data-i18n="login.subtitle">Bitte mit Name und PIN anmelden</p>
+
+    <form id="loginForm" autocomplete="off">
+      <div class="form-group">
+        <label for="nameInput" data-i18n="login.label.name">Name</label>
+        <input
+          type="text"
+          id="nameInput"
+          placeholder="admin"
+          autocomplete="off"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="pinInput" data-i18n="login.label.pin">4-stelliger PIN</label>
+        <input
+          type="password"
+          id="pinInput"
+          class="pin-input"
+          placeholder="••••"
+          maxlength="4"
+          pattern="[0-9]{4}"
+          inputmode="numeric"
+          autocomplete="off"
+          required
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="loginBtn" data-i18n="login.btn">Anmelden</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </form>
+
+    <hr class="divider">
+    <p class="powered-by" data-i18n="login.session.note">Session läuft nach 8 Stunden ab.</p>
+  </div>
+
+  <script src="../shared/data.js"></script>
+  <script src="../shared/auth.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (Auth.isLoggedIn()) window.location.href = 'index.html';
+
+    // Apply translations on load
+    document.addEventListener('DOMContentLoaded', () => I18n.applyToDOM());
+
+    // Only allow digits in PIN field
+    document.getElementById('pinInput').addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 4);
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn      = document.getElementById('loginBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      const name     = document.getElementById('nameInput').value.trim();
+      const pin      = document.getElementById('pinInput').value;
+
+      if (pin.length !== 4) {
+        errorMsg.textContent = I18n.t('login.err.pin.length');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = I18n.t('login.btn.checking');
+      errorMsg.textContent = '';
+
+      const result = await Auth.login(name, pin);
+
+      if (result.ok) {
+        window.location.href = 'index.html';
+      } else if (result.lockedFor) {
+        const mins = Math.ceil(result.lockedFor / 60);
+        errorMsg.textContent = I18n.t('login.err.locked', { min: mins });
+        btn.disabled = true;
+        btn.textContent = I18n.t('login.btn');
+      } else {
+        const attemptsText = result.attemptsLeft
+          ? ' ' + I18n.t('login.err.attempts', { n: result.attemptsLeft })
+          : '';
+        errorMsg.textContent = I18n.t('login.err.invalid') + attemptsText;
+        btn.disabled = false;
+        btn.textContent = I18n.t('login.btn');
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    });
+  </script>
+</body>
+</html>
