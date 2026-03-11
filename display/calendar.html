@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>satis&amp;fy – Kalender</title>
+  <link rel="icon" type="image/svg+xml" href="https://satis-fy.com/favicon.svg">
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    body { overflow: hidden; display: flex; flex-direction: column; height: 100vh; padding: 24px; gap: 20px; }
+
+    .cal-page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 36px;
+      flex-shrink: 0;
+    }
+    .cal-page-title {
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 700;
+    }
+    .cal-page-date {
+      font-size: clamp(1rem, 2vw, 1.5rem);
+      color: var(--muted);
+    }
+    .cal-page-clock {
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cal-page-body {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .cal-day-group { display: flex; flex-direction: column; gap: 10px; }
+    .cal-day-label {
+      font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cal-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border-radius: 10px;
+      border-left: 4px solid var(--accent);
+    }
+    .cal-row.today { border-left-color: var(--success); }
+    .cal-row.allday { border-left-color: var(--accent2); }
+
+    .cal-row-time {
+      font-size: clamp(1rem, 1.8vw, 1.4rem);
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 120px;
+      font-variant-numeric: tabular-nums;
+    }
+    .cal-row-title {
+      font-size: clamp(1rem, 1.8vw, 1.4rem);
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .cal-row-org {
+      font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+      color: var(--muted);
+    }
+
+    .cal-no-events {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.2rem, 2.5vw, 2rem);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .cal-error {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cal-page-header">
+    <div>
+      <div class="cal-page-title">📅 Kalender</div>
+    </div>
+    <div class="cal-page-date" id="calPageDate">–</div>
+    <div class="cal-page-clock" id="calPageClock">00:00</div>
+  </div>
+
+  <div class="cal-page-body" id="calPageBody">
+    <div class="cal-no-events">Lade Termine…</div>
+  </div>
+
+  <script src="../shared/i18n.js"></script>
+  <script>
+    const DAYS_DE   = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    const DAYS_EN   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS_DE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function updateClock() {
+      const now  = new Date();
+      const lang = I18n.getLang();
+      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
+      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
+      document.getElementById('calPageClock').textContent =
+        now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      document.getElementById('calPageDate').textContent = lang === 'en'
+        ? days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate()
+        : days[now.getDay()] + ', ' + now.getDate() + '. ' + months[now.getMonth()];
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function fmt(dateStr) {
+      const d = new Date(dateStr);
+      return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+    }
+
+    function dayKey(dateStr) {
+      const d = new Date(dateStr);
+      return d.toDateString();
+    }
+
+    function dayLabel(dateStr) {
+      const d = new Date(dateStr);
+      const today = new Date();
+      const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+      const lang = I18n.getLang();
+      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
+      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
+      if (d.toDateString() === today.toDateString())    return lang === 'en' ? 'Today' : 'Heute';
+      if (d.toDateString() === tomorrow.toDateString()) return lang === 'en' ? 'Tomorrow' : 'Morgen';
+      return lang === 'en'
+        ? days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate()
+        : days[d.getDay()] + ', ' + d.getDate() + '. ' + months[d.getMonth()];
+    }
+
+    async function loadEvents() {
+      const body = document.getElementById('calPageBody');
+      try {
+        const res = await fetch('/api/calendar');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const events = await res.json();
+        body.innerHTML = '';
+
+        if (!events.length) {
+          const el = document.createElement('div');
+          el.className = 'cal-no-events';
+          el.textContent = I18n.getLang() === 'en' ? 'No upcoming meetings' : 'Keine bevorstehenden Termine';
+          body.appendChild(el);
+          return;
+        }
+
+        // Group by day
+        const groups = new Map();
+        events.forEach(ev => {
+          const key = dayKey(ev.start || new Date().toISOString());
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(ev);
+        });
+
+        const todayStr = new Date().toDateString();
+        for (const [key, evs] of groups) {
+          const group = document.createElement('div');
+          group.className = 'cal-day-group';
+
+          const lbl = document.createElement('div');
+          lbl.className = 'cal-day-label';
+          lbl.textContent = dayLabel(evs[0].start || new Date().toISOString());
+          group.appendChild(lbl);
+
+          evs.forEach(ev => {
+            const row = document.createElement('div');
+            row.className = 'cal-row' + (key === todayStr ? ' today' : '') + (ev.isAllDay ? ' allday' : '');
+
+            const timeEl = document.createElement('div');
+            timeEl.className = 'cal-row-time';
+            timeEl.textContent = ev.isAllDay ? (I18n.getLang() === 'en' ? 'All day' : 'Ganztägig') : fmt(ev.start) + ' – ' + fmt(ev.end);
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'cal-row-title';
+            titleEl.textContent = ev.subject;
+
+            row.appendChild(timeEl);
+            row.appendChild(titleEl);
+            if (ev.organizer) {
+              const orgEl = document.createElement('div');
+              orgEl.className = 'cal-row-org';
+              orgEl.textContent = ev.organizer;
+              row.appendChild(orgEl);
+            }
+            group.appendChild(row);
+          });
+
+          body.appendChild(group);
+        }
+      } catch (e) {
+        body.innerHTML = '';
+        const err = document.createElement('div');
+        err.className = 'cal-error';
+        err.innerHTML = '<div style="font-size:2rem">📅</div><div>' +
+          (I18n.getLang() === 'en'
+            ? 'Teams Calendar not configured.<br>Set it up in the Admin panel.'
+            : 'Teams Kalender nicht eingerichtet.<br>Im Admin-Bereich konfigurieren.') +
+          '</div>';
+        body.appendChild(err);
+      }
+    }
+
+    loadEvents();
+    setInterval(loadEvents, 5 * 60 * 1000); // refresh every 5 min
+
+    // SSE live updates
+    function connectSSE() {
+      const es = new EventSource('/api/events');
+      es.onmessage = (e) => { if (e.data === 'update') loadEvents(); };
+      es.onerror = () => { es.close(); setTimeout(connectSSE, 10000); };
+    }
+    connectSSE();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') loadEvents();
+    });
+  </script>
+</body>
+</html>

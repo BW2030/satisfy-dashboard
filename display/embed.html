@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>satis&amp;fy – Embed</title>
+  <link rel="icon" type="image/svg+xml" href="https://satis-fy.com/favicon.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d0d0d; color: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; overflow: hidden; }
+    iframe { width: 100vw; height: 100vh; border: none; display: block; }
+    #noUrl {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: #64748b;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    #noUrl .icon { font-size: 3rem; }
+  </style>
+</head>
+<body>
+
+  <div id="noUrl" style="display:none">
+    <div class="icon">🔗</div>
+    <div>Keine URL konfiguriert.<br>Im Admin unter <strong>Widgets → Embed-URL</strong> eintragen.</div>
+  </div>
+  <iframe id="embedFrame" src="" allowfullscreen allow="autoplay; fullscreen"></iframe>
+
+  <script>
+    async function loadEmbed() {
+      try {
+        const res = await fetch('/api/content');
+        const data = await res.json();
+        const url = data.widgets?.embedUrl;
+        if (url) {
+          document.getElementById('embedFrame').src = url;
+          document.getElementById('noUrl').style.display = 'none';
+        } else {
+          document.getElementById('embedFrame').style.display = 'none';
+          document.getElementById('noUrl').style.display = 'flex';
+        }
+      } catch {
+        document.getElementById('embedFrame').style.display = 'none';
+        document.getElementById('noUrl').style.display = 'flex';
+      }
+    }
+
+    loadEmbed();
+
+    // SSE: reload if URL changes in admin
+    function connectSSE() {
+      const es = new EventSource('/api/events');
+      es.onmessage = (e) => { if (e.data === 'update') loadEmbed(); };
+      es.onerror = () => { es.close(); setTimeout(connectSSE, 10000); };
+    }
+    connectSSE();
+  </script>
+</body>
+</html>
