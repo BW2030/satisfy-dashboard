@@ -137,6 +137,25 @@ function validateContent(req, res, next) {
   next();
 }
 
+// ── Server-Sent Events (live update push to display) ─────────────────────────
+const sseClients = new Set();
+
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+  res.write('data: connected\n\n');
+  sseClients.add(res);
+  req.on('close', () => sseClients.delete(res));
+});
+
+function pushUpdate() {
+  for (const client of sseClients) {
+    client.write('data: update\n\n');
+  }
+}
+
 // ── Keep-Alive Ping (prevents Render free tier from sleeping) ────────────────
 app.get('/ping', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 
@@ -202,6 +221,7 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
     // Preserve user PIN hashes – never overwrite from client
     const saved = { ...req.body, users: existing.users, calendar: existing.calendar || [] };
     writeData(saved);
+    pushUpdate();
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Fehler beim Speichern der Daten.' });

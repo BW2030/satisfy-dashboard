@@ -371,6 +371,14 @@
     setInterval(loadContent, 60000);
     loadContent();
 
+    // ── Server-Sent Events (instant update when admin saves) ─────────────
+    function connectSSE() {
+      const es = new EventSource('/api/events');
+      es.onmessage = (e) => { if (e.data === 'update') loadContent(); };
+      es.onerror = () => { es.close(); setTimeout(connectSSE, 10000); };
+    }
+    connectSSE();
+
     // ── Auto-Reconnect ────────────────────────────────────────────────────
     const overlay = document.getElementById('reconnectOverlay');
     let reconnectTimer = null;
