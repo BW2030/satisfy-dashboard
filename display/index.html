@@ -55,9 +55,43 @@
 
     .animal-logo {
       height: 1em;
-      filter: brightness(0) invert(1);
       opacity: 0.85;
       display: block;
+    }
+
+    /* Calendar events */
+    .cal-events {
+      display: flex;
+      gap: 16px;
+      overflow: hidden;
+      flex: 1;
+    }
+    .cal-event {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 8px 14px;
+      min-width: 160px;
+      max-width: 220px;
+      flex-shrink: 0;
+    }
+    .cal-event-time {
+      font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .cal-event-title {
+      font-size: clamp(0.75rem, 1.3vw, 0.95rem);
+      color: var(--text);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .cal-empty {
+      color: var(--muted);
+      font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+      font-style: italic;
     }
 
     /* running right → left */
@@ -110,8 +144,8 @@
 
   <!-- Calendar -->
   <section class="calendar-section">
-    <span style="font-size:1.5rem">📅</span>
-    <span class="calendar-placeholder" id="calendarPlaceholder"></span>
+    <span style="font-size:1.5rem;flex-shrink:0">📅</span>
+    <div class="cal-events" id="calEvents"></div>
   </section>
 
   <!-- Animal Parade Layer -->
@@ -293,7 +327,7 @@
 
       // Logo trail – bounces behind the animal
       const logoEl = document.createElement('img');
-      logoEl.src = 'https://satis-fy.com/satis-fy-logo-full-black.jpg';
+      logoEl.src = 'https://satis-fy.com/favicon.svg';
       logoEl.className = 'animal-logo';
       logoEl.alt = '';
       logoEl.style.cssText = `height:${size * 0.45}rem; animation: logo-bounce ${0.4 + Math.random()*0.3}s ease-in-out infinite;`;
@@ -339,9 +373,51 @@
       else stopAnimals();
     }
 
+    // ── Calendar Events ───────────────────────────────────────────────────
+    async function loadCalendar() {
+      const container = document.getElementById('calEvents');
+      try {
+        const res = await fetch('/api/calendar');
+        if (!res.ok) throw new Error();
+        const events = await res.json();
+        container.innerHTML = '';
+        if (!events.length) {
+          const em = document.createElement('span');
+          em.className = 'cal-empty';
+          em.textContent = I18n.getLang() === 'en' ? 'No meetings today' : 'Keine Termine heute';
+          container.appendChild(em);
+          return;
+        }
+        const lang = I18n.getLang();
+        events.forEach(ev => {
+          const card = document.createElement('div');
+          card.className = 'cal-event';
+          const timeEl = document.createElement('div');
+          timeEl.className = 'cal-event-time';
+          if (ev.isAllDay) {
+            timeEl.textContent = lang === 'en' ? 'All day' : 'Ganztägig';
+          } else {
+            const s = new Date(ev.start);
+            const e = new Date(ev.end);
+            timeEl.textContent =
+              s.getHours().toString().padStart(2,'0') + ':' + s.getMinutes().toString().padStart(2,'0') +
+              ' – ' +
+              e.getHours().toString().padStart(2,'0') + ':' + e.getMinutes().toString().padStart(2,'0');
+          }
+          const titleEl = document.createElement('div');
+          titleEl.className = 'cal-event-title';
+          titleEl.textContent = ev.subject;
+          card.appendChild(timeEl);
+          card.appendChild(titleEl);
+          container.appendChild(card);
+        });
+      } catch {
+        container.innerHTML = '';
+      }
+    }
+
     // ── Static Labels ─────────────────────────────────────────────────────
     function applyStaticLabels() {
-      document.getElementById('calendarPlaceholder').textContent = I18n.t('display.calendar.placeholder');
       document.getElementById('reconnectOverlay').textContent =
         I18n.getLang() === 'en' ? '⚠ Connection lost – Reconnecting...' : '⚠ Verbindung unterbrochen – Verbinde neu...';
     }
@@ -361,6 +437,7 @@
         applyStaticLabels();
         await updateWeather(_lastWidgets);
         applyAnimals(_lastWidgets);
+        loadCalendar();
         hideReconnectOverlay();
       } catch {
         showReconnectOverlay();

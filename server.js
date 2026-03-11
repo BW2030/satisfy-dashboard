@@ -206,8 +206,9 @@ app.head('/api/content', (req, res) => res.sendStatus(200));
 app.get('/api/content', (req, res) => {
   try {
     const data = readData();
-    // Always strip PIN hashes before sending to client
-    const safe = { ...data, users: data.users.map(u => ({ name: u.name })) };
+    // Strip PIN hashes and Teams client secret before sending to client
+    const teams = data.teams ? { ...data.teams, clientSecret: undefined } : undefined;
+    const safe = { ...data, users: data.users.map(u => ({ name: u.name })), teams };
     res.json(safe);
   } catch {
     res.status(500).json({ error: 'Fehler beim Lesen der Daten.' });
@@ -218,13 +219,83 @@ app.get('/api/content', (req, res) => {
 app.post('/api/content', requireAuth, validateContent, (req, res) => {
   try {
     const existing = readData();
-    // Preserve user PIN hashes – never overwrite from client
-    const saved = { ...req.body, users: existing.users, calendar: existing.calendar || [] };
+    // Merge teams config – preserve existing clientSecret if not re-entered
+    const teamsNew = req.body.teams || {};
+    const teamsExisting = existing.teams || {};
+    const teams = { ...teamsExisting, ...teamsNew,
+      clientSecret: teamsNew.clientSecret || teamsExisting.clientSecret };
+    // Preserve PIN hashes – never overwrite from client
+    const saved = { ...req.body, users: existing.users, calendar: existing.calendar || [], teams };
     writeData(saved);
     pushUpdate();
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Fehler beim Speichern der Daten.' });
+  }
+});
+
+// ── Teams Calendar (Microsoft Graph API) ─────────────────────────────────────
+let _graphToken = null;
+let _graphTokenExpiry = 0;
+let _calendarCache = null;
+let _calendarCacheTime = 0;
+
+async function getGraphToken(tenantId, clientId, clientSecret) {
+  if (_graphToken && Date.now() < _graphTokenExpiry) return _graphToken;
+  const body = new URLSearchParams({
+    grant_type: 'client_credentials',
+    client_id: clientId,
+    client_secret: clientSecret,
+    scope: 'https://graph.microsoft.com/.default'
+  });
+  const res = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
+  });
+  if (!res.ok) { const t = await res.text(); throw new Error('Token error: ' + t); }
+  const data = await res.json();
+  _graphToken = data.access_token;
+  _graphTokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+  return _graphToken;
+}
+
+app.get('/api/calendar', async (req, res) => {
+  try {
+    const data = readData();
+    const teams = data.teams || {};
+    if (!teams.enabled || !teams.tenantId || !teams.clientId || !teams.clientSecret || !teams.userEmail) {
+      return res.json([]);
+    }
+    // Return cached result if fresh (5 min)
+    if (_calendarCache && Date.now() - _calendarCacheTime < 5 * 60 * 1000) {
+      return res.json(_calendarCache);
+    }
+    const token = await getGraphToken(teams.tenantId, teams.clientId, teams.clientSecret);
+    const now = new Date();
+    const start = now.toISOString();
+    const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const evRes = await fetch(
+      `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(teams.userEmail)}/calendarView` +
+      `?startDateTime=${start}&endDateTime=${end}` +
+      `&$select=subject,start,end,organizer,isAllDay&$orderby=start/dateTime&$top=10`,
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    if (!evRes.ok) { const t = await evRes.text(); throw new Error('Graph error: ' + t); }
+    const evData = await evRes.json();
+    const events = (evData.value || []).map(e => ({
+      subject: e.subject || '(Kein Titel)',
+      start: e.start?.dateTime,
+      end: e.end?.dateTime,
+      organizer: e.organizer?.emailAddress?.name || '',
+      isAllDay: !!e.isAllDay
+    }));
+    _calendarCache = events;
+    _calendarCacheTime = Date.now();
+    res.json(events);
+  } catch (e) {
+    console.error('Calendar error:', e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 

@@ -67,5 +67,12 @@
       "active": true
     }
   ],
-  "calendar": []
+  "calendar": [],
+  "teams": {
+    "enabled": false,
+    "tenantId": "",
+    "clientId": "",
+    "clientSecret": "",
+    "userEmail": ""
+  }
 }

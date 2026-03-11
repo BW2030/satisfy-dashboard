@@ -198,14 +198,53 @@
       </div>
     </section>
 
-    <!-- Calendar -->
+    <!-- Calendar / Teams -->
     <section class="admin-section">
       <h2 class="admin-section-title">
         📅 <span data-i18n="section.calendar">Kalender</span>
       </h2>
-      <div class="calendar-coming-soon">
-        <div class="icon">🚧</div>
-        <div data-i18n="calendar.soon">Kalender-Integration folgt in einer späteren Version.</div>
+
+      <!-- Teams toggle -->
+      <div class="widget-row" style="margin-bottom:16px">
+        <div class="widget-info">
+          <div class="widget-label" data-i18n="teams.label">Microsoft Teams Kalender</div>
+          <div class="widget-desc" data-i18n="teams.desc">Termine über Microsoft Graph API anzeigen</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="teamsEnabled">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Teams config (shown when enabled) -->
+      <div id="teamsConfig" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:700px">
+          <div class="form-group" style="margin:0">
+            <label data-i18n="teams.tenant">Tenant ID</label>
+            <input type="text" id="teamsTenantId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label data-i18n="teams.client">Client ID (App ID)</label>
+            <input type="text" id="teamsClientId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label data-i18n="teams.secret">Client Secret</label>
+            <input type="password" id="teamsClientSecret" placeholder="•••••••• (leer lassen = unverändert)">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label data-i18n="teams.email">Kalender E-Mail / UPN</label>
+            <input type="email" id="teamsUserEmail" placeholder="user@company.com">
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
+          <button class="btn btn-secondary" style="width:auto;padding:8px 18px;font-size:0.85rem"
+                  onclick="testTeams()" data-i18n="teams.test">Verbindung testen</button>
+          <span id="teamsStatus" style="font-size:0.85rem"></span>
+        </div>
+        <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;font-size:0.8rem;color:var(--muted)">
+          <strong data-i18n="teams.help.title">Azure AD Setup:</strong>
+          <span data-i18n="teams.help.text"> portal.azure.com → App registrations → New → API permissions: Calendars.Read (Application) → Grant admin consent → Certificates &amp; secrets → New secret</span>
+        </div>
       </div>
     </section>
 
@@ -300,6 +339,7 @@
       if (!state.widgets) state.widgets = { clock: true, weather: { enabled: false, city: 'New York', lat: 40.71, lon: -74.01 }, animals: false };
       applyLang();
       initWidgets();
+      initTeams();
     }
 
     // ── XSS-safe DOM helper ──
@@ -467,6 +507,58 @@
         document.getElementById('currentPin').value = '';
         document.getElementById('newPin').value     = '';
         document.getElementById('confirmPin').value = '';
+      }
+    }
+
+    // ── Teams Calendar ──
+    function initTeams() {
+      const t = state.teams || {};
+      document.getElementById('teamsEnabled').checked = !!t.enabled;
+      document.getElementById('teamsTenantId').value  = t.tenantId  || '';
+      document.getElementById('teamsClientId').value  = t.clientId  || '';
+      document.getElementById('teamsClientSecret').value = ''; // never prefill secret
+      document.getElementById('teamsUserEmail').value = t.userEmail || '';
+      toggleTeamsConfig(!!t.enabled);
+
+      document.getElementById('teamsEnabled').addEventListener('change', e => {
+        if (!state.teams) state.teams = {};
+        state.teams.enabled = e.target.checked;
+        toggleTeamsConfig(e.target.checked);
+      });
+      ['teamsTenantId','teamsClientId','teamsClientSecret','teamsUserEmail'].forEach(id => {
+        document.getElementById(id).addEventListener('input', e => {
+          if (!state.teams) state.teams = {};
+          const map = { teamsTenantId:'tenantId', teamsClientId:'clientId',
+                        teamsClientSecret:'clientSecret', teamsUserEmail:'userEmail' };
+          if (e.target.value) state.teams[map[id]] = e.target.value;
+        });
+      });
+    }
+
+    function toggleTeamsConfig(show) {
+      document.getElementById('teamsConfig').style.display = show ? 'block' : 'none';
+    }
+
+    async function testTeams() {
+      const status = document.getElementById('teamsStatus');
+      status.textContent = '🔍 ...';
+      status.style.color = 'var(--muted)';
+      try {
+        const res = await fetch('/api/calendar', {
+          headers: { Authorization: 'Bearer ' + Auth.getToken() }
+        });
+        if (res.ok) {
+          const events = await res.json();
+          status.textContent = '✓ ' + I18n.t('teams.test.ok', { n: events.length });
+          status.style.color = 'var(--success)';
+        } else {
+          const err = await res.json();
+          status.textContent = '✗ ' + (err.error || res.status);
+          status.style.color = 'var(--danger)';
+        }
+      } catch {
+        status.textContent = '✗ Netzwerkfehler';
+        status.style.color = 'var(--danger)';
       }
     }
 

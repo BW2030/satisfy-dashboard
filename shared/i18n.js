@@ -75,7 +75,18 @@ const I18n = (() => {
 
       // Display labels
       'display.no.messages': 'Keine Nachrichten vorhanden.',
-      'display.calendar.placeholder': 'Kalender wird in einer späteren Version verfügbar sein.',
+
+      // Teams Calendar
+      'teams.label':      'Microsoft Teams Kalender',
+      'teams.desc':       'Termine über Microsoft Graph API anzeigen',
+      'teams.tenant':     'Tenant ID',
+      'teams.client':     'Client ID (App ID)',
+      'teams.secret':     'Client Secret',
+      'teams.email':      'Kalender E-Mail / UPN',
+      'teams.test':       'Verbindung testen',
+      'teams.test.ok':    '{n} Termin(e) gefunden',
+      'teams.help.title': 'Azure AD Setup:',
+      'teams.help.text':  ' portal.azure.com → App registrations → New → API permissions: Calendars.Read (Application) → Admin consent → Certificates & secrets → New secret',
     },
 
     en: {
@@ -150,7 +161,18 @@ const I18n = (() => {
 
       // Display labels
       'display.no.messages': 'No messages available.',
-      'display.calendar.placeholder': 'Calendar will be available in a later version.',
+
+      // Teams Calendar
+      'teams.label':      'Microsoft Teams Calendar',
+      'teams.desc':       'Show meetings via Microsoft Graph API',
+      'teams.tenant':     'Tenant ID',
+      'teams.client':     'Client ID (App ID)',
+      'teams.secret':     'Client Secret',
+      'teams.email':      'Calendar Email / UPN',
+      'teams.test':       'Test connection',
+      'teams.test.ok':    '{n} event(s) found',
+      'teams.help.title': 'Azure AD Setup:',
+      'teams.help.text':  ' portal.azure.com → App registrations → New → API permissions: Calendars.Read (Application) → Admin consent → Certificates & secrets → New secret',
     }
   };
 
