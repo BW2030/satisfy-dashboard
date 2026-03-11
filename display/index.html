@@ -449,10 +449,17 @@
     loadContent();
 
     // ── Server-Sent Events (instant update when admin saves) ─────────────
+    let _sseConnected = false;
     function connectSSE() {
       const es = new EventSource('/api/events');
-      es.onmessage = (e) => { if (e.data === 'update') loadContent(); };
-      es.onerror = () => { es.close(); setTimeout(connectSSE, 10000); };
+      es.onmessage = (e) => {
+        if (e.data === 'connected') {
+          if (_sseConnected) loadContent(); // reload on reconnect
+          _sseConnected = true;
+        }
+        if (e.data === 'update') loadContent();
+      };
+      es.onerror = () => { _sseConnected = false; es.close(); setTimeout(connectSSE, 10000); };
     }
     connectSSE();
 
