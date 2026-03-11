@@ -46,28 +46,9 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000);
 
-// ── Rate Limiting ─────────────────────────────────────────────────────────────
-const loginAttempts = new Map(); // ip+name → { count, lockedUntil }
-const FAIL_LIMIT = 5;
-const LOCKOUT_MS = 15 * 60 * 1000;
-
-function checkRateLimit(ip, name) {
-  const key = `${ip}:${name.toLowerCase()}`;
-  const now = Date.now();
-  const state = loginAttempts.get(key) || { count: 0, lockedUntil: 0 };
-  if (state.lockedUntil > now) return { blocked: true, retryAfter: Math.ceil((state.lockedUntil - now) / 1000) };
-  return { blocked: false, state, key };
-}
-
-function recordFailedAttempt(key) {
-  const state = loginAttempts.get(key) || { count: 0, lockedUntil: 0 };
-  state.count++;
-  if (state.count >= FAIL_LIMIT) {
-    state.lockedUntil = Date.now() + LOCKOUT_MS;
-    state.count = 0;
-  }
-  loginAttempts.set(key, state);
-}
+// ── Rate Limiting (no lockout – wrong PIN just returns 401) ──────────────────
+function checkRateLimit() { return { blocked: false, key: null }; }
+function recordFailedAttempt() {}
 
 // ── PIN Hashing ───────────────────────────────────────────────────────────────
 

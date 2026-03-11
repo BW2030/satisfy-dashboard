@@ -44,39 +44,10 @@ const Auth = (() => {
     return legacy === stored;
   }
 
-  // ── Rate Limiting (client-side) ──────────────────────────────────────────
-
-  const FAIL_LIMIT = 5;
-  const LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
-
-  function getLockoutState(name) {
-    try {
-      return JSON.parse(sessionStorage.getItem('firetv_lockout_' + name)) || { attempts: 0, lockedUntil: 0 };
-    } catch { return { attempts: 0, lockedUntil: 0 }; }
-  }
-
-  function recordFail(name) {
-    const state = getLockoutState(name);
-    state.attempts++;
-    if (state.attempts >= FAIL_LIMIT) {
-      state.lockedUntil = Date.now() + LOCKOUT_MS;
-      state.attempts = 0;
-    }
-    sessionStorage.setItem('firetv_lockout_' + name, JSON.stringify(state));
-    return state;
-  }
-
-  function clearFail(name) {
-    sessionStorage.removeItem('firetv_lockout_' + name);
-  }
-
-  function getRemainingLockout(name) {
-    const state = getLockoutState(name);
-    if (state.lockedUntil > Date.now()) {
-      return Math.ceil((state.lockedUntil - Date.now()) / 1000);
-    }
-    return 0;
-  }
+  // ── Rate Limiting (disabled – no lockout) ────────────────────────────────
+  function recordFail() {}
+  function clearFail() {}
+  function getRemainingLockout() { return 0; }
 
   // ── Login ────────────────────────────────────────────────────────────────
 
