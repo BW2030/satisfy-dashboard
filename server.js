@@ -144,10 +144,13 @@ app.get('/api/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // disable nginx buffering on Render
   res.flushHeaders();
   res.write('data: connected\n\n');
   sseClients.add(res);
-  req.on('close', () => sseClients.delete(res));
+  // Heartbeat every 25s to keep connection alive through proxies
+  const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 25000);
+  req.on('close', () => { clearInterval(heartbeat); sseClients.delete(res); });
 });
 
 function pushUpdate() {
