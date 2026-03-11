@@ -26,7 +26,7 @@
   "messages": [
     {
       "id": 1,
-      "text": "Alles OK\\! Sonderzeichen funktionieren.",
+      "text": "Willkommen! Inhalte im Admin-Bereich anpassen.",
       "priority": "normal",
       "active": true
     }
