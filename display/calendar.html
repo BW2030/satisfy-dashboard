@@ -173,7 +173,10 @@
       const body = document.getElementById('calPageBody');
       try {
         const cfg = await fetch('/api/content').then(r => r.json());
-        if (cfg.pages?.calendar === false) { document.body.innerHTML = '<div style="height:100vh;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#64748b">⛔ Seite deaktiviert</div>'; return; }
+        if (cfg.pages?.calendar === false) {
+          body.innerHTML = '<div class="cal-no-events" style="color:#64748b">⛔ Seite deaktiviert</div>';
+          return;
+        }
         const res = await fetch('/api/calendar');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const events = await res.json();

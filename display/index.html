@@ -419,7 +419,11 @@
     async function loadContent() {
       try {
         const data = await DataStore.get();
-        if (data.pages?.display === false) { document.body.innerHTML = '<div style="height:100vh;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#64748b">⛔ Seite deaktiviert</div>'; return; }
+        if (data.pages?.display === false) {
+          document.getElementById('reconnectOverlay').textContent = '⛔ Seite deaktiviert';
+          document.getElementById('reconnectOverlay').classList.add('visible');
+          return;
+        }
         _lastWidgets = data.widgets || {};
 
         applyClockVisibility(_lastWidgets);
