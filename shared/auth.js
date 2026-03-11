@@ -87,34 +87,34 @@ const Auth = (() => {
       return { ok: false, lockedFor: lockRemaining };
     }
 
-    // Try server-side login first
-    const serverAvailable = await DataStore.checkServer();
-    if (serverAvailable) {
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, pin })
-        });
-        if (res.ok) {
-          const { token } = await res.json();
-          _setSession(name, token);
-          clearFail(name);
-          return { ok: true };
-        } else if (res.status === 429) {
-          return { ok: false, lockedFor: 900 };
-        } else {
-          const state = recordFail(name);
-          return { ok: false, attemptsLeft: FAIL_LIMIT - state.attempts };
-        }
-      } catch {}
+    // Always try server-side login first (don't depend on checkServer result)
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, pin })
+      });
+      if (res.ok) {
+        const { token } = await res.json();
+        _setSession(name, token);
+        clearFail(name);
+        return { ok: true };
+      } else if (res.status === 429) {
+        return { ok: false, lockedFor: 900 };
+      } else if (res.status === 401 || res.status === 400) {
+        const state = recordFail(name);
+        return { ok: false, attemptsLeft: FAIL_LIMIT - state.attempts };
+      }
+      // Other server errors – fall through to localStorage
+    } catch {
+      // Network error – fall through to localStorage (GitHub Pages mode)
     }
 
-    // Fallback: client-side validation (GitHub Pages mode)
+    // Fallback: client-side validation (GitHub Pages / offline mode)
     const data = await DataStore.get();
     const users = data.users || [];
     const user = users.find(u => u.name.toLowerCase() === name.toLowerCase());
-    if (user && await verifyPin(pin, user.pin)) {
+    if (user && user.pin && await verifyPin(pin, user.pin)) {
       _setSession(name, null);
       clearFail(name);
       return { ok: true };
