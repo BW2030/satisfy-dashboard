@@ -32,6 +32,7 @@
     }
   ],
   "calendar": [],
+  "pages": { "display": true, "calendar": true, "embed": true },
   "teams": {
     "enabled": false,
     "tenantId": "",

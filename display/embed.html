@@ -36,6 +36,7 @@
       try {
         const res = await fetch('/api/content');
         const data = await res.json();
+        if (data.pages?.embed === false) { document.body.innerHTML = '<div style="height:100vh;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#64748b">⛔ Seite deaktiviert</div>'; return; }
         const url = data.widgets?.embedUrl;
         if (url) {
           document.getElementById('embedFrame').src = url;

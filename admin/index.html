@@ -183,12 +183,33 @@
         </div>
       </div>
 
-      <!-- Display Links -->
-      <div style="margin-top:8px;padding:16px;background:var(--surface2);border-radius:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-        <span style="color:var(--muted);font-size:0.85rem;font-weight:600">🖥 Seiten öffnen:</span>
-        <a href="../display/index.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">📺 Haupt-Display</a>
-        <a href="../display/calendar.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">📅 Kalender</a>
-        <a href="../display/embed.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">🔗 Embed</a>
+      <!-- Page Toggles + Links -->
+      <div style="margin-top:8px;padding:16px;background:var(--surface2);border-radius:10px;display:flex;flex-direction:column;gap:12px">
+        <div style="color:var(--muted);font-size:0.85rem;font-weight:600;margin-bottom:4px">🖥 Seiten</div>
+
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <label class="toggle" title="Haupt-Display aktivieren">
+            <input type="checkbox" id="pageDisplay" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <a href="../display/index.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">📺 Haupt-Display</a>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <label class="toggle" title="Kalender-Seite aktivieren">
+            <input type="checkbox" id="pageCalendar" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <a href="../display/calendar.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">📅 Kalender</a>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <label class="toggle" title="Embed-Seite aktivieren">
+            <input type="checkbox" id="pageEmbed" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <a href="../display/embed.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">🔗 Embed</a>
+        </div>
       </div>
     </section>
 
@@ -605,6 +626,19 @@
       wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; toggleWeatherExtra(wWeather.checked); });
       wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
       document.getElementById('embedUrl').addEventListener('input', e => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = e.target.value.trim(); });
+
+      // Page toggles
+      const pages = state.pages || {};
+      document.getElementById('pageDisplay').checked  = pages.display  !== false;
+      document.getElementById('pageCalendar').checked = pages.calendar !== false;
+      document.getElementById('pageEmbed').checked    = pages.embed    !== false;
+      ['pageDisplay','pageCalendar','pageEmbed'].forEach(id => {
+        document.getElementById(id).addEventListener('change', e => {
+          if (!state.pages) state.pages = {};
+          const map = { pageDisplay:'display', pageCalendar:'calendar', pageEmbed:'embed' };
+          state.pages[map[id]] = e.target.checked;
+        });
+      });
     }
 
     function toggleWeatherExtra(show) {
