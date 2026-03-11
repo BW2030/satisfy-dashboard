@@ -16,48 +16,12 @@
     "animals": false
   },
   "kpis": [
-    {
-      "id": 1,
-      "label": "Umsatz",
-      "value": "12.450",
-      "unit": "€",
-      "active": true
-    },
-    {
-      "id": 2,
-      "label": "Auftraege",
-      "value": "37",
-      "unit": "Stk.",
-      "active": true
-    },
-    {
-      "id": 3,
-      "label": "Mitarbeiter",
-      "value": "8",
-      "unit": "",
-      "active": true
-    },
-    {
-      "id": 4,
-      "label": "",
-      "value": "",
-      "unit": "",
-      "active": false
-    },
-    {
-      "id": 5,
-      "label": "",
-      "value": "",
-      "unit": "",
-      "active": false
-    },
-    {
-      "id": 6,
-      "label": "",
-      "value": "",
-      "unit": "",
-      "active": false
-    }
+    { "id": 1, "label": "", "value": "", "unit": "", "active": false },
+    { "id": 2, "label": "", "value": "", "unit": "", "active": false },
+    { "id": 3, "label": "", "value": "", "unit": "", "active": false },
+    { "id": 4, "label": "", "value": "", "unit": "", "active": false },
+    { "id": 5, "label": "", "value": "", "unit": "", "active": false },
+    { "id": 6, "label": "", "value": "", "unit": "", "active": false }
   ],
   "messages": [
     {

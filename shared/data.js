@@ -68,15 +68,16 @@ const DataStore = (() => {
           headers: _authHeaders(),
           body: JSON.stringify(data)
         });
-        if (res.ok) return true;
+        if (res.ok) return { ok: true, server: true };
+        if (res.status === 401) return { ok: false, authExpired: true };
       } catch {}
     }
-    // localStorage fallback
+    // localStorage fallback (GitHub Pages / offline)
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(data));
-      return true;
+      return { ok: true, server: false };
     } catch {
-      return false;
+      return { ok: false };
     }
   }
 

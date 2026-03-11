@@ -468,10 +468,15 @@
 
     // ── Save ──
     async function saveAll() {
-      const ok = await DataStore.save(state);
+      const result = await DataStore.save(state);
       const status = document.getElementById('saveStatus');
-      status.textContent = I18n.t(ok ? 'save.ok' : 'save.error');
-      status.style.color  = ok ? 'var(--success)' : 'var(--danger)';
+      if (result.authExpired) {
+        // Session expired – force re-login
+        Auth.logout();
+        return;
+      }
+      status.textContent = result.ok ? I18n.t('save.ok') : I18n.t('save.error');
+      status.style.color  = result.ok ? 'var(--success)' : 'var(--danger)';
       status.classList.add('visible');
       setTimeout(() => status.classList.remove('visible'), 3000);
     }
