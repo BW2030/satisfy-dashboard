@@ -256,24 +256,15 @@
       const active = (kpis || []).filter(k => k.active && k.label);
       const row    = document.getElementById('kpiRow');
       row.innerHTML = '';
-      const shown = active.slice(0, 3);
-      while (shown.length < 3) shown.push(null);
-      shown.forEach(kpi => {
+      active.slice(0, 6).forEach(kpi => {
         const card = document.createElement('div');
-        if (!kpi) {
-          card.className = 'kpi-card empty';
-          const lbl = document.createElement('div'); lbl.className = 'kpi-label'; lbl.textContent = '–';
-          const val = document.createElement('div'); val.className = 'kpi-value'; val.textContent = '–';
-          card.appendChild(lbl); card.appendChild(val);
-        } else {
-          card.className = 'kpi-card';
-          const lbl  = document.createElement('div'); lbl.className  = 'kpi-label'; lbl.textContent  = kpi.label;
-          const val  = document.createElement('div'); val.className  = 'kpi-value'; val.textContent  = kpi.value;
-          card.appendChild(lbl); card.appendChild(val);
-          if (kpi.unit) {
-            const unit = document.createElement('div'); unit.className = 'kpi-unit'; unit.textContent = kpi.unit;
-            card.appendChild(unit);
-          }
+        card.className = 'kpi-card';
+        const lbl = document.createElement('div'); lbl.className = 'kpi-label'; lbl.textContent = kpi.label;
+        const val = document.createElement('div'); val.className = 'kpi-value'; val.textContent = kpi.value;
+        card.appendChild(lbl); card.appendChild(val);
+        if (kpi.unit) {
+          const unit = document.createElement('div'); unit.className = 'kpi-unit'; unit.textContent = kpi.unit;
+          card.appendChild(unit);
         }
         row.appendChild(card);
       });
