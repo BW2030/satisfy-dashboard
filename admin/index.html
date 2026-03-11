@@ -276,14 +276,27 @@
             <input type="email" id="teamsUserEmail" placeholder="user@company.com">
           </div>
         </div>
+        <!-- Login status -->
+        <div id="teamsLoginStatus" style="margin-top:16px;padding:14px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <span id="teamsLoginInfo" style="font-size:0.9rem;color:var(--muted)">Lade Status…</span>
+          <div style="display:flex;gap:8px">
+            <a id="teamsLoginBtn" href="/auth/microsoft/login"
+               class="btn btn-primary" style="width:auto;padding:8px 18px;font-size:0.85rem;text-decoration:none">
+              🔑 Mit Microsoft anmelden
+            </a>
+            <button id="teamsLogoutBtn" class="btn btn-secondary" style="width:auto;padding:8px 14px;font-size:0.85rem;display:none"
+                    onclick="teamsLogout()">Abmelden</button>
+          </div>
+        </div>
         <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
           <button class="btn btn-secondary" style="width:auto;padding:8px 18px;font-size:0.85rem"
-                  onclick="testTeams()" data-i18n="teams.test">Verbindung testen</button>
+                  onclick="testTeams()" data-i18n="teams.test">Kalender testen</button>
           <span id="teamsStatus" style="font-size:0.85rem"></span>
         </div>
         <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;font-size:0.8rem;color:var(--muted)">
-          <strong data-i18n="teams.help.title">Azure AD Setup:</strong>
-          <span data-i18n="teams.help.text"> portal.azure.com → App registrations → New → API permissions: Calendars.Read (Application) → Grant admin consent → Certificates &amp; secrets → New secret</span>
+          <strong>Azure AD Setup:</strong>
+          Redirect URI eintragen: <code style="background:var(--surface);padding:2px 6px;border-radius:4px">https://satisfy-dashboard.onrender.com/auth/microsoft/callback</code><br>
+          Permissions: <strong>Calendars.Read</strong> (Delegated) · <strong>offline_access</strong>
         </div>
       </div>
     </section>
@@ -380,6 +393,7 @@
       applyLang();
       initWidgets();
       initTeams();
+      loadTeamsStatus();
     }
 
     // ── XSS-safe DOM helper ──
@@ -583,6 +597,54 @@
     function toggleTeamsConfig(show) {
       document.getElementById('teamsConfig').style.display = show ? 'block' : 'none';
     }
+
+    async function loadTeamsStatus() {
+      try {
+        const res = await fetch('/api/teams-status', { headers: { Authorization: 'Bearer ' + Auth.getToken() } });
+        const s = await res.json();
+        const info = document.getElementById('teamsLoginInfo');
+        const loginBtn = document.getElementById('teamsLoginBtn');
+        const logoutBtn = document.getElementById('teamsLogoutBtn');
+        if (s.loggedIn && !s.expired) {
+          info.style.color = 'var(--success)';
+          info.textContent = '✓ Angemeldet als ' + (s.userName || s.userEmail);
+          loginBtn.style.display = 'none';
+          logoutBtn.style.display = '';
+        } else if (s.loggedIn && s.expired) {
+          info.style.color = 'var(--warning)';
+          info.textContent = '⚠ Token abgelaufen – bitte neu anmelden';
+          loginBtn.style.display = '';
+          logoutBtn.style.display = '';
+        } else {
+          info.style.color = 'var(--muted)';
+          info.textContent = 'Nicht angemeldet';
+          loginBtn.style.display = '';
+          logoutBtn.style.display = 'none';
+        }
+      } catch { document.getElementById('teamsLoginInfo').textContent = 'Status nicht verfügbar'; }
+    }
+
+    async function teamsLogout() {
+      await fetch('/api/teams-logout', { method: 'POST', headers: { Authorization: 'Bearer ' + Auth.getToken() } });
+      loadTeamsStatus();
+    }
+
+    // Handle OAuth redirect params
+    (() => {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('teams_ok')) {
+        const s = document.getElementById('teamsStatus');
+        s.textContent = '✓ Microsoft-Login erfolgreich!';
+        s.style.color = 'var(--success)';
+        history.replaceState({}, '', window.location.pathname);
+      }
+      if (p.get('teams_error')) {
+        const s = document.getElementById('teamsStatus');
+        s.textContent = '✗ Fehler: ' + p.get('teams_error');
+        s.style.color = 'var(--danger)';
+        history.replaceState({}, '', window.location.pathname);
+      }
+    })();
 
     async function testTeams() {
       const status = document.getElementById('teamsStatus');

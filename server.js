@@ -237,61 +237,132 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
   }
 });
 
-// ── Teams Calendar (Microsoft Graph API) ─────────────────────────────────────
-let _graphToken = null;
-let _graphTokenExpiry = 0;
+// ── Teams Calendar – OAuth2 + Microsoft Graph ────────────────────────────────
+const TOKENS_FILE = path.join(__dirname, 'data', 'tokens.json');
 let _calendarCache = null;
 let _calendarCacheTime = 0;
+const _oauthStates = new Map();
 
-async function getGraphToken(tenantId, clientId, clientSecret) {
-  if (_graphToken && Date.now() < _graphTokenExpiry) return _graphToken;
-  const body = new URLSearchParams({
-    grant_type: 'client_credentials',
-    client_id: clientId,
-    client_secret: clientSecret,
-    scope: 'https://graph.microsoft.com/.default'
-  });
-  const res = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString()
-  });
-  if (!res.ok) { const t = await res.text(); throw new Error('Token error: ' + t); }
-  const data = await res.json();
-  _graphToken = data.access_token;
-  _graphTokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
-  return _graphToken;
+function readTokens() {
+  try { return JSON.parse(fs.readFileSync(TOKENS_FILE, 'utf8')); } catch { return {}; }
+}
+function writeTokens(t) {
+  fs.writeFileSync(TOKENS_FILE, JSON.stringify(t, null, 2), 'utf8');
 }
 
+async function getValidAccessToken() {
+  const tokens = readTokens();
+  if (!tokens.access_token) return null;
+  // Still valid
+  if (tokens.expires_at > Date.now() + 60000) return tokens.access_token;
+  // Try refresh
+  if (!tokens.refresh_token) return null;
+  const cfg = readData().teams || {};
+  if (!cfg.tenantId || !cfg.clientId || !cfg.clientSecret) return null;
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: tokens.refresh_token,
+    client_id: cfg.clientId,
+    client_secret: cfg.clientSecret,
+    scope: 'https://graph.microsoft.com/Calendars.Read offline_access'
+  });
+  const r = await fetch(`https://login.microsoftonline.com/${cfg.tenantId}/oauth2/v2.0/token`, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString()
+  });
+  if (!r.ok) return null;
+  const t = await r.json();
+  writeTokens({ ...tokens, access_token: t.access_token,
+    refresh_token: t.refresh_token || tokens.refresh_token,
+    expires_at: Date.now() + t.expires_in * 1000 });
+  return t.access_token;
+}
+
+// Initiate OAuth login
+app.get('/auth/microsoft/login', (req, res) => {
+  const cfg = readData().teams || {};
+  if (!cfg.tenantId || !cfg.clientId) return res.redirect('/admin/index.html?teams_error=missing_config');
+  const state = crypto.randomBytes(16).toString('hex');
+  _oauthStates.set(state, Date.now());
+  setTimeout(() => _oauthStates.delete(state), 10 * 60 * 1000);
+  const redirectUri = `${req.protocol}://${req.get('host')}/auth/microsoft/callback`;
+  const params = new URLSearchParams({
+    client_id: cfg.clientId, response_type: 'code', redirect_uri: redirectUri,
+    scope: 'https://graph.microsoft.com/Calendars.Read offline_access',
+    state, response_mode: 'query'
+  });
+  res.redirect(`https://login.microsoftonline.com/${cfg.tenantId}/oauth2/v2.0/authorize?${params}`);
+});
+
+// OAuth callback
+app.get('/auth/microsoft/callback', async (req, res) => {
+  const { code, state, error } = req.query;
+  if (error) return res.redirect('/admin/index.html?teams_error=' + encodeURIComponent(error));
+  if (!_oauthStates.has(state)) return res.redirect('/admin/index.html?teams_error=invalid_state');
+  _oauthStates.delete(state);
+  try {
+    const cfg = readData().teams || {};
+    const redirectUri = `${req.protocol}://${req.get('host')}/auth/microsoft/callback`;
+    const body = new URLSearchParams({
+      grant_type: 'authorization_code', code, client_id: cfg.clientId,
+      client_secret: cfg.clientSecret, redirect_uri: redirectUri,
+      scope: 'https://graph.microsoft.com/Calendars.Read offline_access'
+    });
+    const tokenRes = await fetch(`https://login.microsoftonline.com/${cfg.tenantId}/oauth2/v2.0/token`, {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString()
+    });
+    if (!tokenRes.ok) { const t = await tokenRes.text(); throw new Error(t); }
+    const tokens = await tokenRes.json();
+    // Get user info
+    const meRes = await fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,mail,userPrincipalName',
+      { headers: { Authorization: 'Bearer ' + tokens.access_token } });
+    const me = meRes.ok ? await meRes.json() : {};
+    writeTokens({
+      access_token: tokens.access_token, refresh_token: tokens.refresh_token,
+      expires_at: Date.now() + tokens.expires_in * 1000,
+      user_name: me.displayName || '', user_email: me.mail || me.userPrincipalName || ''
+    });
+    _calendarCache = null;
+    res.redirect('/admin/index.html?teams_ok=1');
+  } catch (e) {
+    console.error('OAuth error:', e.message);
+    res.redirect('/admin/index.html?teams_error=' + encodeURIComponent(e.message));
+  }
+});
+
+// Teams status
+app.get('/api/teams-status', requireAuth, (req, res) => {
+  const t = readTokens();
+  if (!t.access_token) return res.json({ loggedIn: false });
+  res.json({ loggedIn: true, expired: t.expires_at < Date.now(), userName: t.user_name, userEmail: t.user_email });
+});
+
+// Teams logout
+app.post('/api/teams-logout', requireAuth, (req, res) => {
+  try { fs.unlinkSync(TOKENS_FILE); } catch {}
+  _calendarCache = null;
+  res.json({ ok: true });
+});
+
+// Calendar endpoint
 app.get('/api/calendar', async (req, res) => {
   try {
     const data = readData();
-    const teams = data.teams || {};
-    if (!teams.enabled || !teams.tenantId || !teams.clientId || !teams.clientSecret || !teams.userEmail) {
-      return res.json([]);
-    }
-    // Return cached result if fresh (5 min)
-    if (_calendarCache && Date.now() - _calendarCacheTime < 5 * 60 * 1000) {
-      return res.json(_calendarCache);
-    }
-    const token = await getGraphToken(teams.tenantId, teams.clientId, teams.clientSecret);
+    if (!data.teams?.enabled) return res.json([]);
+    if (_calendarCache && Date.now() - _calendarCacheTime < 5 * 60 * 1000) return res.json(_calendarCache);
+    const token = await getValidAccessToken();
+    if (!token) return res.json([]);
     const now = new Date();
-    const start = now.toISOString();
     const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const evRes = await fetch(
-      `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(teams.userEmail)}/calendarView` +
-      `?startDateTime=${start}&endDateTime=${end}` +
+      `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${now.toISOString()}&endDateTime=${end}` +
       `&$select=subject,start,end,organizer,isAllDay&$orderby=start/dateTime&$top=10`,
       { headers: { Authorization: 'Bearer ' + token } }
     );
     if (!evRes.ok) { const t = await evRes.text(); throw new Error('Graph error: ' + t); }
     const evData = await evRes.json();
     const events = (evData.value || []).map(e => ({
-      subject: e.subject || '(Kein Titel)',
-      start: e.start?.dateTime,
-      end: e.end?.dateTime,
-      organizer: e.organizer?.emailAddress?.name || '',
-      isAllDay: !!e.isAllDay
+      subject: e.subject || '(Kein Titel)', start: e.start?.dateTime, end: e.end?.dateTime,
+      organizer: e.organizer?.emailAddress?.name || '', isAllDay: !!e.isAllDay
     }));
     _calendarCache = events;
     _calendarCacheTime = Date.now();
