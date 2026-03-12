@@ -55,9 +55,8 @@
 
     .animal-logo {
       height: 1em;
-      opacity: 0.95;
+      opacity: 0.9;
       display: block;
-      filter: brightness(0) invert(1);
     }
 
     /* Calendar events */
@@ -150,7 +149,7 @@
   <!-- Background Logo -->
   <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0">
     <img src="https://satis-fy.com/favicon.svg" alt=""
-         style="width:clamp(200px,28vw,420px);filter:brightness(0) invert(1);opacity:0.18"
+         style="width:clamp(200px,28vw,420px);opacity:0.06"
          onerror="this.style.display='none'">
   </div>
 
@@ -168,9 +167,9 @@
   <!-- Logo Screen (wenn alles ausgeschaltet) -->
   <div id="logoScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:40;flex-direction:column;align-items:center;justify-content:center;gap:32px">
     <img src="https://satis-fy.com/favicon.svg" alt="satis&amp;fy"
-         style="width:clamp(180px,30vw,360px);filter:brightness(0) invert(1);opacity:0.92"
+         style="width:clamp(180px,30vw,360px);opacity:0.9"
          onerror="this.style.display='none'">
-    <div style="font-size:clamp(1.2rem,3vw,2.2rem);font-weight:700;color:#fff;opacity:0.7;letter-spacing:4px">satis&amp;fy</div>
+    <div style="font-size:clamp(1.2rem,3vw,2.2rem);font-weight:700;color:var(--text);opacity:0.5;letter-spacing:6px;text-transform:uppercase">satis&amp;fy</div>
   </div>
 
   <!-- Reconnect Overlay -->
@@ -350,7 +349,7 @@
       logoEl.src = 'https://satis-fy.com/favicon.svg';
       logoEl.className = 'animal-logo';
       logoEl.alt = '';
-      logoEl.style.cssText = `height:${size * 0.9}rem; animation: logo-bounce ${0.4 + Math.random()*0.3}s ease-in-out infinite;`;
+      logoEl.style.cssText = `height:${size * 0.9}rem; animation: logo-bounce ${0.4 + Math.random()*0.3}s ease-in-out infinite; filter:none;`;
       logoEl.onerror = () => { logoEl.style.display = 'none'; };
 
       // Logo läuft hinter dem Tier
