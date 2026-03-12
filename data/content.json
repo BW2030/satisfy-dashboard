@@ -8,7 +8,7 @@
   "widgets": {
     "clock": true,
     "weather": {
-      "enabled": true,
+      "enabled": false,
       "city": "New York",
       "lat": 40.7128,
       "lon": -74.006
@@ -16,7 +16,7 @@
     "animals": false,
     "embedUrl": "",
     "infoboard": false,
-    "showPing": true,
+    "showPing": false,
     "calendar": true,
     "embedSlots": [
       {
