@@ -172,6 +172,18 @@
         </label>
       </div>
 
+      <!-- Ping Status -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label">📡 Ping-Status</div>
+          <div class="widget-desc">Online-Anzeige unten rechts auf dem Display</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetShowPing">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <!-- Info-Tafel -->
       <div class="widget-row">
         <div class="widget-info">
@@ -545,6 +557,7 @@
       state.widgets.clock     = document.getElementById('widgetClock').checked;
       state.widgets.animals   = document.getElementById('widgetAnimals').checked;
       state.widgets.infoboard = document.getElementById('widgetInfoboard').checked;
+      state.widgets.showPing  = document.getElementById('widgetShowPing').checked;
       if (!state.widgets.weather) state.widgets.weather = {};
       state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
       state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
@@ -716,6 +729,7 @@
       wWeather.checked = !!(w.weather?.enabled);
       wAnimals.checked = !!(w.animals);
       document.getElementById('widgetInfoboard').checked = w.infoboard !== false;
+      document.getElementById('widgetShowPing').checked  = !!(w.showPing);
 
       document.getElementById('weatherCity').value = w.weather?.city || 'New York';
       document.getElementById('embedUrl').value = w.embedUrl || '';
@@ -724,6 +738,7 @@
 
       wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
       document.getElementById('widgetInfoboard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.infoboard = e.target.checked; });
+      document.getElementById('widgetShowPing').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.showPing  = e.target.checked; });
       wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; toggleWeatherExtra(wWeather.checked); });
       wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
       const embedUrlEl = document.getElementById('embedUrl');

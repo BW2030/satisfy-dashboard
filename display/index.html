@@ -154,6 +154,14 @@
          onerror="this.style.display='none'">
   </div>
 
+  <!-- Ping Status -->
+  <div id="pingStatus" style="display:none;position:fixed;bottom:16px;right:20px;z-index:60;
+       display:none;align-items:center;gap:8px;background:rgba(0,0,0,0.45);
+       border-radius:20px;padding:6px 14px;backdrop-filter:blur(6px)">
+    <span id="pingDot" style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;flex-shrink:0"></span>
+    <span id="pingTime" style="font-size:0.78rem;color:#cbd5e1;font-variant-numeric:tabular-nums">–</span>
+  </div>
+
   <!-- Animal Parade Layer -->
   <div class="animal-layer" id="animalLayer"></div>
 
@@ -444,6 +452,9 @@
 
         applyClockVisibility(_lastWidgets);
         document.querySelector('.info-board').style.display = _lastWidgets.infoboard !== false ? '' : 'none';
+        const pingEl = document.getElementById('pingStatus');
+        pingEl.style.display = _lastWidgets.showPing ? 'flex' : 'none';
+        if (_lastWidgets.showPing) updatePing();
         renderKPIs(data.kpis || []);
         messages = (data.messages || []).filter(m => m.active && m.text);
         renderNextMessage();
@@ -468,6 +479,28 @@
         showReconnectOverlay();
       }
     }
+
+    // ── Ping Status ───────────────────────────────────────────────────────
+    async function updatePing() {
+      const el = document.getElementById('pingStatus');
+      if (el.style.display === 'none') return;
+      try {
+        const res = await fetch('/ping');
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('pingDot').style.background = '#22c55e';
+          const t = new Date(data.time);
+          document.getElementById('pingTime').textContent =
+            '✅ ' + t.getHours().toString().padStart(2,'0') + ':' +
+            t.getMinutes().toString().padStart(2,'0') + ':' +
+            t.getSeconds().toString().padStart(2,'0');
+        }
+      } catch {
+        document.getElementById('pingDot').style.background = '#ef4444';
+        document.getElementById('pingTime').textContent = '❌ offline';
+      }
+    }
+    setInterval(updatePing, 60000);
 
     setInterval(renderNextMessage, 10000);
     setInterval(loadContent, 60000);
