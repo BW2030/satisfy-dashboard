@@ -16,9 +16,11 @@ const DataStore = (() => {
       { id: 6, label: '', value: '', unit: '', active: false }
     ],
     messages: [{ id: 1, text: 'Willkommen! Inhalte im Admin-Bereich anpassen.', priority: 'normal', active: true }],
+    lassoMessages: [],
     calendar: {},
     widgets: {
       clock: true, infoboard: true, showPing: false, animals: false, calendar: true,
+      lassoBoard: false,
       weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 },
       embedUrl: '',
       embedSlots: [
@@ -28,7 +30,14 @@ const DataStore = (() => {
         { id: 5, label: 'Embed 5', url: '', active: false }
       ]
     },
-    pages: { active: 'display', rotationSec: 30 }
+    pages: { active: 'display', rotationSec: 30 },
+    slides: [
+      { id: 1, name: 'Termine',   type: 'calendar',  url: '', content: '', active: false },
+      { id: 2, name: 'Dashboard', type: 'dashboard', url: '', content: '', active: false },
+      { id: 3, name: 'Slide 3',   type: 'text',      url: '', content: '', active: false },
+      { id: 4, name: 'Slide 4',   type: 'embed',     url: '', content: '', active: false },
+      { id: 5, name: 'Slide 5',   type: 'text',      url: '', content: '', active: false }
+    ]
   };
 
   function _authHeaders() {

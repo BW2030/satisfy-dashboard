@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>satis&amp;fy – Slide</title>
+  <link rel="icon" type="image/svg+xml" href="https://satis-fy.com/favicon.svg">
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    body { overflow: hidden; }
+
+    /* ── Dashboard type ─────────────────────────────────────────────────── */
+    #slideDashboard { position: fixed; inset: 0; display: none; flex-direction: column; }
+    .weather-widget { display: flex; align-items: center; gap: 12px; text-align: right; }
+    .weather-icon { font-size: clamp(2rem, 4vw, 3rem); line-height: 1; }
+    .weather-info { display: flex; flex-direction: column; }
+    .weather-temp { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; line-height: 1; }
+    .weather-desc { font-size: clamp(0.75rem, 1.3vw, 1rem); color: var(--muted); margin-top: 2px; }
+    .weather-city { font-size: clamp(0.7rem, 1.1vw, 0.9rem); color: var(--muted); }
+    .cal-events { display: flex; gap: 16px; overflow: hidden; flex: 1; }
+    .cal-event { display: flex; flex-direction: column; background: var(--surface2); border-radius: 8px; padding: 8px 14px; min-width: 160px; max-width: 220px; flex-shrink: 0; }
+    .cal-event-time { font-size: clamp(0.7rem, 1.2vw, 0.9rem); color: var(--accent); font-weight: 600; }
+    .cal-event-title { font-size: clamp(0.75rem, 1.3vw, 0.95rem); color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .cal-empty { color: var(--muted); font-size: clamp(0.9rem, 1.5vw, 1.1rem); font-style: italic; }
+
+    /* ── Calendar type ──────────────────────────────────────────────────── */
+    #slideCalendar { position: fixed; inset: 0; display: none; flex-direction: column; padding: 24px; gap: 20px; }
+    .cal-page-header { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 36px; flex-shrink: 0; }
+    .cal-page-title { font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 700; }
+    .cal-page-date  { font-size: clamp(1rem, 2vw, 1.5rem); color: var(--muted); }
+    .cal-page-clock { font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .cal-page-body { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 36px; overflow: hidden; display: flex; flex-direction: column; gap: 16px; }
+    .cal-day-group { display: flex; flex-direction: column; gap: 10px; }
+    .cal-day-label { font-size: clamp(0.75rem, 1.2vw, 0.95rem); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .cal-row { display: flex; align-items: center; gap: 20px; padding: 12px 16px; background: var(--surface2); border-radius: 10px; border-left: 4px solid var(--accent); }
+    .cal-row.today  { border-left-color: var(--success); }
+    .cal-row.allday { border-left-color: var(--accent2); }
+    .cal-row-time  { font-size: clamp(1rem, 1.8vw, 1.4rem); font-weight: 700; color: var(--accent); min-width: 120px; font-variant-numeric: tabular-nums; }
+    .cal-row-title { font-size: clamp(1rem, 1.8vw, 1.4rem); flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .cal-row-org   { font-size: clamp(0.75rem, 1.2vw, 0.95rem); color: var(--muted); }
+    .cal-no-events { flex: 1; display: flex; align-items: center; justify-content: center; font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--muted); font-style: italic; }
+
+    /* ── Embed type ─────────────────────────────────────────────────────── */
+    #slideEmbed { position: fixed; inset: 0; display: none; }
+    #slideEmbed iframe { width: 100vw; height: 100vh; border: none; display: block; }
+
+    /* ── Text type ──────────────────────────────────────────────────────── */
+    #slideText {
+      position: fixed; inset: 0; display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px; gap: 32px; text-align: center;
+      background: var(--bg);
+    }
+    .slide-text-title { font-size: clamp(2rem, 7vw, 5rem); font-weight: 700; line-height: 1.2; color: var(--text); }
+    .slide-text-body  { font-size: clamp(1.1rem, 3vw, 2.2rem); color: var(--muted); max-width: 900px; line-height: 1.5; white-space: pre-wrap; }
+
+    /* ── Background logo (dashboard) ────────────────────────────────────── */
+    #bgLogo { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 0; }
+  </style>
+</head>
+<body class="display-body">
+
+  <!-- Dashboard type -->
+  <div id="slideDashboard">
+    <header class="display-header" id="displayHeader">
+      <div id="clockBlock">
+        <div class="clock" id="clock">00:00:00</div>
+      </div>
+      <div id="dateBlock">
+        <div class="date" id="date">–</div>
+      </div>
+      <div class="weather-widget" id="weatherWidget" style="display:none">
+        <div class="weather-icon" id="weatherIcon">–</div>
+        <div class="weather-info">
+          <div class="weather-temp" id="weatherTemp">–</div>
+          <div class="weather-desc" id="weatherDesc">–</div>
+          <div class="weather-city" id="weatherCity">–</div>
+        </div>
+      </div>
+    </header>
+    <section class="kpi-row" id="kpiRow"></section>
+    <section class="info-board">
+      <span class="info-icon">📋</span>
+      <div class="info-text" id="infoText">...</div>
+      <span class="info-counter" id="infoCounter"></span>
+    </section>
+    <section class="info-board info-board--lasso" id="lassoBoardSection" style="display:none">
+      <span class="info-icon">📡</span>
+      <div class="info-text" id="lassoText">...</div>
+      <span class="info-counter" id="lassoCounter"></span>
+    </section>
+    <section class="calendar-section">
+      <span style="font-size:1.5rem;flex-shrink:0">📅</span>
+      <div class="cal-events" id="calEvents"></div>
+    </section>
+    <div id="bgLogo">
+      <img src="https://satis-fy.com/favicon.svg" alt=""
+           style="width:clamp(200px,28vw,420px);opacity:0.06"
+           onerror="this.style.display='none'">
+    </div>
+  </div>
+
+  <!-- Calendar type -->
+  <div id="slideCalendar">
+    <div class="cal-page-header">
+      <div class="cal-page-title">📅 <span id="slideCalTitle">Kalender</span></div>
+      <div class="cal-page-date"  id="calPageDate">–</div>
+      <div class="cal-page-clock" id="calPageClock">00:00</div>
+    </div>
+    <div class="cal-page-body" id="calPageBody">
+      <div class="cal-no-events">Lade Termine…</div>
+    </div>
+  </div>
+
+  <!-- Embed type -->
+  <div id="slideEmbed">
+    <iframe id="embedFrame" src="" allowfullscreen allow="autoplay; fullscreen"></iframe>
+  </div>
+
+  <!-- Text type -->
+  <div id="slideText">
+    <div class="slide-text-title" id="slideTextTitle"></div>
+    <div class="slide-text-body"  id="slideTextBody"></div>
+  </div>
+
+  <!-- Reconnect Overlay -->
+  <div class="reconnect-overlay" id="reconnectOverlay"></div>
+
+  <script src="../shared/data.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script>
+    const SLIDE_ID = parseInt(new URLSearchParams(location.search).get('id') || '1', 10);
+
+    // ── Rotation Sequence (gleiche Logik wie andere Display-Seiten) ───────
+    function buildSequence(data) {
+      const webOnly = data.pages?.active === 'web';
+      const seq = [];
+      if (!webOnly) {
+        seq.push({ id: 'display', url: 'index.html' });
+        if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
+      }
+      if (data.widgets?.embedUrl && data.widgets?.embedSlot1Active !== false) seq.push({ id: 'embed', url: 'embed.html' });
+      (data.widgets?.embedSlots || []).forEach(s => {
+        if (s.active && s.url) seq.push({ id: 'embed' + s.id, url: 'embed.html?slot=' + s.id });
+      });
+      (data.slides || []).forEach(s => {
+        if (s.active) seq.push({ id: 'slide' + s.id, url: 'slide.html?id=' + s.id });
+      });
+      if (seq.length === 0) seq.push({ id: 'display', url: 'index.html' });
+      return seq;
+    }
+
+    // ── Clock & Date (für Dashboard-Typ) ─────────────────────────────────
+    const DAYS_DE   = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    const DAYS_EN   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS_DE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function updateClock() {
+      const now  = new Date();
+      const lang = I18n.getLang();
+      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
+      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
+      const clockEl = document.getElementById('clock');
+      const dateEl  = document.getElementById('date');
+      if (clockEl) clockEl.textContent =
+        now.getHours().toString().padStart(2,'0') + ':' +
+        now.getMinutes().toString().padStart(2,'0') + ':' +
+        now.getSeconds().toString().padStart(2,'0');
+      const calClock = document.getElementById('calPageClock');
+      const calDate  = document.getElementById('calPageDate');
+      if (calClock) calClock.textContent =
+        now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      if (dateEl) dateEl.innerHTML = lang === 'en'
+        ? days[now.getDay()] + '<br>' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
+        : days[now.getDay()] + '<br>' + now.getDate() + '. ' + months[now.getMonth()] + ' ' + now.getFullYear();
+      if (calDate) calDate.textContent = lang === 'en'
+        ? days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate()
+        : days[now.getDay()] + ', ' + now.getDate() + '. ' + months[now.getMonth()];
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ── Weather (für Dashboard-Typ) ──────────────────────────────────────
+    const WEATHER_ICONS = { 0:'☀️',1:'🌤️',2:'⛅',3:'🌥️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',77:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',85:'❄️',86:'❄️',95:'⛈️',96:'⛈️',99:'⛈️' };
+    const WEATHER_DESC_DE = { 0:'Klarer Himmel',1:'Überwiegend klar',2:'Teilweise bewölkt',3:'Bedeckt',45:'Nebel',48:'Nebel',51:'Leichter Nieselregen',53:'Nieselregen',55:'Starker Nieselregen',61:'Leichter Regen',63:'Regen',65:'Starker Regen',71:'Leichter Schnee',73:'Schnee',75:'Starker Schnee',77:'Schneekörner',80:'Regenschauer',81:'Starke Schauer',82:'Heftige Schauer',85:'Schneeschauer',86:'Starke Schneeschauer',95:'Gewitter',96:'Gewitter',99:'Starkes Gewitter' };
+    const WEATHER_DESC_EN = { 0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Heavy showers',82:'Violent showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm',99:'Heavy thunderstorm' };
+    let _weatherCache = null, _weatherCacheTime = 0;
+
+    async function fetchWeather(lat, lon) {
+      if (_weatherCache && Date.now() - _weatherCacheTime < 10 * 60 * 1000) return _weatherCache;
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        _weatherCache = data.current; _weatherCacheTime = Date.now();
+        return _weatherCache;
+      } catch { return null; }
+    }
+
+    async function updateWeather(widgets) {
+      const w  = widgets?.weather;
+      const el = document.getElementById('weatherWidget');
+      if (!el || !w?.enabled || !w.lat) { if (el) el.style.display = 'none'; return; }
+      el.style.display = 'flex';
+      const current = await fetchWeather(w.lat, w.lon);
+      if (!current) { el.style.display = 'none'; return; }
+      const code = current.weather_code;
+      const lang = I18n.getLang();
+      const desc = lang === 'en' ? WEATHER_DESC_EN[code] : WEATHER_DESC_DE[code];
+      document.getElementById('weatherIcon').textContent = WEATHER_ICONS[code] || '🌡️';
+      document.getElementById('weatherTemp').textContent = Math.round(current.temperature_2m) + '°F';
+      document.getElementById('weatherDesc').textContent = desc || '';
+      document.getElementById('weatherCity').textContent = w.city || '';
+    }
+
+    // ── KPIs (für Dashboard-Typ) ─────────────────────────────────────────
+    function renderKPIs(kpis) {
+      const row = document.getElementById('kpiRow');
+      if (!row) return;
+      row.innerHTML = '';
+      (kpis || []).filter(k => k.active && k.label).slice(0, 6).forEach(kpi => {
+        const card = document.createElement('div'); card.className = 'kpi-card';
+        const lbl = document.createElement('div'); lbl.className = 'kpi-label'; lbl.textContent = kpi.label;
+        const val = document.createElement('div'); val.className = 'kpi-value'; val.textContent = kpi.value;
+        card.appendChild(lbl); card.appendChild(val);
+        if (kpi.unit) { const u = document.createElement('div'); u.className = 'kpi-unit'; u.textContent = kpi.unit; card.appendChild(u); }
+        row.appendChild(card);
+      });
+    }
+
+    // ── Messages (für Dashboard-Typ) ─────────────────────────────────────
+    let _messages = [], _msgIdx = 0;
+    let _lassoMessages = [], _lassoIdx = 0;
+
+    function renderNextLassoMessage() {
+      const active = _lassoMessages.filter(m => m.active && m.text);
+      if (!active.length) return;
+      const msg = active[_lassoIdx % active.length];
+      const el = document.getElementById('lassoText');
+      const cn = document.getElementById('lassoCounter');
+      if (el) el.textContent = msg.text;
+      if (cn) cn.textContent = active.length > 1 ? `${(_lassoIdx % active.length) + 1} / ${active.length}` : '';
+      _lassoIdx++;
+    }
+
+    function applyLassoBoard(data) {
+      const section = document.getElementById('lassoBoardSection');
+      if (!section) return;
+      const enabled = data.widgets?.lassoBoard;
+      _lassoMessages = (data.lassoMessages || []).filter(m => m.active && m.text);
+      if (enabled && _lassoMessages.length > 0) {
+        section.style.display = '';
+        _lassoIdx = 0;
+        renderNextLassoMessage();
+      } else {
+        section.style.display = 'none';
+      }
+    }
+
+    setInterval(renderNextLassoMessage, 10000);
+
+    function renderNextMessage() {
+      const el = document.getElementById('infoText');
+      const cn = document.getElementById('infoCounter');
+      if (!el) return;
+      if (!_messages.length) { el.textContent = ''; if (cn) cn.textContent = ''; return; }
+      const msg = _messages[_msgIdx % _messages.length];
+      el.textContent = msg.text;
+      if (cn) cn.textContent = _messages.length > 1 ? `${(_msgIdx % _messages.length) + 1} / ${_messages.length}` : '';
+      _msgIdx++;
+    }
+    setInterval(renderNextMessage, 10000);
+
+    // ── Dashboard Calendar (Termine-Zeile unten) ─────────────────────────
+    async function loadDashboardCalendar() {
+      const container = document.getElementById('calEvents');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/calendar');
+        if (!res.ok) throw new Error();
+        const events = await res.json();
+        container.innerHTML = '';
+        if (!events.length) {
+          const em = document.createElement('span'); em.className = 'cal-empty';
+          em.textContent = I18n.getLang() === 'en' ? 'No meetings today' : 'Keine Termine heute';
+          container.appendChild(em); return;
+        }
+        events.forEach(ev => {
+          const card = document.createElement('div'); card.className = 'cal-event';
+          const timeEl = document.createElement('div'); timeEl.className = 'cal-event-time';
+          if (ev.isAllDay) { timeEl.textContent = I18n.getLang() === 'en' ? 'All day' : 'Ganztägig'; }
+          else {
+            const s = new Date(ev.start); const e = new Date(ev.end);
+            timeEl.textContent = s.getHours().toString().padStart(2,'0') + ':' + s.getMinutes().toString().padStart(2,'0') + ' – ' + e.getHours().toString().padStart(2,'0') + ':' + e.getMinutes().toString().padStart(2,'0');
+          }
+          const titleEl = document.createElement('div'); titleEl.className = 'cal-event-title'; titleEl.textContent = ev.subject;
+          card.appendChild(timeEl); card.appendChild(titleEl); container.appendChild(card);
+        });
+      } catch { if (container) container.innerHTML = ''; }
+    }
+
+    // ── Kalender-Seite (für Calendar-Typ) ───────────────────────────────
+    function fmtTime(d) { return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0'); }
+    function dayKey(dateStr) { return new Date(dateStr).toDateString(); }
+    function dayLabel(dateStr) {
+      const d = new Date(dateStr); const today = new Date(); const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const lang = I18n.getLang();
+      const days = lang === 'en' ? DAYS_EN : DAYS_DE; const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
+      if (d.toDateString() === today.toDateString())    return lang === 'en' ? 'Today'    : 'Heute';
+      if (d.toDateString() === tomorrow.toDateString()) return lang === 'en' ? 'Tomorrow' : 'Morgen';
+      return lang === 'en' ? days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate()
+                           : days[d.getDay()] + ', ' + d.getDate() + '. ' + months[d.getMonth()];
+    }
+
+    async function loadCalendarPage() {
+      const body = document.getElementById('calPageBody');
+      if (!body) return;
+      try {
+        const res = await fetch('/api/calendar');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const events = await res.json();
+        body.innerHTML = '';
+        if (!events.length) {
+          const el = document.createElement('div'); el.className = 'cal-no-events';
+          el.textContent = I18n.getLang() === 'en' ? 'No upcoming meetings' : 'Keine bevorstehenden Termine';
+          body.appendChild(el); return;
+        }
+        const groups = new Map();
+        events.forEach(ev => { const k = dayKey(ev.start || new Date().toISOString()); if (!groups.has(k)) groups.set(k,[]); groups.get(k).push(ev); });
+        const todayStr = new Date().toDateString();
+        for (const [key, evs] of groups) {
+          const group = document.createElement('div'); group.className = 'cal-day-group';
+          const lbl = document.createElement('div'); lbl.className = 'cal-day-label'; lbl.textContent = dayLabel(evs[0].start || new Date().toISOString());
+          group.appendChild(lbl);
+          evs.forEach(ev => {
+            const row = document.createElement('div');
+            row.className = 'cal-row' + (key === todayStr ? ' today' : '') + (ev.isAllDay ? ' allday' : '');
+            const timeEl = document.createElement('div'); timeEl.className = 'cal-row-time';
+            timeEl.textContent = ev.isAllDay ? (I18n.getLang() === 'en' ? 'All day' : 'Ganztägig') : fmtTime(new Date(ev.start)) + ' – ' + fmtTime(new Date(ev.end));
+            const titleEl = document.createElement('div'); titleEl.className = 'cal-row-title'; titleEl.textContent = ev.subject;
+            row.appendChild(timeEl); row.appendChild(titleEl);
+            if (ev.organizer) { const o = document.createElement('div'); o.className = 'cal-row-org'; o.textContent = ev.organizer; row.appendChild(o); }
+            group.appendChild(row);
+          });
+          body.appendChild(group);
+        }
+      } catch {
+        if (body) { body.innerHTML = ''; const err = document.createElement('div'); err.className = 'cal-no-events'; err.textContent = I18n.getLang() === 'en' ? 'Calendar not available' : 'Kalender nicht verfügbar'; body.appendChild(err); }
+      }
+    }
+
+    // ── Main Load ────────────────────────────────────────────────────────
+    async function loadSlide() {
+      try {
+        const data = await fetch('/api/content').then(r => r.json());
+
+        // Rotation einrichten
+        const active = data.pages?.active;
+        if (active === 'auto' || active === 'web') {
+          const seq = buildSequence(data);
+          if (seq.length > 1) {
+            const myId = 'slide' + SLIDE_ID;
+            const idx  = seq.findIndex(p => p.id === myId);
+            const next = seq[(idx + 1) % seq.length];
+            setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+          }
+        }
+
+        // Slide-Config finden
+        const slides = data.slides || [];
+        const slide  = slides.find(s => s.id === SLIDE_ID);
+        if (!slide) {
+          document.getElementById('slideText').style.display = 'flex';
+          document.getElementById('slideTextTitle').textContent = 'Slide ' + SLIDE_ID;
+          document.getElementById('slideTextBody').textContent  = 'Nicht konfiguriert';
+          return;
+        }
+
+        // Slide-Titel im Kalender setzen
+        const calTitleEl = document.getElementById('slideCalTitle');
+        if (calTitleEl) calTitleEl.textContent = slide.name || 'Kalender';
+
+        // Typ rendern
+        switch (slide.type) {
+          case 'dashboard':
+            document.getElementById('slideDashboard').style.display = 'flex';
+            renderKPIs(data.kpis || []);
+            _messages = (data.messages || []).filter(m => m.active && m.text);
+            renderNextMessage();
+            await updateWeather(data.widgets || {});
+            applyLassoBoard(data);
+            const wdg = data.widgets || {};
+            document.getElementById('clockBlock').style.display   = wdg.clock  !== false ? '' : 'none';
+            document.getElementById('dateBlock').style.display    = wdg.clock  !== false ? '' : 'none';
+            const calSect = document.querySelector('.calendar-section');
+            if (calSect) calSect.style.display = wdg.calendar !== false ? '' : 'none';
+            loadDashboardCalendar();
+            break;
+
+          case 'calendar':
+            document.getElementById('slideCalendar').style.display = 'flex';
+            loadCalendarPage();
+            setInterval(loadCalendarPage, 5 * 60 * 1000);
+            break;
+
+          case 'embed':
+            if (slide.url) {
+              document.getElementById('slideEmbed').style.display = 'block';
+              document.getElementById('embedFrame').src = slide.url;
+            } else {
+              document.getElementById('slideText').style.display = 'flex';
+              document.getElementById('slideTextTitle').textContent = slide.name || 'Embed';
+              document.getElementById('slideTextBody').textContent  = 'Keine URL konfiguriert';
+            }
+            break;
+
+          case 'text':
+          default:
+            document.getElementById('slideText').style.display = 'flex';
+            document.getElementById('slideTextTitle').textContent = slide.name    || '';
+            document.getElementById('slideTextBody').textContent  = slide.content || '';
+            break;
+        }
+
+        hideReconnectOverlay();
+      } catch {
+        showReconnectOverlay();
+      }
+    }
+
+    // ── Reconnect ────────────────────────────────────────────────────────
+    const overlay = document.getElementById('reconnectOverlay');
+    let reconnectTimer = null;
+
+    function showReconnectOverlay() {
+      overlay.textContent = I18n.getLang() === 'en' ? '⚠ Connection lost – Reconnecting...' : '⚠ Verbindung unterbrochen – Verbinde neu...';
+      overlay.classList.add('visible');
+      if (!reconnectTimer) reconnectTimer = setInterval(() => { DataStore.resetServerCheck(); loadSlide(); }, 10000);
+    }
+    function hideReconnectOverlay() {
+      overlay.classList.remove('visible');
+      if (reconnectTimer) { clearInterval(reconnectTimer); reconnectTimer = null; }
+    }
+
+    // ── SSE Live-Updates ─────────────────────────────────────────────────
+    function connectSSE() {
+      const es = new EventSource('/api/events');
+      es.onmessage = (e) => { if (e.data === 'update') loadSlide(); };
+      es.onerror   = () => { es.close(); setTimeout(connectSSE, 10000); };
+    }
+    connectSSE();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') { DataStore.resetServerCheck(); loadSlide(); }
+    });
+
+    loadSlide();
+  </script>
+</body>
+</html>

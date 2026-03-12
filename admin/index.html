@@ -274,6 +274,18 @@
         </label>
       </div>
 
+      <!-- LASSO-Tafel -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label">📡 LASSO-Tafel</div>
+          <div class="widget-desc">Automatisch befüllte Info-Tafel via LASSO/Zapier-Webhook</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetLassoBoard">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <!-- Embed URLs -->
       <div class="widget-row" style="align-items:flex-start;flex-direction:column;gap:0;border-bottom:none;padding-bottom:0">
         <div class="widget-info" style="margin-bottom:12px">
@@ -369,6 +381,25 @@
       </h2>
       <div class="admin-section-body">
         <div class="kpi-grid" id="kpiGrid"></div>
+      </div>
+    </section>
+
+    <!-- Zapier Webhook -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        <div class="section-icon"></div>
+        📡 Zapier Webhook-URLs
+      </h2>
+      <div class="admin-section-body">
+        <div id="webhookInfo" style="background:var(--surface2);border-radius:8px;padding:14px 16px;font-size:0.9rem;margin-bottom:20px">
+          <span style="color:var(--muted)">Lade…</span>
+        </div>
+
+        <div style="font-weight:600;font-size:0.95rem;margin-bottom:10px">LASSO-Nachrichten (via Webhook)</div>
+        <div id="lassoMsgList" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div id="lassoMsgEmpty" style="color:var(--muted);font-size:0.88rem;font-style:italic;display:none;padding:8px 0">
+          Noch keine LASSO-Nachrichten. Webhook-Test ausführen um Nachrichten zu pushen.
+        </div>
       </div>
     </section>
 
@@ -485,6 +516,97 @@
       </div><!-- /admin-section-body -->
     </section>
 
+    <!-- Slides -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        <div class="section-icon"></div>
+        📺 Slides
+      </h2>
+      <div class="admin-section-body">
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px">
+          Aktive Slides werden automatisch in die Rotation eingebaut. Direktlink: <code style="background:var(--surface);padding:2px 6px;border-radius:4px">/tv/1</code> bis <code style="background:var(--surface);padding:2px 6px;border-radius:4px">/tv/5</code>
+        </p>
+        <div style="display:flex;flex-direction:column;gap:8px" id="slidesList">
+
+          <!-- Slide 1 -->
+          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+            <span class="embed-slot-num">1</span>
+            <input type="text" id="slideName1" placeholder="Name" class="embed-slot-input" style="max-width:160px">
+            <select id="slideType1" class="embed-slot-input" style="max-width:160px">
+              <option value="calendar">📅 Kalender</option>
+              <option value="dashboard">📺 Dashboard</option>
+              <option value="embed">🔗 Webseite</option>
+              <option value="text">📝 Text</option>
+            </select>
+            <input type="text" id="slideContent1" placeholder="URL oder Text" class="embed-slot-input">
+            <a id="slideLink1" href="/tv/1" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive1"><span class="toggle-slider"></span></label>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+            <span class="embed-slot-num">2</span>
+            <input type="text" id="slideName2" placeholder="Name" class="embed-slot-input" style="max-width:160px">
+            <select id="slideType2" class="embed-slot-input" style="max-width:160px">
+              <option value="calendar">📅 Kalender</option>
+              <option value="dashboard">📺 Dashboard</option>
+              <option value="embed">🔗 Webseite</option>
+              <option value="text">📝 Text</option>
+            </select>
+            <input type="text" id="slideContent2" placeholder="URL oder Text" class="embed-slot-input">
+            <a id="slideLink2" href="/tv/2" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive2"><span class="toggle-slider"></span></label>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+            <span class="embed-slot-num">3</span>
+            <input type="text" id="slideName3" placeholder="Name" class="embed-slot-input" style="max-width:160px">
+            <select id="slideType3" class="embed-slot-input" style="max-width:160px">
+              <option value="calendar">📅 Kalender</option>
+              <option value="dashboard">📺 Dashboard</option>
+              <option value="embed">🔗 Webseite</option>
+              <option value="text">📝 Text</option>
+            </select>
+            <input type="text" id="slideContent3" placeholder="URL oder Text" class="embed-slot-input">
+            <a id="slideLink3" href="/tv/3" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive3"><span class="toggle-slider"></span></label>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+            <span class="embed-slot-num">4</span>
+            <input type="text" id="slideName4" placeholder="Name" class="embed-slot-input" style="max-width:160px">
+            <select id="slideType4" class="embed-slot-input" style="max-width:160px">
+              <option value="calendar">📅 Kalender</option>
+              <option value="dashboard">📺 Dashboard</option>
+              <option value="embed">🔗 Webseite</option>
+              <option value="text">📝 Text</option>
+            </select>
+            <input type="text" id="slideContent4" placeholder="URL oder Text" class="embed-slot-input">
+            <a id="slideLink4" href="/tv/4" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive4"><span class="toggle-slider"></span></label>
+          </div>
+
+          <!-- Slide 5 -->
+          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+            <span class="embed-slot-num">5</span>
+            <input type="text" id="slideName5" placeholder="Name" class="embed-slot-input" style="max-width:160px">
+            <select id="slideType5" class="embed-slot-input" style="max-width:160px">
+              <option value="calendar">📅 Kalender</option>
+              <option value="dashboard">📺 Dashboard</option>
+              <option value="embed">🔗 Webseite</option>
+              <option value="text">📝 Text</option>
+            </select>
+            <input type="text" id="slideContent5" placeholder="URL oder Text" class="embed-slot-input">
+            <a id="slideLink5" href="/tv/5" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive5"><span class="toggle-slider"></span></label>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
     <!-- Account Settings -->
     <section class="admin-section">
       <h2 class="admin-section-title">
@@ -595,6 +717,8 @@
       if (wd.showPing   === undefined) wd.showPing   = false;
       if (wd.calendar   === undefined) wd.calendar   = true;
       if (wd.animals    === undefined) wd.animals    = false;
+      if (wd.lassoBoard === undefined) wd.lassoBoard = false;
+      if (!state.lassoMessages) state.lassoMessages = [];
       if (!wd.weather)   wd.weather   = { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 };
       if (!wd.embedSlots) wd.embedSlots = [
         { id: 2, label: 'Embed 2', url: '', active: false },
@@ -608,6 +732,8 @@
       initWidgets();
       initTeams();
       loadTeamsStatus();
+      loadWebhookInfo();
+      renderLassoMessages();
     }
 
     // ── XSS-safe DOM helper ──
@@ -784,11 +910,12 @@
     function syncFormToState() {
       // Direkt vor dem Speichern alle Felder auslesen – unabhängig von Events
       if (!state.widgets) state.widgets = {};
-      state.widgets.clock     = document.getElementById('widgetClock').checked;
-      state.widgets.calendar  = document.getElementById('widgetCalendar').checked;
-      state.widgets.animals   = document.getElementById('widgetAnimals').checked;
-      state.widgets.infoboard = document.getElementById('widgetInfoboard').checked;
-      state.widgets.showPing  = document.getElementById('widgetShowPing').checked;
+      state.widgets.clock      = document.getElementById('widgetClock').checked;
+      state.widgets.calendar   = document.getElementById('widgetCalendar').checked;
+      state.widgets.animals    = document.getElementById('widgetAnimals').checked;
+      state.widgets.infoboard  = document.getElementById('widgetInfoboard').checked;
+      state.widgets.showPing   = document.getElementById('widgetShowPing').checked;
+      state.widgets.lassoBoard = document.getElementById('widgetLassoBoard').checked;
       if (!state.widgets.weather) state.widgets.weather = {};
       state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
       state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
@@ -806,6 +933,24 @@
         slot.url    = urlEl.value.trim();
         slot.label  = 'Embed ' + id;
         slot.active = togEl.checked;
+      });
+
+      // Slides aus DOM auslesen
+      if (!state.slides) state.slides = [];
+      [1,2,3,4,5].forEach(id => {
+        const nameEl    = document.getElementById('slideName'    + id);
+        const typeEl    = document.getElementById('slideType'    + id);
+        const contentEl = document.getElementById('slideContent' + id);
+        const activeEl  = document.getElementById('slideActive'  + id);
+        if (!nameEl) return;
+        let s = state.slides.find(s => s.id === id);
+        if (!s) { s = { id, name: 'Slide ' + id, type: 'text', url: '', content: '', active: false }; state.slides.push(s); }
+        s.name   = nameEl.value.trim() || 'Slide ' + id;
+        s.type   = typeEl.value;
+        const val = contentEl.value.trim();
+        s.url     = typeEl.value === 'embed' ? val : '';
+        s.content = typeEl.value === 'text'  ? val : '';
+        s.active  = activeEl.checked;
       });
 
       if (!state.pages) state.pages = {};
@@ -977,6 +1122,7 @@
       document.getElementById('widgetCalendar').checked  = w.calendar  !== false;
       document.getElementById('widgetInfoboard').checked = w.infoboard !== false;
       document.getElementById('widgetShowPing').checked  = !!(w.showPing);
+      document.getElementById('widgetLassoBoard').checked = !!(w.lassoBoard);
 
       document.getElementById('embedUrl').value = w.embedUrl || '';
       document.getElementById('embedSlotActive1').checked = w.embedSlot1Active !== false;
@@ -988,12 +1134,25 @@
         document.getElementById('embedSlotUrl'    + id).value   = s.url    || '';
         document.getElementById('embedSlotActive' + id).checked = !!s.active;
       });
+      // Slides laden
+      const slidesData = state.slides || [];
+      [1,2,3,4,5].forEach(id => {
+        const s = slidesData.find(s => s.id === id) || {};
+        document.getElementById('slideName'    + id).value   = s.name    || 'Slide ' + id;
+        document.getElementById('slideType'    + id).value   = s.type    || 'text';
+        document.getElementById('slideContent' + id).value   = s.url || s.content || '';
+        document.getElementById('slideActive'  + id).checked = !!s.active;
+        updateSlideContentPlaceholder(id, s.type || 'text');
+        document.getElementById('slideType' + id).addEventListener('change', e => updateSlideContentPlaceholder(id, e.target.value));
+      });
+
       wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
       document.getElementById('widgetCalendar').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.calendar  = e.target.checked; });
       document.getElementById('widgetInfoboard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.infoboard = e.target.checked; });
       document.getElementById('widgetShowPing').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.showPing  = e.target.checked; });
       wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; });
       wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
+      document.getElementById('widgetLassoBoard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.lassoBoard = e.target.checked; });
       const embedUrlEl = document.getElementById('embedUrl');
       const syncEmbedUrl = () => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = embedUrlEl.value.trim(); };
       embedUrlEl.addEventListener('input',  syncEmbedUrl);
@@ -1016,6 +1175,14 @@
       });
     }
 
+    function updateSlideContentPlaceholder(id, type) {
+      const el = document.getElementById('slideContent' + id);
+      if (!el) return;
+      if (type === 'embed') { el.placeholder = 'https://...'; el.style.display = ''; }
+      else if (type === 'text') { el.placeholder = 'Freitext / Untertitel'; el.style.display = ''; }
+      else { el.placeholder = '–'; el.style.display = 'none'; }
+    }
+
     function highlightActiveRow(active) {
       ['display','calendar','embed','auto','web'].forEach(p => {
         const row = document.getElementById('row' + p.charAt(0).toUpperCase() + p.slice(1));
@@ -1023,6 +1190,86 @@
       });
     }
 
+
+    // ── Webhook Info ──
+    async function loadWebhookInfo() {
+      const container = document.getElementById('webhookInfo');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/webhook-info', { headers: { Authorization: 'Bearer ' + Auth.getToken() } });
+        if (!res.ok) {
+          if (res.status === 503) {
+            container.innerHTML = '<span style="color:var(--warning)">⚠ Webhooks deaktiviert – <strong>WEBHOOK_SECRET</strong> Umgebungsvariable in Render.com setzen.</span>';
+          } else {
+            container.innerHTML = '<span style="color:var(--danger)">Fehler beim Laden.</span>';
+          }
+          return;
+        }
+        const info = await res.json();
+        container.innerHTML =
+          '<div style="display:flex;flex-direction:column;gap:8px;font-size:0.85rem">' +
+          '<div><span style="color:var(--muted);display:inline-block;min-width:60px">KPI:</span>' +
+          '<code style="background:var(--surface);padding:2px 8px;border-radius:4px;word-break:break-all">POST ' + info.kpiUrl + '?key=' + info.keyPreview + '</code></div>' +
+          '<div><span style="color:var(--muted);display:inline-block;min-width:60px">LASSO:</span>' +
+          '<code style="background:var(--surface);padding:2px 8px;border-radius:4px;word-break:break-all">POST ' + info.lassoUrl + '?key=' + info.keyPreview + '</code></div>' +
+          '</div>';
+      } catch {
+        container.innerHTML = '<span style="color:var(--muted)">Server nicht verfügbar</span>';
+      }
+    }
+
+    // ── LASSO Messages ──
+    function renderLassoMessages() {
+      const list  = document.getElementById('lassoMsgList');
+      const empty = document.getElementById('lassoMsgEmpty');
+      if (!list) return;
+      const msgs = (state.lassoMessages || []).slice().reverse(); // neueste zuerst
+      list.innerHTML = '';
+      if (!msgs.length) {
+        if (empty) empty.style.display = '';
+        return;
+      }
+      if (empty) empty.style.display = 'none';
+      msgs.forEach(msg => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:8px 12px';
+
+        const text = document.createElement('div');
+        text.style.flex = '1';
+        text.textContent = msg.text;
+
+        const ts = document.createElement('div');
+        ts.style.cssText = 'font-size:0.75rem;color:var(--muted);white-space:nowrap;flex-shrink:0';
+        if (msg.updatedAt) {
+          const d = new Date(msg.updatedAt);
+          ts.textContent = d.toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+        }
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'icon-btn';
+        delBtn.title = 'Löschen';
+        delBtn.textContent = '🗑';
+        delBtn.addEventListener('click', () => deleteLassoMessage(msg.id));
+
+        row.appendChild(text);
+        row.appendChild(ts);
+        row.appendChild(delBtn);
+        list.appendChild(row);
+      });
+    }
+
+    async function deleteLassoMessage(id) {
+      try {
+        const res = await fetch('/api/lasso-message/' + id, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + Auth.getToken() }
+        });
+        if (res.ok) {
+          state.lassoMessages = (state.lassoMessages || []).filter(m => m.id !== id);
+          renderLassoMessages();
+        }
+      } catch {}
+    }
 
     // ── ICS Testen ──
     async function testICS() {

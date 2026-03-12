@@ -45,6 +45,9 @@
       (data.widgets?.embedSlots || []).forEach(s => {
         if (s.active && s.url) seq.push({ id: 'embed' + s.id, url: 'embed.html?slot=' + s.id });
       });
+      (data.slides || []).forEach(s => {
+        if (s.active) seq.push({ id: 'slide' + s.id, url: 'slide.html?id=' + s.id });
+      });
       if (seq.length === 0) seq.push({ id: 'display', url: 'index.html' });
       return seq;
     }
