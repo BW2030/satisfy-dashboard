@@ -84,7 +84,7 @@
   ],
   "calendar": [],
   "pages": {
-    "active": "embed",
+    "active": "auto",
     "rotationSec": 30
   },
   "teams": {
