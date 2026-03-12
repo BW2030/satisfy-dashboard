@@ -64,11 +64,13 @@
         }
 
         if (active === 'auto' || active === 'web') {
-          const seq  = buildSequence(data);
-          const myId = SLOT === '1' ? 'embed' : 'embed' + SLOT;
-          const idx  = seq.findIndex(p => p.id === myId);
-          const next = seq[(idx + 1) % seq.length];
-          setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+          const seq = buildSequence(data);
+          if (seq.length > 1) {
+            const myId = SLOT === '1' ? 'embed' : 'embed' + SLOT;
+            const idx  = seq.findIndex(p => p.id === myId);
+            const next = seq[(idx + 1) % seq.length];
+            setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+          }
         }
 
         // URL für diesen Slot ermitteln

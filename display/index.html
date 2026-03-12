@@ -467,9 +467,11 @@
           location.replace(seq[0].url); return;
         }
         if (active === 'auto') {
-          const seq  = buildSequence(data);
-          const next = seq[1 % seq.length];
-          setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+          const seq = buildSequence(data);
+          if (seq.length > 1) {
+            const next = seq[1 % seq.length];
+            setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+          }
         }
         _lastWidgets = data.widgets || {};
 
