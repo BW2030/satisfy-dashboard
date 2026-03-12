@@ -102,12 +102,6 @@
       "text": "lkjob",
       "priority": "normal",
       "active": true
-    },
-    {
-      "id": 4,
-      "text": "hallo",
-      "priority": "normal",
-      "active": true
     }
   ],
   "calendar": {
