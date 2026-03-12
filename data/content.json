@@ -15,9 +15,9 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": false,
+    "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
@@ -43,7 +43,8 @@
         "url": "",
         "active": false
       }
-    ]
+    ],
+    "embedSlot1Active": true
   },
   "kpis": [
     {
@@ -123,6 +124,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T05:50:02.521Z"
+    "lastPingAt": "2026-03-12T06:00:03.903Z"
   }
 }
