@@ -55,8 +55,9 @@
 
     .animal-logo {
       height: 1em;
-      opacity: 0.85;
+      opacity: 0.95;
       display: block;
+      filter: brightness(0) invert(1);
     }
 
     /* Calendar events */
@@ -321,7 +322,7 @@
       logoEl.src = 'https://satis-fy.com/favicon.svg';
       logoEl.className = 'animal-logo';
       logoEl.alt = '';
-      logoEl.style.cssText = `height:${size * 0.45}rem; animation: logo-bounce ${0.4 + Math.random()*0.3}s ease-in-out infinite;`;
+      logoEl.style.cssText = `height:${size * 0.9}rem; animation: logo-bounce ${0.4 + Math.random()*0.3}s ease-in-out infinite;`;
       logoEl.onerror = () => { logoEl.style.display = 'none'; };
 
       // If RTL: emoji first, then logo behind (logo appears to the right = trailing)
