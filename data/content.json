@@ -15,9 +15,9 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
+    "infoboard": false,
     "showPing": false,
-    "calendar": true,
+    "calendar": false,
     "embedSlots": [
       {
         "id": 2,
@@ -109,7 +109,7 @@
   },
   "pages": {
     "active": "display",
-    "rotationSec": 5
+    "rotationSec": 30
   },
   "teams": {
     "enabled": false,
@@ -118,6 +118,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T20:40:35.617Z"
+    "lastPingAt": "2026-03-12T21:00:16.258Z"
   }
 }
