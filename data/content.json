@@ -13,10 +13,10 @@
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
+    "animals": false,
     "embedUrl": "https://www.lasso.io/",
     "infoboard": false,
-    "showPing": false,
+    "showPing": true,
     "calendar": false,
     "embedSlots": [
       {
