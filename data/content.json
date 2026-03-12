@@ -8,12 +8,12 @@
   "widgets": {
     "clock": true,
     "weather": {
-      "enabled": false,
+      "enabled": true,
       "city": "New York",
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": false,
+    "animals": true,
     "embedUrl": "https://www.lasso.io/"
   },
   "kpis": [
