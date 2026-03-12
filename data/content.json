@@ -82,7 +82,7 @@
       "active": true
     }
   ],
-  "calendar": [],
+  "calendar": {},
   "pages": {
     "active": "display",
     "rotationSec": 30

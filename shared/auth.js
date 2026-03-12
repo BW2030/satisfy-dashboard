@@ -44,21 +44,10 @@ const Auth = (() => {
     return legacy === stored;
   }
 
-  // ── Rate Limiting (disabled – no lockout) ────────────────────────────────
-  function recordFail() {}
-  function clearFail() {}
-  function getRemainingLockout() { return 0; }
-
   // ── Login ────────────────────────────────────────────────────────────────
 
   async function login(name, pin) {
-    // Check lockout
-    const lockRemaining = getRemainingLockout(name);
-    if (lockRemaining > 0) {
-      return { ok: false, lockedFor: lockRemaining };
-    }
-
-    // Always try server-side login first (don't depend on checkServer result)
+    // Always try server-side login first
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
@@ -73,8 +62,7 @@ const Auth = (() => {
       } else if (res.status === 429) {
         return { ok: false, lockedFor: 900 };
       } else if (res.status === 401 || res.status === 400) {
-        const state = recordFail(name);
-        return { ok: false, attemptsLeft: FAIL_LIMIT - state.attempts };
+        return { ok: false };
       }
       // Other server errors – fall through to localStorage
     } catch {
@@ -87,11 +75,9 @@ const Auth = (() => {
     const user = users.find(u => u.name.toLowerCase() === name.toLowerCase());
     if (user && user.pin && await verifyPin(pin, user.pin)) {
       _setSession(name, null);
-      clearFail(name);
       return { ok: true };
     }
-    const state = recordFail(name);
-    return { ok: false, attemptsLeft: FAIL_LIMIT - state.attempts };
+    return { ok: false };
   }
 
   function _setSession(name, token) {

@@ -528,8 +528,21 @@
     // ── Load ──
     async function loadData() {
       state = await DataStore.get();
-      if (!state.widgets) state.widgets = { clock: true, weather: { enabled: false, city: 'New York', lat: 40.71, lon: -74.01 }, animals: false };
-      if (!state.pages) state.pages = { active: 'display' };
+      if (!state.widgets) state.widgets = {};
+      const wd = state.widgets;
+      if (wd.clock      === undefined) wd.clock      = true;
+      if (wd.infoboard  === undefined) wd.infoboard  = true;
+      if (wd.showPing   === undefined) wd.showPing   = false;
+      if (wd.calendar   === undefined) wd.calendar   = true;
+      if (wd.animals    === undefined) wd.animals    = false;
+      if (!wd.weather)   wd.weather   = { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 };
+      if (!wd.embedSlots) wd.embedSlots = [
+        { id: 2, label: 'Embed 2', url: '', active: false },
+        { id: 3, label: 'Embed 3', url: '', active: false },
+        { id: 4, label: 'Embed 4', url: '', active: false },
+        { id: 5, label: 'Embed 5', url: '', active: false }
+      ];
+      if (!state.pages) state.pages = { active: 'display', rotationSec: 30 };
       else if (!state.pages.active) state.pages.active = 'display';
       applyLang();
       initWidgets();
@@ -678,14 +691,13 @@
       // Embed Slots aus DOM auslesen
       if (!state.widgets.embedSlots) state.widgets.embedSlots = [];
       [2,3,4,5].forEach(id => {
-        const urlEl   = document.getElementById('embedSlotUrl' + id);
-        const labelEl = document.getElementById('embedSlotLabel' + id);
-        const togEl   = document.getElementById('embedSlotActive' + id);
+        const urlEl = document.getElementById('embedSlotUrl' + id);
+        const togEl = document.getElementById('embedSlotActive' + id);
         if (!urlEl) return;
         let slot = state.widgets.embedSlots.find(s => s.id === id);
         if (!slot) { slot = { id, label: 'Embed ' + id, url: '', active: false }; state.widgets.embedSlots.push(slot); }
         slot.url    = urlEl.value.trim();
-        slot.label  = labelEl.value.trim() || 'Embed ' + id;
+        slot.label  = 'Embed ' + id;
         slot.active = togEl.checked;
       });
 

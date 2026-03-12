@@ -46,8 +46,8 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000);
 
-// ── Rate Limiting (no lockout – wrong PIN just returns 401) ──────────────────
-function checkRateLimit() { return { blocked: false, key: null }; }
+// ── Rate Limiting (currently disabled) ───────────────────────────────────────
+function checkRateLimit()      { return { blocked: false, key: null }; }
 function recordFailedAttempt() {}
 
 // ── PIN Hashing ───────────────────────────────────────────────────────────────
@@ -89,7 +89,10 @@ async function verifyPin(pin, stored) {
 
 const DEFAULT_DATA = {
   users: [],
-  widgets: { clock: true, weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 }, animals: false, embedUrl: '',
+  widgets: {
+    clock: true, infoboard: true, showPing: false, animals: false, calendar: true,
+    weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 },
+    embedUrl: '',
     embedSlots: [
       { id: 2, label: 'Embed 2', url: '', active: false },
       { id: 3, label: 'Embed 3', url: '', active: false },
@@ -99,8 +102,8 @@ const DEFAULT_DATA = {
   },
   kpis: [1,2,3,4,5,6].map(id => ({ id, label: '', value: '', unit: '', active: false })),
   messages: [{ id: 1, text: 'Willkommen! Inhalte im Admin-Bereich anpassen.', priority: 'normal', active: true }],
-  calendar: [],
-  pages: { active: 'display' },
+  calendar: {},
+  pages: { active: 'display', rotationSec: 30 },
   teams: { enabled: false, tenantId: '', clientId: '', userEmail: '' }
 };
 

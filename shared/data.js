@@ -6,19 +6,29 @@ const DataStore = (() => {
   let _serverAvailable = null;
 
   const defaultContent = {
-    users: [{ name: 'admin', pin: '' }], // pin set by server on first run
+    users: [{ name: 'admin', pin: '' }],
     kpis: [
-      { id: 1, label: 'KPI 1', value: '–', unit: '', active: true },
-      { id: 2, label: 'KPI 2', value: '–', unit: '', active: true },
-      { id: 3, label: 'KPI 3', value: '–', unit: '', active: true },
+      { id: 1, label: '', value: '', unit: '', active: false },
+      { id: 2, label: '', value: '', unit: '', active: false },
+      { id: 3, label: '', value: '', unit: '', active: false },
       { id: 4, label: '', value: '', unit: '', active: false },
       { id: 5, label: '', value: '', unit: '', active: false },
       { id: 6, label: '', value: '', unit: '', active: false }
     ],
     messages: [{ id: 1, text: 'Willkommen! Inhalte im Admin-Bereich anpassen.', priority: 'normal', active: true }],
-    calendar: [],
-    widgets: { clock: true, weather: { enabled: false, city: 'New York', lat: 40.71, lon: -74.01 }, animals: false },
-    pages: { active: 'display' }
+    calendar: {},
+    widgets: {
+      clock: true, infoboard: true, showPing: false, animals: false, calendar: true,
+      weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 },
+      embedUrl: '',
+      embedSlots: [
+        { id: 2, label: 'Embed 2', url: '', active: false },
+        { id: 3, label: 'Embed 3', url: '', active: false },
+        { id: 4, label: 'Embed 4', url: '', active: false },
+        { id: 5, label: 'Embed 5', url: '', active: false }
+      ]
+    },
+    pages: { active: 'display', rotationSec: 30 }
   };
 
   function _authHeaders() {
