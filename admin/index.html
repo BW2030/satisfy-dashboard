@@ -517,7 +517,22 @@
     }
 
     // ── Save ──
+    function syncFormToState() {
+      // Direkt vor dem Speichern alle Felder auslesen – unabhängig von Events
+      if (!state.widgets) state.widgets = {};
+      state.widgets.clock   = document.getElementById('widgetClock').checked;
+      state.widgets.animals = document.getElementById('widgetAnimals').checked;
+      if (!state.widgets.weather) state.widgets.weather = {};
+      state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
+      state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
+
+      if (!state.pages) state.pages = {};
+      const activeRadio = document.querySelector('input[name="activePage"]:checked');
+      if (activeRadio) state.pages.active = activeRadio.value;
+    }
+
     async function saveAll() {
+      syncFormToState();
       const result = await DataStore.save(state);
       const status = document.getElementById('saveStatus');
       if (result.authExpired) {
