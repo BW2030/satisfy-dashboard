@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://www.lasso.io/",
+    "embedUrl": "",
     "infoboard": true,
     "showPing": false,
     "calendar": true,
@@ -44,7 +44,7 @@
         "active": false
       }
     ],
-    "embedSlot1Active": true
+    "embedSlot1Active": false
   },
   "kpis": [
     {
@@ -118,6 +118,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T21:00:16.258Z"
+    "lastPingAt": "2026-03-12T21:20:16.949Z"
   }
 }
