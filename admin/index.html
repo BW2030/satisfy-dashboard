@@ -183,33 +183,27 @@
         </div>
       </div>
 
-      <!-- Page Toggles + Links -->
+      <!-- Active Page Selector -->
       <div style="margin-top:8px;padding:16px;background:var(--surface2);border-radius:10px;display:flex;flex-direction:column;gap:12px">
-        <div style="color:var(--muted);font-size:0.85rem;font-weight:600;margin-bottom:4px">🖥 Seiten</div>
+        <div style="color:var(--muted);font-size:0.85rem;font-weight:600;margin-bottom:4px">🖥 Aktive Seite</div>
 
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <label class="toggle" title="Haupt-Display aktivieren">
-            <input type="checkbox" id="pageDisplay" checked>
-            <span class="toggle-slider"></span>
-          </label>
-          <a href="../display/index.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">📺 Haupt-Display</a>
-        </div>
+        <label style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1px solid var(--border);transition:background 0.15s" id="rowDisplay">
+          <input type="radio" name="activePage" id="pageDisplay" value="display" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
+          <span style="flex:1;font-size:0.95rem;font-weight:600">📺 Haupt-Display</span>
+          <a href="../display/index.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none" onclick="event.stopPropagation()">Öffnen</a>
+        </label>
 
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <label class="toggle" title="Kalender-Seite aktivieren">
-            <input type="checkbox" id="pageCalendar" checked>
-            <span class="toggle-slider"></span>
-          </label>
-          <a href="../display/calendar.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">📅 Kalender</a>
-        </div>
+        <label style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1px solid var(--border);transition:background 0.15s" id="rowCalendar">
+          <input type="radio" name="activePage" id="pageCalendar" value="calendar" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
+          <span style="flex:1;font-size:0.95rem;font-weight:600">📅 Kalender</span>
+          <a href="../display/calendar.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none" onclick="event.stopPropagation()">Öffnen</a>
+        </label>
 
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <label class="toggle" title="Embed-Seite aktivieren">
-            <input type="checkbox" id="pageEmbed" checked>
-            <span class="toggle-slider"></span>
-          </label>
-          <a href="../display/embed.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.82rem;text-decoration:none">🔗 Embed</a>
-        </div>
+        <label style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1px solid var(--border);transition:background 0.15s" id="rowEmbed">
+          <input type="radio" name="activePage" id="pageEmbed" value="embed" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
+          <span style="flex:1;font-size:0.95rem;font-weight:600">🔗 Embed</span>
+          <a href="../display/embed.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none" onclick="event.stopPropagation()">Öffnen</a>
+        </label>
       </div>
     </section>
 
@@ -689,17 +683,26 @@
       wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
       document.getElementById('embedUrl').addEventListener('input', e => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = e.target.value.trim(); });
 
-      // Page toggles
+      // Active page radio buttons
       const pages = state.pages || {};
-      document.getElementById('pageDisplay').checked  = pages.display  !== false;
-      document.getElementById('pageCalendar').checked = pages.calendar !== false;
-      document.getElementById('pageEmbed').checked    = pages.embed    !== false;
-      ['pageDisplay','pageCalendar','pageEmbed'].forEach(id => {
-        document.getElementById(id).addEventListener('change', e => {
+      const activePage = pages.active || 'display';
+      const activeRadio = document.querySelector(`input[name="activePage"][value="${activePage}"]`);
+      if (activeRadio) activeRadio.checked = true;
+      highlightActiveRow(activePage);
+
+      document.querySelectorAll('input[name="activePage"]').forEach(radio => {
+        radio.addEventListener('change', e => {
           if (!state.pages) state.pages = {};
-          const map = { pageDisplay:'display', pageCalendar:'calendar', pageEmbed:'embed' };
-          state.pages[map[id]] = e.target.checked;
+          state.pages.active = e.target.value;
+          highlightActiveRow(e.target.value);
         });
+      });
+    }
+
+    function highlightActiveRow(active) {
+      ['display','calendar','embed'].forEach(p => {
+        const row = document.getElementById('row' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (row) row.style.background = p === active ? 'rgba(99,102,241,0.12)' : '';
       });
     }
 

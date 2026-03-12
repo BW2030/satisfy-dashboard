@@ -419,11 +419,9 @@
     async function loadContent() {
       try {
         const data = await DataStore.get();
-        if (data.pages?.display === false) {
-          document.getElementById('reconnectOverlay').textContent = '⛔ Seite deaktiviert';
-          document.getElementById('reconnectOverlay').classList.add('visible');
-          return;
-        }
+        const active = data.pages?.active;
+        if (active === 'calendar') { location.replace('calendar.html'); return; }
+        if (active === 'embed')    { location.replace('embed.html');    return; }
         _lastWidgets = data.widgets || {};
 
         applyClockVisibility(_lastWidgets);
