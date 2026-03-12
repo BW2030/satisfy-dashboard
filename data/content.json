@@ -15,9 +15,9 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
+    "infoboard": false,
     "showPing": false,
-    "calendar": true,
+    "calendar": false,
     "embedSlots": [
       {
         "id": 2,
