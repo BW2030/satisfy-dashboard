@@ -178,7 +178,7 @@
           <div class="widget-label">🔗 Embed-URL</div>
           <div class="widget-desc">Externe Seite einbetten (z.B. Lasso.io) → <a href="../display/embed.html" target="_blank" style="color:var(--accent)">embed.html</a></div>
           <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input type="url" id="embedUrl" placeholder="https://..." style="flex:1;min-width:280px">
+            <input type="text" id="embedUrl" placeholder="https://..." style="flex:1;min-width:280px">
           </div>
         </div>
       </div>
@@ -678,12 +678,16 @@
 
       document.getElementById('weatherCity').value = w.weather?.city || 'New York';
       document.getElementById('embedUrl').value = w.embedUrl || '';
+      if (w.embedUrl) state.widgets.embedUrl = w.embedUrl; // sicherstellen dass State korrekt ist
       toggleWeatherExtra(wWeather.checked);
 
       wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
       wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; toggleWeatherExtra(wWeather.checked); });
       wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
-      document.getElementById('embedUrl').addEventListener('input', e => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = e.target.value.trim(); });
+      const embedUrlEl = document.getElementById('embedUrl');
+      const syncEmbedUrl = () => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = embedUrlEl.value.trim(); };
+      embedUrlEl.addEventListener('input',  syncEmbedUrl);
+      embedUrlEl.addEventListener('change', syncEmbedUrl);
 
       // Active page radio buttons
       const pages = state.pages || {};
