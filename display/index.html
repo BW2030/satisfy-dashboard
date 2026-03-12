@@ -422,7 +422,7 @@
         const active = data.pages?.active;
         if (active === 'calendar') { location.replace('calendar.html'); return; }
         if (active === 'embed')    { location.replace('embed.html');    return; }
-        if (active === 'auto') { setTimeout(() => location.replace('calendar.html'), 5000); }
+        if (active === 'auto') { setTimeout(() => location.replace('calendar.html'), (data.pages?.rotationSec || 30) * 1000); }
         _lastWidgets = data.widgets || {};
 
         applyClockVisibility(_lastWidgets);

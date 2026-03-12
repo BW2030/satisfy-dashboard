@@ -207,7 +207,12 @@
 
         <label style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1px solid var(--border);transition:background 0.15s" id="rowAuto">
           <input type="radio" name="activePage" id="pageAuto" value="auto" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
-          <span style="flex:1;font-size:0.95rem;font-weight:600">🔄 Auto-Rotation <span style="font-weight:400;font-size:0.82rem;color:var(--muted)">(alle 5 Sek. – Embed nur wenn URL gesetzt)</span></span>
+          <span style="flex:1;font-size:0.95rem;font-weight:600">🔄 Auto-Rotation</span>
+          <div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">
+            <input type="number" id="rotationSec" min="5" max="3600" value="30"
+              style="width:70px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9rem;padding:5px 8px;outline:none;text-align:center">
+            <span style="font-size:0.85rem;color:var(--muted)">Sek.</span>
+          </div>
         </label>
       </div>
     </section>
@@ -534,6 +539,8 @@
       if (!state.pages) state.pages = {};
       const activeRadio = document.querySelector('input[name="activePage"]:checked');
       if (activeRadio) state.pages.active = activeRadio.value;
+      const sec = parseInt(document.getElementById('rotationSec').value, 10);
+      state.pages.rotationSec = isNaN(sec) || sec < 5 ? 30 : sec;
     }
 
     async function saveAll() {
@@ -714,6 +721,7 @@
       const activePage = pages.active || 'display';
       const activeRadio = document.querySelector(`input[name="activePage"][value="${activePage}"]`);
       if (activeRadio) activeRadio.checked = true;
+      document.getElementById('rotationSec').value = pages.rotationSec || 30;
       highlightActiveRow(activePage);
 
       document.querySelectorAll('input[name="activePage"]').forEach(radio => {

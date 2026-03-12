@@ -46,7 +46,7 @@
           return;
         }
         if (active === 'auto') {
-          setTimeout(() => location.replace('index.html'), 5000);
+          setTimeout(() => location.replace('index.html'), (data.pages?.rotationSec || 30) * 1000);
         }
         const url = data.widgets?.embedUrl;
         if (url) {

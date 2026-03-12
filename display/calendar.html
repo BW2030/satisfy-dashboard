@@ -180,7 +180,7 @@
         }
         if (active === 'auto') {
           const hasEmbed = !!cfg.widgets?.embedUrl;
-          setTimeout(() => location.replace(hasEmbed ? 'embed.html' : 'index.html'), 5000);
+          setTimeout(() => location.replace(hasEmbed ? 'embed.html' : 'index.html'), (cfg.pages?.rotationSec || 30) * 1000);
         }
         const res = await fetch('/api/calendar');
         if (!res.ok) throw new Error('HTTP ' + res.status);
