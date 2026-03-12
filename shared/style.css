@@ -422,6 +422,37 @@ body {
 .kpi-edit-card input:focus { border-color: var(--accent); }
 
 /* Messages */
+.msg-live-preview {
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.msg-preview-label {
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.msg-preview-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.97rem;
+  color: var(--text);
+}
+.msg-preview-counter {
+  font-size: 0.82rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.message-item--inactive { opacity: 0.4; }
+
 .message-list { display: flex; flex-direction: column; gap: 12px; }
 
 .message-item {

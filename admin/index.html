@@ -379,6 +379,13 @@
         <span data-i18n="section.info">Info-Tafel</span>
       </h2>
       <div class="admin-section-body">
+        <div class="msg-live-preview" id="msgLivePreview">
+          <div class="msg-preview-label">Aktuell auf Display</div>
+          <div class="msg-preview-content">
+            <span id="msgPreviewText" style="flex:1">–</span>
+            <span id="msgPreviewCounter" class="msg-preview-counter"></span>
+          </div>
+        </div>
         <div class="message-list" id="messageList"></div>
         <div class="add-message-row">
         <input type="text" id="newMsgInput" data-i18n-placeholder="msg.placeholder" placeholder="Neue Nachricht eingeben..." maxlength="200">
@@ -648,7 +655,7 @@
       list.innerHTML = '';
       (state.messages || []).forEach(msg => {
         const item = document.createElement('div');
-        item.className = 'message-item';
+        item.className = 'message-item' + (msg.active ? '' : ' message-item--inactive');
 
         const textInp = makeInput('text', msg.text, 'msg.placeholder', null);
         textInp.style.flex = '1';
@@ -679,6 +686,9 @@
         toggleInp.addEventListener('change', e => {
           const m = state.messages.find(m => m.id === msg.id);
           if (m) m.active = e.target.checked;
+          item.classList.toggle('message-item--inactive', !e.target.checked);
+          _previewIdx = 0;
+          updateMsgPreview();
         });
         const toggleSpan = document.createElement('span');
         toggleSpan.className = 'toggle-slider';
@@ -697,6 +707,7 @@
         item.appendChild(delBtn);
         list.appendChild(item);
       });
+      updateMsgPreview();
     }
 
     function addMessage() {
@@ -714,6 +725,25 @@
       state.messages = state.messages.filter(m => m.id !== id);
       renderMessages();
     }
+
+    // ── Msg Live Preview ──
+    let _previewIdx = 0;
+    function updateMsgPreview() {
+      const active = (state.messages || []).filter(m => m.active && m.text);
+      const textEl    = document.getElementById('msgPreviewText');
+      const counterEl = document.getElementById('msgPreviewCounter');
+      if (!textEl) return;
+      if (!active.length) {
+        textEl.textContent    = 'Keine aktiven Nachrichten';
+        counterEl.textContent = '';
+        return;
+      }
+      _previewIdx = _previewIdx % active.length;
+      textEl.textContent    = active[_previewIdx].text;
+      counterEl.textContent = active.length > 1 ? `${_previewIdx + 1} / ${active.length}` : '';
+      _previewIdx++;
+    }
+    setInterval(updateMsgPreview, 10000);
 
     // ── Save ──
     function syncFormToState() {
