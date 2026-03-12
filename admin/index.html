@@ -78,6 +78,42 @@
     .widget-extra input:focus { border-color: var(--accent); }
     .widget-found { font-size: 0.8rem; color: var(--success); margin-top: 4px; }
 
+    /* Embed Slot Rows */
+    .embed-slot-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    .embed-slot-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--border);
+      border-radius: 4px;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .embed-slot-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.88rem;
+      padding: 7px 10px;
+      outline: none;
+      min-width: 0;
+    }
+    .embed-slot-input:focus { border-color: var(--accent); }
+
     /* Ping badge in nav */
     .ping-badge {
       display: flex;
@@ -245,46 +281,45 @@
       </div>
 
       <!-- Embed URLs -->
-      <div class="widget-row" style="align-items:flex-start;flex-direction:column;gap:0">
-        <div style="display:flex;align-items:center;gap:10px;width:100%;margin-bottom:10px">
-          <div class="widget-info">
-            <div class="widget-label">Embed-URLs</div>
-            <div class="widget-desc">Externe Seiten einbetten — alle aktiven URLs werden in der Auto-Rotation angezeigt</div>
-          </div>
+      <div class="widget-row" style="align-items:flex-start;flex-direction:column;gap:0;border-bottom:none;padding-bottom:0">
+        <div class="widget-info" style="margin-bottom:12px">
+          <div class="widget-label">Embed-URLs</div>
+          <div class="widget-desc">Externe Seiten einbetten — alle aktiven URLs werden in der Auto-Rotation angezeigt</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+        <div style="display:flex;flex-direction:column;gap:6px;width:100%">
 
           <!-- Slot 1 -->
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 1</span>
-            <input type="text" id="embedUrl" placeholder="https://..." style="flex:1;min-width:260px">
+          <div class="embed-slot-row">
+            <span class="embed-slot-num">1</span>
+            <input type="text" id="embedUrl" placeholder="https://..." class="embed-slot-input">
+            <label class="toggle"><input type="checkbox" id="embedSlotActive1" checked><span class="toggle-slider"></span></label>
           </div>
 
           <!-- Slot 2 -->
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 2</span>
-            <input type="text" id="embedSlotUrl2" placeholder="https://..." style="flex:1;min-width:260px">
+          <div class="embed-slot-row">
+            <span class="embed-slot-num">2</span>
+            <input type="text" id="embedSlotUrl2" placeholder="https://..." class="embed-slot-input">
             <label class="toggle"><input type="checkbox" id="embedSlotActive2"><span class="toggle-slider"></span></label>
           </div>
 
           <!-- Slot 3 -->
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 3</span>
-            <input type="text" id="embedSlotUrl3" placeholder="https://..." style="flex:1;min-width:260px">
+          <div class="embed-slot-row">
+            <span class="embed-slot-num">3</span>
+            <input type="text" id="embedSlotUrl3" placeholder="https://..." class="embed-slot-input">
             <label class="toggle"><input type="checkbox" id="embedSlotActive3"><span class="toggle-slider"></span></label>
           </div>
 
           <!-- Slot 4 -->
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 4</span>
-            <input type="text" id="embedSlotUrl4" placeholder="https://..." style="flex:1;min-width:260px">
+          <div class="embed-slot-row">
+            <span class="embed-slot-num">4</span>
+            <input type="text" id="embedSlotUrl4" placeholder="https://..." class="embed-slot-input">
             <label class="toggle"><input type="checkbox" id="embedSlotActive4"><span class="toggle-slider"></span></label>
           </div>
 
           <!-- Slot 5 -->
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 5</span>
-            <input type="text" id="embedSlotUrl5" placeholder="https://..." style="flex:1;min-width:260px">
+          <div class="embed-slot-row">
+            <span class="embed-slot-num">5</span>
+            <input type="text" id="embedSlotUrl5" placeholder="https://..." class="embed-slot-input">
             <label class="toggle"><input type="checkbox" id="embedSlotActive5"><span class="toggle-slider"></span></label>
           </div>
 
@@ -698,6 +733,7 @@
       if (!state.widgets.weather) state.widgets.weather = {};
       state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
       state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
+      state.widgets.embedSlot1Active = document.getElementById('embedSlotActive1').checked;
       if (!state.calendar) state.calendar = {};
       state.calendar.icsUrl = document.getElementById('icsUrl').value.trim();
       // Embed Slots aus DOM auslesen
@@ -885,6 +921,7 @@
 
       document.getElementById('weatherCity').value = w.weather?.city || 'New York';
       document.getElementById('embedUrl').value = w.embedUrl || '';
+      document.getElementById('embedSlotActive1').checked = w.embedSlot1Active !== false;
       document.getElementById('icsUrl').value = (state.calendar?.icsUrl) || '';
       // Embed Slots laden
       const slots = state.widgets?.embedSlots || [];
@@ -893,7 +930,6 @@
         document.getElementById('embedSlotUrl'    + id).value   = s.url    || '';
         document.getElementById('embedSlotActive' + id).checked = !!s.active;
       });
-      if (w.embedUrl) state.widgets.embedUrl = w.embedUrl; // sicherstellen dass State korrekt ist
       toggleWeatherExtra(wWeather.checked);
 
       wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });

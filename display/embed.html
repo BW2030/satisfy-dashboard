@@ -41,7 +41,7 @@
         seq.push({ id: 'display', url: 'index.html' });
         if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
       }
-      if (data.widgets?.embedUrl) seq.push({ id: 'embed', url: 'embed.html' });
+      if (data.widgets?.embedUrl && data.widgets?.embedSlot1Active !== false) seq.push({ id: 'embed', url: 'embed.html' });
       (data.widgets?.embedSlots || []).forEach(s => {
         if (s.active && s.url) seq.push({ id: 'embed' + s.id, url: 'embed.html?slot=' + s.id });
       });
