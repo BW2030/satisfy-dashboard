@@ -174,9 +174,13 @@
       try {
         const cfg = await fetch('/api/content').then(r => r.json());
         const active = cfg.pages?.active;
-        if (active && active !== 'calendar') {
+        if (active && active !== 'calendar' && active !== 'auto') {
           location.replace(active === 'embed' ? 'embed.html' : 'index.html');
           return;
+        }
+        if (active === 'auto') {
+          const hasEmbed = !!cfg.widgets?.embedUrl;
+          setTimeout(() => location.replace(hasEmbed ? 'embed.html' : 'index.html'), 5000);
         }
         const res = await fetch('/api/calendar');
         if (!res.ok) throw new Error('HTTP ' + res.status);

@@ -204,6 +204,11 @@
           <span style="flex:1;font-size:0.95rem;font-weight:600">🔗 Embed</span>
           <a href="../display/embed.html" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none" onclick="event.stopPropagation()">Öffnen</a>
         </label>
+
+        <label style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1px solid var(--border);transition:background 0.15s" id="rowAuto">
+          <input type="radio" name="activePage" id="pageAuto" value="auto" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
+          <span style="flex:1;font-size:0.95rem;font-weight:600">🔄 Auto-Rotation <span style="font-weight:400;font-size:0.82rem;color:var(--muted)">(alle 5 Sek. – Embed nur wenn URL gesetzt)</span></span>
+        </label>
       </div>
     </section>
 
@@ -721,7 +726,7 @@
     }
 
     function highlightActiveRow(active) {
-      ['display','calendar','embed'].forEach(p => {
+      ['display','calendar','embed','auto'].forEach(p => {
         const row = document.getElementById('row' + p.charAt(0).toUpperCase() + p.slice(1));
         if (row) row.style.background = p === active ? 'rgba(99,102,241,0.12)' : '';
       });

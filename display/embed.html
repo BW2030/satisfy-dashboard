@@ -41,9 +41,12 @@
         const noUrlMsg = document.getElementById('noUrlMsg');
 
         const active = data.pages?.active;
-        if (active && active !== 'embed') {
+        if (active && active !== 'embed' && active !== 'auto') {
           location.replace(active === 'calendar' ? 'calendar.html' : 'index.html');
           return;
+        }
+        if (active === 'auto') {
+          setTimeout(() => location.replace('index.html'), 5000);
         }
         const url = data.widgets?.embedUrl;
         if (url) {
