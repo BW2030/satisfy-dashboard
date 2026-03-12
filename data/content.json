@@ -15,7 +15,7 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
+    "infoboard": false,
     "showPing": false,
     "calendar": false,
     "embedSlots": [
@@ -123,6 +123,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T05:20:02.325Z"
+    "lastPingAt": "2026-03-12T05:40:02.405Z"
   }
 }
