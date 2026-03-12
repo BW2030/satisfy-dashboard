@@ -219,12 +219,6 @@
         <div class="widget-info">
           <div class="widget-label" data-i18n="widget.weather.label">Wetter</div>
           <div class="widget-desc" data-i18n="widget.weather.desc">Aktuelles Wetter (Open-Meteo)</div>
-          <div class="widget-extra" id="weatherExtra" style="display:none">
-            <input type="text" id="weatherCity" placeholder="New York" maxlength="80">
-            <button class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.85rem"
-                    onclick="searchCity()" data-i18n="widget.weather.search">Suchen</button>
-            <div class="widget-found" id="weatherFound"></div>
-          </div>
         </div>
         <label class="toggle">
           <input type="checkbox" id="widgetWeather">
@@ -919,7 +913,6 @@
       document.getElementById('widgetInfoboard').checked = w.infoboard !== false;
       document.getElementById('widgetShowPing').checked  = !!(w.showPing);
 
-      document.getElementById('weatherCity').value = w.weather?.city || 'New York';
       document.getElementById('embedUrl').value = w.embedUrl || '';
       document.getElementById('embedSlotActive1').checked = w.embedSlot1Active !== false;
       document.getElementById('icsUrl').value = (state.calendar?.icsUrl) || '';
@@ -930,13 +923,11 @@
         document.getElementById('embedSlotUrl'    + id).value   = s.url    || '';
         document.getElementById('embedSlotActive' + id).checked = !!s.active;
       });
-      toggleWeatherExtra(wWeather.checked);
-
       wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
       document.getElementById('widgetCalendar').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.calendar  = e.target.checked; });
       document.getElementById('widgetInfoboard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.infoboard = e.target.checked; });
       document.getElementById('widgetShowPing').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.showPing  = e.target.checked; });
-      wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; toggleWeatherExtra(wWeather.checked); });
+      wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; });
       wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
       const embedUrlEl = document.getElementById('embedUrl');
       const syncEmbedUrl = () => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = embedUrlEl.value.trim(); };
@@ -967,39 +958,6 @@
       });
     }
 
-    function toggleWeatherExtra(show) {
-      document.getElementById('weatherExtra').style.display = show ? 'flex' : 'none';
-      document.getElementById('weatherExtra').style.flexWrap = 'wrap';
-    }
-
-    async function searchCity() {
-      const city = document.getElementById('weatherCity').value.trim();
-      const found = document.getElementById('weatherFound');
-      if (!city) return;
-      found.textContent = '🔍 ...';
-      found.style.color = 'var(--muted)';
-      try {
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en`);
-        const data = await res.json();
-        if (data.results?.length) {
-          const r = data.results[0];
-          if (!state.widgets) state.widgets = {};
-          if (!state.widgets.weather) state.widgets.weather = {};
-          state.widgets.weather.city = r.name + (r.admin1 ? ', ' + r.admin1 : '');
-          state.widgets.weather.lat  = r.latitude;
-          state.widgets.weather.lon  = r.longitude;
-          document.getElementById('weatherCity').value = state.widgets.weather.city;
-          found.textContent = I18n.t('widget.weather.found', { city: state.widgets.weather.city, lat: r.latitude.toFixed(2), lon: r.longitude.toFixed(2) });
-          found.style.color = 'var(--success)';
-        } else {
-          found.textContent = I18n.t('widget.weather.not.found');
-          found.style.color = 'var(--danger)';
-        }
-      } catch {
-        found.textContent = '⚠ API error';
-        found.style.color = 'var(--danger)';
-      }
-    }
 
     // ── ICS Testen ──
     async function testICS() {
