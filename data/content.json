@@ -70,7 +70,7 @@
   ],
   "calendar": [],
   "pages": {
-    "active": "embed",
+    "active": "display",
     "rotationSec": 30
   },
   "teams": {
