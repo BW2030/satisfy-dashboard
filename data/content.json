@@ -70,7 +70,7 @@
   ],
   "calendar": [],
   "pages": {
-    "active": "display"
+    "active": "auto"
   },
   "teams": {
     "enabled": false,
