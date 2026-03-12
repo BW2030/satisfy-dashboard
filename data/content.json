@@ -16,7 +16,7 @@
     "animals": true,
     "embedUrl": "",
     "infoboard": true,
-    "showPing": false,
+    "showPing": true,
     "calendar": true,
     "embedSlots": [
       {
