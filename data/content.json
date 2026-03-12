@@ -6,7 +6,7 @@
     }
   ],
   "widgets": {
-    "clock": false,
+    "clock": true,
     "weather": {
       "enabled": false,
       "city": "New York",
@@ -17,7 +17,7 @@
     "embedUrl": "",
     "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
@@ -123,6 +123,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T05:40:02.405Z"
+    "lastPingAt": "2026-03-12T05:50:02.521Z"
   }
 }
