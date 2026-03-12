@@ -440,12 +440,17 @@
 
     // ── Rotation Sequence ─────────────────────────────────────────────────
     function buildSequence(data) {
-      const seq = [{ id: 'display', url: 'index.html' }];
-      if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
+      const webOnly = data.pages?.active === 'web';
+      const seq = [];
+      if (!webOnly) {
+        seq.push({ id: 'display', url: 'index.html' });
+        if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
+      }
       if (data.widgets?.embedUrl) seq.push({ id: 'embed', url: 'embed.html' });
       (data.widgets?.embedSlots || []).forEach(s => {
         if (s.active && s.url) seq.push({ id: 'embed' + s.id, url: 'embed.html?slot=' + s.id });
       });
+      if (seq.length === 0) seq.push({ id: 'display', url: 'index.html' });
       return seq;
     }
 
@@ -458,9 +463,13 @@
         const active = data.pages?.active;
         if (active === 'calendar') { location.replace('calendar.html'); return; }
         if (active === 'embed')    { location.replace('embed.html');    return; }
+        if (active === 'web') {
+          const seq = buildSequence(data);
+          location.replace(seq[0].url); return;
+        }
         if (active === 'auto') {
           const seq  = buildSequence(data);
-          const next = seq[1 % seq.length]; // display ist immer index 0
+          const next = seq[1 % seq.length];
           setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
         }
         _lastWidgets = data.widgets || {};

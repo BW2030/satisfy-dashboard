@@ -323,6 +323,12 @@
             <span style="font-size:0.85rem;color:var(--muted)">Sek.</span>
           </div>
         </label>
+
+        <label style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1px solid var(--border);transition:background 0.15s" id="rowWeb">
+          <input type="radio" name="activePage" id="pageWeb" value="web" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
+          <span style="flex:1;font-size:0.95rem;font-weight:600">🌐 Nur Webseiten</span>
+          <span style="font-size:0.8rem;color:var(--muted)">Nur Embed-URLs rotieren</span>
+        </label>
       </div>
     </section>
 
@@ -895,7 +901,7 @@
     }
 
     function highlightActiveRow(active) {
-      ['display','calendar','embed','auto'].forEach(p => {
+      ['display','calendar','embed','auto','web'].forEach(p => {
         const row = document.getElementById('row' + p.charAt(0).toUpperCase() + p.slice(1));
         if (row) row.style.background = p === active ? 'rgba(99,102,241,0.12)' : '';
       });

@@ -170,12 +170,17 @@
     }
 
     function buildSequence(data) {
-      const seq = [{ id: 'display', url: 'index.html' }];
-      if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
+      const webOnly = data.pages?.active === 'web';
+      const seq = [];
+      if (!webOnly) {
+        seq.push({ id: 'display', url: 'index.html' });
+        if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
+      }
       if (data.widgets?.embedUrl) seq.push({ id: 'embed', url: 'embed.html' });
       (data.widgets?.embedSlots || []).forEach(s => {
         if (s.active && s.url) seq.push({ id: 'embed' + s.id, url: 'embed.html?slot=' + s.id });
       });
+      if (seq.length === 0) seq.push({ id: 'display', url: 'index.html' });
       return seq;
     }
 
@@ -184,6 +189,7 @@
       try {
         const cfg = await fetch('/api/content').then(r => r.json());
         const active = cfg.pages?.active;
+        if (active === 'web') { location.replace(buildSequence(cfg)[0].url); return; }
         if (active && active !== 'calendar' && active !== 'auto') {
           location.replace(active === 'embed' ? 'embed.html' : 'index.html');
           return;
