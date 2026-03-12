@@ -173,6 +173,7 @@
         <span id="navPingTime">📡 –</span>
       </div>
       <span id="userLabel"></span>
+      <button class="lang-toggle" id="themeToggle" onclick="toggleTheme()" title="Hell/Dunkel">🌙</button>
       <button class="lang-toggle" onclick="I18n.toggle()">EN</button>
       <a href="../display/index.html" target="_blank" class="btn btn-primary"
          style="width:auto;padding:7px 18px;font-size:0.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;"
@@ -537,6 +538,18 @@
     const user = Auth.getCurrentUser();
     document.getElementById('userLabel').textContent = '👤 ' + user.name;
     document.getElementById('logoutBtn').onclick = () => Auth.logout();
+
+    // ── Theme Toggle ──
+    function applyTheme(light) {
+      document.body.classList.toggle('admin-light', light);
+      document.getElementById('themeToggle').textContent = light ? '☀️' : '🌙';
+    }
+    function toggleTheme() {
+      const isLight = !document.body.classList.contains('admin-light');
+      localStorage.setItem('adminTheme', isLight ? 'light' : 'dark');
+      applyTheme(isLight);
+    }
+    applyTheme(localStorage.getItem('adminTheme') === 'light');
 
     // ── Mode Badge ──
     DataStore.checkServer().then(ok => {
@@ -1074,12 +1087,25 @@
     loadNavPing();
     setInterval(loadNavPing, 60000);
 
+    // ── SSE: Live-Sync wenn Display-Daten sich ändern ──
+    function connectAdminSSE() {
+      const es = new EventSource('/api/events');
+      es.onmessage = (e) => {
+        if (e.data === 'update') {
+          DataStore.resetServerCheck();
+          loadData();
+        }
+      };
+      es.onerror = () => { es.close(); setTimeout(connectAdminSSE, 10000); };
+    }
+    connectAdminSSE();
+
     // ── Init ──
     loadData();
 
     document.getElementById('newMsgInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') addMessage();
     });
-  </script>
+</script>
 </body>
 </html>
