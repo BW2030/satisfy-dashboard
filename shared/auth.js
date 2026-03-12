@@ -57,7 +57,6 @@ const Auth = (() => {
       if (res.ok) {
         const { token } = await res.json();
         _setSession(name, token);
-        clearFail(name);
         return { ok: true };
       } else if (res.status === 429) {
         return { ok: false, lockedFor: 900 };
