@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://www.lasso.io/"
+    "embedUrl": ""
   },
   "kpis": [
     {
@@ -76,7 +76,7 @@
   ],
   "calendar": [],
   "pages": {
-    "active": "auto",
+    "active": "display",
     "rotationSec": 30
   },
   "teams": {
