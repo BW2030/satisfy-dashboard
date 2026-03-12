@@ -15,8 +15,8 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
-    "showPing": false
+    "infoboard": false,
+    "showPing": true
   },
   "kpis": [
     {
