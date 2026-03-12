@@ -22,8 +22,8 @@
       {
         "id": 2,
         "label": "Embed 2",
-        "url": "",
-        "active": false
+        "url": "https://esahubble.org/wordbank/saturn/",
+        "active": true
       },
       {
         "id": 3,
