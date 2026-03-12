@@ -173,8 +173,9 @@
       const body = document.getElementById('calPageBody');
       try {
         const cfg = await fetch('/api/content').then(r => r.json());
-        if (cfg.pages?.calendar === false) {
-          body.innerHTML = '<div class="cal-no-events" style="color:#64748b">⛔ Seite deaktiviert</div>';
+        const active = cfg.pages?.active;
+        if (active && active !== 'calendar') {
+          location.replace(active === 'embed' ? 'embed.html' : 'index.html');
           return;
         }
         const res = await fetch('/api/calendar');

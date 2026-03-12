@@ -40,10 +40,9 @@
         const noUrl = document.getElementById('noUrl');
         const noUrlMsg = document.getElementById('noUrlMsg');
 
-        if (data.pages?.embed === false) {
-          frame.style.display = 'none';
-          noUrl.style.display = 'flex';
-          noUrlMsg.innerHTML = '⛔ Seite deaktiviert';
+        const active = data.pages?.active;
+        if (active && active !== 'embed') {
+          location.replace(active === 'calendar' ? 'calendar.html' : 'index.html');
           return;
         }
         const url = data.widgets?.embedUrl;
