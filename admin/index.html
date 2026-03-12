@@ -384,6 +384,8 @@
     async function loadData() {
       state = await DataStore.get();
       if (!state.widgets) state.widgets = { clock: true, weather: { enabled: false, city: 'New York', lat: 40.71, lon: -74.01 }, animals: false };
+      if (!state.pages) state.pages = { active: 'display' };
+      else if (!state.pages.active) state.pages.active = 'display';
       applyLang();
       initWidgets();
       initTeams();
@@ -583,7 +585,7 @@
           if (!state.teams) state.teams = {};
           const map = { teamsTenantId:'tenantId', teamsClientId:'clientId',
                         teamsClientSecret:'clientSecret', teamsUserEmail:'userEmail' };
-          if (e.target.value) state.teams[map[id]] = e.target.value;
+          state.teams[map[id]] = e.target.value;
         });
       });
     }

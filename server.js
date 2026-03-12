@@ -342,7 +342,9 @@ app.get('/api/calendar', async (req, res) => {
     if (!evRes.ok) { const t = await evRes.text(); throw new Error('Graph error: ' + t); }
     const evData = await evRes.json();
     const events = (evData.value || []).map(e => ({
-      subject: e.subject || '(Kein Titel)', start: e.start?.dateTime, end: e.end?.dateTime,
+      subject: e.subject || '(Kein Titel)',
+      start: e.isAllDay ? e.start?.date : e.start?.dateTime,
+      end:   e.isAllDay ? e.end?.date   : e.end?.dateTime,
       organizer: e.organizer?.emailAddress?.name || '', isAllDay: !!e.isAllDay
     }));
     _calendarCache = events;

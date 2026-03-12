@@ -16,7 +16,9 @@ const DataStore = (() => {
       { id: 6, label: '', value: '', unit: '', active: false }
     ],
     messages: [{ id: 1, text: 'Willkommen! Inhalte im Admin-Bereich anpassen.', priority: 'normal', active: true }],
-    calendar: []
+    calendar: [],
+    widgets: { clock: true, weather: { enabled: false, city: 'New York', lat: 40.71, lon: -74.01 }, animals: false },
+    pages: { active: 'display' }
   };
 
   function _authHeaders() {
