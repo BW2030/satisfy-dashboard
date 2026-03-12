@@ -95,6 +95,12 @@
       "id": 1,
       "text": "Willkommen! Inhalte im Admin-Bereich anpassen.",
       "priority": "normal",
+      "active": false
+    },
+    {
+      "id": 2,
+      "text": "7o5",
+      "priority": "normal",
       "active": true
     }
   ],
