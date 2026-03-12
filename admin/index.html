@@ -150,22 +150,21 @@
   <main class="admin-content">
 
     <!-- Ping Status Card -->
-    <div id="pingCard" style="
-      display:flex;align-items:center;gap:16px;
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:var(--radius);padding:16px 24px;margin-bottom:8px;">
-      <span id="pingCardDot" style="width:14px;height:14px;border-radius:50%;background:var(--muted);flex-shrink:0"></span>
+    <div id="pingCard" class="ping-status-card">
+      <span id="pingCardDot" class="ping-status-dot"></span>
       <div>
-        <div style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px">Letzter externer Ping</div>
-        <div id="pingCardTime" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">–</div>
+        <div class="ping-status-label">Letzter externer Ping</div>
+        <div id="pingCardTime" class="ping-status-time">–</div>
       </div>
     </div>
 
     <!-- Widgets -->
     <section class="admin-section">
       <h2 class="admin-section-title">
-        🎛️ <span data-i18n="section.widgets">Widgets</span>
+        <div class="section-icon"></div>
+        <span data-i18n="section.widgets">Widgets</span>
       </h2>
+      <div class="admin-section-body">
 
       <!-- Clock -->
       <div class="widget-row">
@@ -200,7 +199,7 @@
       <!-- Calendar on display -->
       <div class="widget-row">
         <div class="widget-info">
-          <div class="widget-label">📅 Termine</div>
+          <div class="widget-label">Termine</div>
           <div class="widget-desc">Kalender-Termine auf dem Haupt-Display anzeigen</div>
         </div>
         <label class="toggle">
@@ -212,7 +211,7 @@
       <!-- Animals -->
       <div class="widget-row">
         <div class="widget-info">
-          <div class="widget-label" data-i18n="widget.animals.label">Tier-Parade 🐾</div>
+          <div class="widget-label" data-i18n="widget.animals.label">Tier-Parade</div>
           <div class="widget-desc" data-i18n="widget.animals.desc">Lustige Tiere rennen über das Display</div>
         </div>
         <label class="toggle">
@@ -224,7 +223,7 @@
       <!-- Ping Status -->
       <div class="widget-row">
         <div class="widget-info">
-          <div class="widget-label">📡 Ping-Status</div>
+          <div class="widget-label">Ping-Status</div>
           <div class="widget-desc">Online-Anzeige unten rechts auf dem Display</div>
         </div>
         <label class="toggle">
@@ -236,7 +235,7 @@
       <!-- Info-Tafel -->
       <div class="widget-row">
         <div class="widget-info">
-          <div class="widget-label">📋 Info-Tafel</div>
+          <div class="widget-label">Info-Tafel</div>
           <div class="widget-desc">Nachrichten-Ticker auf dem Display anzeigen</div>
         </div>
         <label class="toggle">
@@ -249,7 +248,7 @@
       <div class="widget-row" style="align-items:flex-start;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;gap:10px;width:100%;margin-bottom:10px">
           <div class="widget-info">
-            <div class="widget-label">🔗 Embed-URLs</div>
+            <div class="widget-label">Embed-URLs</div>
             <div class="widget-desc">Externe Seiten einbetten — alle aktiven URLs werden in der Auto-Rotation angezeigt</div>
           </div>
         </div>
@@ -294,7 +293,7 @@
 
       <!-- Active Page Selector -->
       <div style="margin-top:8px;padding:16px;background:var(--surface2);border-radius:10px;display:flex;flex-direction:column;gap:12px">
-        <div style="color:var(--muted);font-size:0.85rem;font-weight:600;margin-bottom:4px">🖥 Aktive Seite</div>
+        <div style="color:var(--muted);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Aktive Seite</div>
 
         <label style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1px solid var(--border);transition:background 0.15s" id="rowDisplay">
           <input type="radio" name="activePage" id="pageDisplay" value="display" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer">
@@ -330,23 +329,29 @@
           <span style="font-size:0.8rem;color:var(--muted)">Nur Embed-URLs rotieren</span>
         </label>
       </div>
+      </div><!-- /admin-section-body -->
     </section>
 
     <!-- KPIs -->
     <section class="admin-section">
       <h2 class="admin-section-title">
-        📊 <span data-i18n="section.kpis">KPI-Kacheln</span>
+        <div class="section-icon"></div>
+        <span data-i18n="section.kpis">KPI-Kacheln</span>
       </h2>
-      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="admin-section-body">
+        <div class="kpi-grid" id="kpiGrid"></div>
+      </div>
     </section>
 
     <!-- Info Board -->
     <section class="admin-section">
       <h2 class="admin-section-title">
-        📋 <span data-i18n="section.info">Info-Tafel</span>
+        <div class="section-icon"></div>
+        <span data-i18n="section.info">Info-Tafel</span>
       </h2>
-      <div class="message-list" id="messageList"></div>
-      <div class="add-message-row">
+      <div class="admin-section-body">
+        <div class="message-list" id="messageList"></div>
+        <div class="add-message-row">
         <input type="text" id="newMsgInput" data-i18n-placeholder="msg.placeholder" placeholder="Neue Nachricht eingeben..." maxlength="200">
         <select id="newMsgPriority" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:0.9rem;outline:none">
           <option value="normal"    data-i18n="msg.priority.normal">Normal</option>
@@ -354,19 +359,22 @@
           <option value="urgent"    data-i18n="msg.priority.urgent">Dringend</option>
         </select>
         <button class="btn btn-primary" style="width:auto;padding:10px 20px" onclick="addMessage()" data-i18n="msg.add">+ Hinzufügen</button>
-      </div>
+        </div>
+      </div><!-- /admin-section-body -->
     </section>
 
     <!-- Calendar / Teams -->
     <section class="admin-section">
       <h2 class="admin-section-title">
-        📅 <span data-i18n="section.calendar">Kalender</span>
+        <div class="section-icon"></div>
+        <span data-i18n="section.calendar">Kalender</span>
       </h2>
+      <div class="admin-section-body">
 
       <!-- ICS Kalender-Abo -->
       <div class="widget-row" style="align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:4px">
         <div class="widget-info">
-          <div class="widget-label">📆 Kalender abonnieren (ICS)</div>
+          <div class="widget-label" data-i18n="widget.calendar.label">Kalender abonnieren (ICS)</div>
           <div class="widget-desc">Funktioniert mit Google Kalender, Outlook, Apple Kalender u.v.m. — kein Login nötig</div>
           <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <input type="text" id="icsUrl" placeholder="https://calendar.google.com/calendar/ical/..." style="flex:1;min-width:300px">
@@ -438,37 +446,41 @@
           Permissions: <strong>Calendars.Read</strong> (Delegated) · <strong>offline_access</strong>
         </div>
       </div>
+      </div><!-- /admin-section-body -->
     </section>
 
     <!-- Account Settings -->
     <section class="admin-section">
       <h2 class="admin-section-title">
-        👤 <span data-i18n="section.account">Konto-Einstellungen</span>
+        <div class="section-icon"></div>
+        <span data-i18n="section.account">Konto-Einstellungen</span>
       </h2>
-      <p id="accountSubtitle" style="color:var(--muted);font-size:0.9rem;margin-bottom:20px"></p>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:600px">
-        <div class="form-group" style="margin:0">
-          <label data-i18n="account.current.pin">Aktueller PIN</label>
-          <input type="password" id="currentPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+      <div class="admin-section-body">
+        <p id="accountSubtitle" style="color:var(--muted);font-size:0.9rem;margin-bottom:20px"></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:600px">
+          <div class="form-group" style="margin:0">
+            <label data-i18n="account.current.pin">Aktueller PIN</label>
+            <input type="password" id="currentPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label data-i18n="account.new.pin">Neuer PIN</label>
+            <input type="password" id="newPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label data-i18n="account.confirm.pin">PIN bestätigen</label>
+            <input type="password" id="confirmPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+          </div>
         </div>
-        <div class="form-group" style="margin:0">
-          <label data-i18n="account.new.pin">Neuer PIN</label>
-          <input type="password" id="newPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+        <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+          <button class="btn btn-primary" style="width:auto;padding:10px 24px" onclick="changePin()" data-i18n="account.btn.change">PIN ändern</button>
+          <span id="pinStatus" style="font-size:0.85rem"></span>
         </div>
-        <div class="form-group" style="margin:0">
-          <label data-i18n="account.confirm.pin">PIN bestätigen</label>
-          <input type="password" id="confirmPin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
-        </div>
-      </div>
-      <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
-        <button class="btn btn-primary" style="width:auto;padding:10px 24px" onclick="changePin()" data-i18n="account.btn.change">PIN ändern</button>
-        <span id="pinStatus" style="font-size:0.85rem"></span>
-      </div>
+      </div><!-- /admin-section-body -->
     </section>
 
     <!-- Save Bar -->
     <div class="save-bar">
-      <button class="btn btn-primary" style="width:auto;padding:12px 32px" onclick="saveAll()" data-i18n="save.btn">💾 Speichern</button>
+      <button class="btn btn-primary" style="width:auto;padding:12px 36px;font-size:1rem" onclick="saveAll()" data-i18n="save.btn">Speichern</button>
       <span class="save-status" id="saveStatus"></span>
     </div>
 

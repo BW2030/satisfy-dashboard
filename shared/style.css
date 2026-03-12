@@ -1,17 +1,17 @@
 /* FireTV Dashboard – Dark Theme */
 :root {
-  --bg:        #0d0d0d;
-  --surface:   #1a1a1a;
-  --surface2:  #242424;
-  --border:    #2e2e2e;
-  --accent:    #0ea5e9;
-  --accent2:   #7c3aed;
-  --text:      #f1f5f9;
-  --muted:     #64748b;
+  --bg:        #111111;
+  --surface:   #1c1c1c;
+  --surface2:  #262626;
+  --border:    #333333;
+  --accent:    #dc2626;
+  --accent2:   #b91c1c;
+  --text:      #f0f0f0;
+  --muted:     #6b7280;
   --success:   #22c55e;
   --warning:   #f59e0b;
   --danger:    #ef4444;
-  --radius:    12px;
+  --radius:    10px;
   --font:      'Segoe UI', system-ui, sans-serif;
 }
 
@@ -287,10 +287,11 @@ body {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: var(--accent);
   color: white;
   margin-top: 8px;
 }
+.btn-primary:hover { background: var(--accent2); }
 
 .btn-secondary {
   background: var(--surface2);
@@ -321,10 +322,12 @@ body {
 .admin-nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 16px 32px;
+  border-top: 3px solid var(--accent);
+  padding: 14px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .admin-nav-title {
@@ -344,8 +347,8 @@ body {
 }
 
 .admin-content {
-  padding: 32px;
-  max-width: 1000px;
+  padding: 28px 32px;
+  max-width: 960px;
   margin: 0 auto;
   width: 100%;
 }
@@ -354,19 +357,37 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 28px;
-  margin-bottom: 24px;
+  padding: 0;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  overflow: hidden;
 }
 
 .admin-section-title {
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  margin-bottom: 20px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-bottom: 16px;
+  padding: 14px 24px;
+  background: var(--surface2);
   border-bottom: 1px solid var(--border);
+}
+
+.admin-section-title .section-icon {
+  width: 3px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.admin-section-body {
+  padding: 20px 24px;
 }
 
 /* KPI Grid */
@@ -490,15 +511,49 @@ body {
 .toggle input:checked + .toggle-slider { background: var(--accent); }
 .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
 
+/* Ping status card */
+.ping-status-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.ping-status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+.ping-status-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.ping-status-time {
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
 /* Save button */
 .save-bar {
   position: sticky;
   bottom: 0;
   background: var(--bg);
-  padding: 16px 0;
+  padding: 16px 0 20px;
   display: flex;
   gap: 12px;
   align-items: center;
+  border-top: 1px solid var(--border);
 }
 
 .save-status {
@@ -540,8 +595,8 @@ body {
   font-weight: 600;
 }
 
-.badge-local { background: #22c55e22; color: var(--success); border: 1px solid var(--success); }
-.badge-static { background: #0ea5e922; color: var(--accent); border: 1px solid var(--accent); }
+.badge-local { background: #22c55e22; color: var(--success); border: 1px solid #22c55e66; }
+.badge-static { background: #f59e0b22; color: var(--warning); border: 1px solid #f59e0b66; }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
