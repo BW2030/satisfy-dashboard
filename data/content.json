@@ -6,15 +6,15 @@
     }
   ],
   "widgets": {
-    "clock": false,
+    "clock": true,
     "weather": {
       "enabled": false,
       "city": "New York",
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
-    "embedUrl": ""
+    "animals": false,
+    "embedUrl": "https://www.lasso.io/"
   },
   "kpis": [
     {
@@ -76,7 +76,7 @@
   ],
   "calendar": [],
   "pages": {
-    "active": "display",
+    "active": "auto",
     "rotationSec": 30
   },
   "teams": {
