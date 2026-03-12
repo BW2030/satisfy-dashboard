@@ -98,9 +98,9 @@
     /* Horizontal */
     @keyframes run-rtl { from { transform: translateX(110vw)  scaleX(1);  } to { transform: translateX(-30vw)  scaleX(1);  } }
     @keyframes run-ltr { from { transform: translateX(-30vw)  scaleX(-1); } to { transform: translateX(110vw)  scaleX(-1); } }
-    /* Vertikal */
-    @keyframes run-ttb { from { transform: translateY(-20vh) rotate(90deg);  } to { transform: translateY(110vh) rotate(90deg);  } }
-    @keyframes run-btt { from { transform: translateY(110vh)  rotate(-90deg); } to { transform: translateY(-20vh) rotate(-90deg); } }
+    /* Fallen von oben */
+    @keyframes run-ttb { from { transform: translateY(-15vh) rotate(0deg);   } to { transform: translateY(110vh) rotate(360deg); } }
+    @keyframes run-btt { from { transform: translateY(110vh)  rotate(0deg);  } to { transform: translateY(-15vh) rotate(-360deg); } }
     /* Diagonal */
     @keyframes run-diag1 { from { transform: translate(-20vw,-20vh) rotate(45deg);  } to { transform: translate(110vw,110vh) rotate(45deg);  } }
     @keyframes run-diag2 { from { transform: translate(110vw,-20vh)  rotate(-45deg); } to { transform: translate(-20vw,110vh) rotate(-45deg); } }
@@ -312,7 +312,7 @@
     const ANIMALS = ['🐱','🐶','🦊','🐰','🐻','🦁','🐯','🐸','🦄','🐮','🐼','🐨','🦘','🐺','🦝','🐙','🦋','🦔','🦭','🐧'];
     let animalTimer = null;
 
-    const DIRECTIONS = ['rtl','ltr','ttb','btt','diag1','diag2'];
+    const DIRECTIONS = ['rtl','ltr','ttb','ttb','ttb','btt','diag1','diag2'];
 
     function spawnAnimal() {
       const layer = document.getElementById('animalLayer');
