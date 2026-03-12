@@ -169,6 +169,16 @@
         : days[d.getDay()] + ', ' + d.getDate() + '. ' + months[d.getMonth()];
     }
 
+    function buildSequence(data) {
+      const seq = [{ id: 'display', url: 'index.html' }];
+      if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
+      if (data.widgets?.embedUrl) seq.push({ id: 'embed', url: 'embed.html' });
+      (data.widgets?.embedSlots || []).forEach(s => {
+        if (s.active && s.url) seq.push({ id: 'embed' + s.id, url: 'embed.html?slot=' + s.id });
+      });
+      return seq;
+    }
+
     async function loadEvents() {
       const body = document.getElementById('calPageBody');
       try {
@@ -179,8 +189,10 @@
           return;
         }
         if (active === 'auto') {
-          const hasEmbed = !!cfg.widgets?.embedUrl;
-          setTimeout(() => location.replace(hasEmbed ? 'embed.html' : 'index.html'), (cfg.pages?.rotationSec || 30) * 1000);
+          const seq  = buildSequence(cfg);
+          const idx  = seq.findIndex(p => p.id === 'calendar');
+          const next = seq[(idx + 1) % seq.length];
+          setTimeout(() => location.replace(next.url), (cfg.pages?.rotationSec || 30) * 1000);
         }
         const res = await fetch('/api/calendar');
         if (!res.ok) throw new Error('HTTP ' + res.status);

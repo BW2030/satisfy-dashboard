@@ -78,6 +78,27 @@
     .widget-extra input:focus { border-color: var(--accent); }
     .widget-found { font-size: 0.8rem; color: var(--success); margin-top: 4px; }
 
+    /* Ping badge in nav */
+    .ping-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      white-space: nowrap;
+    }
+    .ping-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
     /* Footer */
     .admin-footer {
       text-align: center;
@@ -112,6 +133,10 @@
       <span class="badge-mode" id="modeBadge">...</span>
     </div>
     <div class="admin-nav-user">
+      <div class="ping-badge" id="pingBadge" title="Letzter externer Ping (cron-job.org)">
+        <span class="ping-dot" id="navPingDot"></span>
+        <span id="navPingTime">📡 –</span>
+      </div>
       <span id="userLabel"></span>
       <button class="lang-toggle" onclick="I18n.toggle()">EN</button>
       <a href="../display/index.html" target="_blank" class="btn btn-primary"
@@ -123,6 +148,18 @@
   </nav>
 
   <main class="admin-content">
+
+    <!-- Ping Status Card -->
+    <div id="pingCard" style="
+      display:flex;align-items:center;gap:16px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:16px 24px;margin-bottom:8px;">
+      <span id="pingCardDot" style="width:14px;height:14px;border-radius:50%;background:var(--muted);flex-shrink:0"></span>
+      <div>
+        <div style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px">Letzter externer Ping</div>
+        <div id="pingCardTime" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">–</div>
+      </div>
+    </div>
 
     <!-- Widgets -->
     <section class="admin-section">
@@ -156,6 +193,18 @@
         </div>
         <label class="toggle">
           <input type="checkbox" id="widgetWeather">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Calendar on display -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label">📅 Termine</div>
+          <div class="widget-desc">Kalender-Termine auf dem Haupt-Display anzeigen</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetCalendar" checked>
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -196,14 +245,50 @@
         </label>
       </div>
 
-      <!-- Embed URL -->
-      <div class="widget-row" style="align-items:flex-start;flex-wrap:wrap;gap:12px">
-        <div class="widget-info">
-          <div class="widget-label">🔗 Embed-URL</div>
-          <div class="widget-desc">Externe Seite einbetten (z.B. Lasso.io) → <a href="../display/embed.html" target="_blank" style="color:var(--accent)">embed.html</a></div>
-          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input type="text" id="embedUrl" placeholder="https://..." style="flex:1;min-width:280px">
+      <!-- Embed URLs -->
+      <div class="widget-row" style="align-items:flex-start;flex-direction:column;gap:0">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;margin-bottom:10px">
+          <div class="widget-info">
+            <div class="widget-label">🔗 Embed-URLs</div>
+            <div class="widget-desc">Externe Seiten einbetten — alle aktiven URLs werden in der Auto-Rotation angezeigt</div>
           </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+
+          <!-- Slot 1 -->
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 1</span>
+            <input type="text" id="embedUrl" placeholder="https://..." style="flex:1;min-width:260px">
+          </div>
+
+          <!-- Slot 2 -->
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 2</span>
+            <input type="text" id="embedSlotUrl2" placeholder="https://..." style="flex:1;min-width:260px">
+            <label class="toggle"><input type="checkbox" id="embedSlotActive2"><span class="toggle-slider"></span></label>
+          </div>
+
+          <!-- Slot 3 -->
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 3</span>
+            <input type="text" id="embedSlotUrl3" placeholder="https://..." style="flex:1;min-width:260px">
+            <label class="toggle"><input type="checkbox" id="embedSlotActive3"><span class="toggle-slider"></span></label>
+          </div>
+
+          <!-- Slot 4 -->
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 4</span>
+            <input type="text" id="embedSlotUrl4" placeholder="https://..." style="flex:1;min-width:260px">
+            <label class="toggle"><input type="checkbox" id="embedSlotActive4"><span class="toggle-slider"></span></label>
+          </div>
+
+          <!-- Slot 5 -->
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:0.8rem;font-weight:700;color:var(--muted);min-width:60px">Embed 5</span>
+            <input type="text" id="embedSlotUrl5" placeholder="https://..." style="flex:1;min-width:260px">
+            <label class="toggle"><input type="checkbox" id="embedSlotActive5"><span class="toggle-slider"></span></label>
+          </div>
+
         </div>
       </div>
 
@@ -271,6 +356,26 @@
       <h2 class="admin-section-title">
         📅 <span data-i18n="section.calendar">Kalender</span>
       </h2>
+
+      <!-- ICS Kalender-Abo -->
+      <div class="widget-row" style="align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:4px">
+        <div class="widget-info">
+          <div class="widget-label">📆 Kalender abonnieren (ICS)</div>
+          <div class="widget-desc">Funktioniert mit Google Kalender, Outlook, Apple Kalender u.v.m. — kein Login nötig</div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="icsUrl" placeholder="https://calendar.google.com/calendar/ical/..." style="flex:1;min-width:300px">
+            <button class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:0.85rem" onclick="testICS()">Testen</button>
+          </div>
+          <div id="icsStatus" style="font-size:0.8rem;margin-top:6px"></div>
+          <div style="margin-top:8px;padding:10px 14px;background:var(--surface);border-radius:8px;font-size:0.78rem;color:var(--muted)">
+            <strong>Google Kalender:</strong> Kalender-Einstellungen → "Kalender integrieren" → <em>Geheime Adresse im iCal-Format</em><br>
+            <strong>Outlook:</strong> Kalender → Freigeben → ICS-Link kopieren<br>
+            <strong>Apple:</strong> iCloud.com → Kalender → Teilen-Symbol → Öffentlicher Kalender
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:8px 0 16px">
 
       <!-- Teams toggle -->
       <div class="widget-row" style="margin-bottom:16px">
@@ -555,12 +660,28 @@
       // Direkt vor dem Speichern alle Felder auslesen – unabhängig von Events
       if (!state.widgets) state.widgets = {};
       state.widgets.clock     = document.getElementById('widgetClock').checked;
+      state.widgets.calendar  = document.getElementById('widgetCalendar').checked;
       state.widgets.animals   = document.getElementById('widgetAnimals').checked;
       state.widgets.infoboard = document.getElementById('widgetInfoboard').checked;
       state.widgets.showPing  = document.getElementById('widgetShowPing').checked;
       if (!state.widgets.weather) state.widgets.weather = {};
       state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
       state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
+      if (!state.calendar) state.calendar = {};
+      state.calendar.icsUrl = document.getElementById('icsUrl').value.trim();
+      // Embed Slots aus DOM auslesen
+      if (!state.widgets.embedSlots) state.widgets.embedSlots = [];
+      [2,3,4,5].forEach(id => {
+        const urlEl   = document.getElementById('embedSlotUrl' + id);
+        const labelEl = document.getElementById('embedSlotLabel' + id);
+        const togEl   = document.getElementById('embedSlotActive' + id);
+        if (!urlEl) return;
+        let slot = state.widgets.embedSlots.find(s => s.id === id);
+        if (!slot) { slot = { id, label: 'Embed ' + id, url: '', active: false }; state.widgets.embedSlots.push(slot); }
+        slot.url    = urlEl.value.trim();
+        slot.label  = labelEl.value.trim() || 'Embed ' + id;
+        slot.active = togEl.checked;
+      });
 
       if (!state.pages) state.pages = {};
       const activeRadio = document.querySelector('input[name="activePage"]:checked');
@@ -728,15 +849,25 @@
       wClock.checked   = w.clock     !== false;
       wWeather.checked = !!(w.weather?.enabled);
       wAnimals.checked = !!(w.animals);
+      document.getElementById('widgetCalendar').checked  = w.calendar  !== false;
       document.getElementById('widgetInfoboard').checked = w.infoboard !== false;
       document.getElementById('widgetShowPing').checked  = !!(w.showPing);
 
       document.getElementById('weatherCity').value = w.weather?.city || 'New York';
       document.getElementById('embedUrl').value = w.embedUrl || '';
+      document.getElementById('icsUrl').value = (state.calendar?.icsUrl) || '';
+      // Embed Slots laden
+      const slots = state.widgets?.embedSlots || [];
+      [2,3,4,5].forEach(id => {
+        const s = slots.find(s => s.id === id) || {};
+        document.getElementById('embedSlotUrl'    + id).value   = s.url    || '';
+        document.getElementById('embedSlotActive' + id).checked = !!s.active;
+      });
       if (w.embedUrl) state.widgets.embedUrl = w.embedUrl; // sicherstellen dass State korrekt ist
       toggleWeatherExtra(wWeather.checked);
 
       wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
+      document.getElementById('widgetCalendar').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.calendar  = e.target.checked; });
       document.getElementById('widgetInfoboard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.infoboard = e.target.checked; });
       document.getElementById('widgetShowPing').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.showPing  = e.target.checked; });
       wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; toggleWeatherExtra(wWeather.checked); });
@@ -803,6 +934,69 @@
         found.style.color = 'var(--danger)';
       }
     }
+
+    // ── ICS Testen ──
+    async function testICS() {
+      const url    = document.getElementById('icsUrl').value.trim();
+      const status = document.getElementById('icsStatus');
+      if (!url) { status.textContent = '⚠ Bitte zuerst eine URL eingeben.'; status.style.color = 'var(--warning)'; return; }
+      status.textContent = '🔍 Teste URL…'; status.style.color = 'var(--muted)';
+      // Zuerst speichern, dann testen
+      syncFormToState();
+      await DataStore.save(state);
+      try {
+        const res = await fetch('/api/calendar');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const events = await res.json();
+        status.textContent = '✓ ' + events.length + ' Termine in den nächsten 7 Tagen geladen';
+        status.style.color = 'var(--success)';
+      } catch (e) {
+        status.textContent = '✗ Fehler: ' + e.message;
+        status.style.color = 'var(--danger)';
+      }
+    }
+
+    // ── Ping Status in Header ──
+    async function loadNavPing() {
+      try {
+        const res  = await fetch('/api/last-ping');
+        const data = await res.json();
+        const navDot  = document.getElementById('navPingDot');
+        const navTxt  = document.getElementById('navPingTime');
+        const cardDot = document.getElementById('pingCardDot');
+        const cardTxt = document.getElementById('pingCardTime');
+
+        if (!data.time) {
+          navDot.style.background  = '#f59e0b';
+          cardDot.style.background = '#f59e0b';
+          navTxt.textContent  = '📡 Kein Ping';
+          cardTxt.textContent = 'Noch kein Ping empfangen';
+          return;
+        }
+
+        const t      = new Date(data.time);
+        const ageMin = (Date.now() - t.getTime()) / 60000;
+        const color  = ageMin < 15 ? '#22c55e' : ageMin < 30 ? '#f59e0b' : '#ef4444';
+
+        const dateStr = t.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const timeStr = t.getHours().toString().padStart(2,'0') + ':' +
+                        t.getMinutes().toString().padStart(2,'0') + ':' +
+                        t.getSeconds().toString().padStart(2,'0');
+
+        navDot.style.background  = color;
+        cardDot.style.background = color;
+        navTxt.textContent  = '📡 ' + dateStr.slice(0,5) + ' ' + timeStr;
+        cardTxt.textContent = dateStr + '  ' + timeStr +
+          '  (' + (ageMin < 1 ? 'gerade eben' : Math.round(ageMin) + ' Min. her') + ')';
+      } catch {
+        document.getElementById('navPingDot').style.background  = '#ef4444';
+        document.getElementById('pingCardDot').style.background = '#ef4444';
+        document.getElementById('navPingTime').textContent  = '📡 offline';
+        document.getElementById('pingCardTime').textContent = 'Nicht erreichbar';
+      }
+    }
+    loadNavPing();
+    setInterval(loadNavPing, 60000);
 
     // ── Init ──
     loadData();

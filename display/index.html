@@ -438,6 +438,17 @@
         I18n.getLang() === 'en' ? '⚠ Connection lost – Reconnecting...' : '⚠ Verbindung unterbrochen – Verbinde neu...';
     }
 
+    // ── Rotation Sequence ─────────────────────────────────────────────────
+    function buildSequence(data) {
+      const seq = [{ id: 'display', url: 'index.html' }];
+      if (data.calendar?.icsUrl || data.teams?.enabled) seq.push({ id: 'calendar', url: 'calendar.html' });
+      if (data.widgets?.embedUrl) seq.push({ id: 'embed', url: 'embed.html' });
+      (data.widgets?.embedSlots || []).forEach(s => {
+        if (s.active && s.url) seq.push({ id: 'embed' + s.id, url: 'embed.html?slot=' + s.id });
+      });
+      return seq;
+    }
+
     // ── Main Load ────────────────────────────────────────────────────────
     let _lastWidgets = null;
 
@@ -447,10 +458,15 @@
         const active = data.pages?.active;
         if (active === 'calendar') { location.replace('calendar.html'); return; }
         if (active === 'embed')    { location.replace('embed.html');    return; }
-        if (active === 'auto') { setTimeout(() => location.replace('calendar.html'), (data.pages?.rotationSec || 30) * 1000); }
+        if (active === 'auto') {
+          const seq  = buildSequence(data);
+          const next = seq[1 % seq.length]; // display ist immer index 0
+          setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+        }
         _lastWidgets = data.widgets || {};
 
         applyClockVisibility(_lastWidgets);
+        document.querySelector('.calendar-section').style.display = _lastWidgets.calendar !== false ? '' : 'none';
         document.querySelector('.info-board').style.display = _lastWidgets.infoboard !== false ? '' : 'none';
         const pingEl = document.getElementById('pingStatus');
         pingEl.style.display = _lastWidgets.showPing ? 'flex' : 'none';
@@ -468,7 +484,8 @@
         const allOff = _lastWidgets.clock === false
           && !_lastWidgets.weather?.enabled
           && !(data.kpis || []).some(k => k.active && k.label)
-          && (!messages.length || _lastWidgets.infoboard === false);
+          && (!messages.length || _lastWidgets.infoboard === false)
+          && _lastWidgets.calendar === false;
         const logoScreen = document.getElementById('logoScreen');
         logoScreen.style.display = allOff ? 'flex' : 'none';
         document.getElementById('displayHeader').style.visibility = allOff ? 'hidden' : '';
@@ -485,16 +502,23 @@
       const el = document.getElementById('pingStatus');
       if (el.style.display === 'none') return;
       try {
-        const res = await fetch('/ping');
+        const res = await fetch('/api/last-ping');
         const data = await res.json();
-        if (data.ok) {
-          document.getElementById('pingDot').style.background = '#22c55e';
-          const t = new Date(data.time);
-          document.getElementById('pingTime').textContent =
-            '✅ ' + t.getHours().toString().padStart(2,'0') + ':' +
-            t.getMinutes().toString().padStart(2,'0') + ':' +
-            t.getSeconds().toString().padStart(2,'0');
+        const dot  = document.getElementById('pingDot');
+        const txt  = document.getElementById('pingTime');
+        if (!data.time) {
+          dot.style.background = '#f59e0b';
+          txt.textContent = 'Kein Ping erhalten';
+          return;
         }
+        const t = new Date(data.time);
+        const ageMin = (Date.now() - t.getTime()) / 60000;
+        // Green if last ping < 15 min ago, yellow if < 30 min, red if older
+        dot.style.background = ageMin < 15 ? '#22c55e' : ageMin < 30 ? '#f59e0b' : '#ef4444';
+        txt.textContent =
+          'Ping: ' + t.getHours().toString().padStart(2,'0') + ':' +
+          t.getMinutes().toString().padStart(2,'0') + ':' +
+          t.getSeconds().toString().padStart(2,'0');
       } catch {
         document.getElementById('pingDot').style.background = '#ef4444';
         document.getElementById('pingTime').textContent = '❌ offline';

@@ -89,7 +89,14 @@ async function verifyPin(pin, stored) {
 
 const DEFAULT_DATA = {
   users: [],
-  widgets: { clock: true, weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 }, animals: false, embedUrl: '' },
+  widgets: { clock: true, weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 }, animals: false, embedUrl: '',
+    embedSlots: [
+      { id: 2, label: 'Embed 2', url: '', active: false },
+      { id: 3, label: 'Embed 3', url: '', active: false },
+      { id: 4, label: 'Embed 4', url: '', active: false },
+      { id: 5, label: 'Embed 5', url: '', active: false }
+    ]
+  },
   kpis: [1,2,3,4,5,6].map(id => ({ id, label: '', value: '', unit: '', active: false })),
   messages: [{ id: 1, text: 'Willkommen! Inhalte im Admin-Bereich anpassen.', priority: 'normal', active: true }],
   calendar: [],
@@ -202,7 +209,27 @@ function pushUpdate() {
 }
 
 // ── Keep-Alive Ping (prevents Render free tier from sleeping) ────────────────
-app.get('/ping', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+let lastExternalPing = null;
+
+app.get('/ping', (req, res) => {
+  lastExternalPing = new Date().toISOString();
+  // Zeitstempel dauerhaft in content.json speichern
+  try {
+    const data = readData();
+    if (!data.meta) data.meta = {};
+    data.meta.lastPingAt = lastExternalPing;
+    writeData(data);
+  } catch {}
+  res.json({ ok: true, time: lastExternalPing });
+});
+
+app.get('/api/last-ping', (req, res) => {
+  // Aus Speicher oder Fallback aus Datei
+  const time = lastExternalPing || (() => {
+    try { return readData().meta?.lastPingAt || null; } catch { return null; }
+  })();
+  res.json({ time });
+});
 
 // ── Static Files ──────────────────────────────────────────────────────────────
 app.use('/shared', express.static(path.join(__dirname, 'shared')));
@@ -270,7 +297,9 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
     const teams = { ...teamsExisting, ...teamsNew,
       clientSecret: teamsNew.clientSecret || teamsExisting.clientSecret };
     // Preserve PIN hashes – never overwrite from client
-    const saved = { ...req.body, users: existing.users, calendar: existing.calendar || [], teams };
+    // calendar.icsUrl aus Body übernehmen, aber alte Struktur beibehalten
+    const calendarNew = req.body.calendar || {};
+    const saved = { ...req.body, users: existing.users, calendar: calendarNew, teams };
     writeData(saved);
     pushToGitHub(saved); // nicht-blockierend
     pushUpdate();
@@ -279,6 +308,64 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
     res.status(500).json({ error: 'Fehler beim Speichern der Daten.' });
   }
 });
+
+// ── ICS Kalender-Abo ──────────────────────────────────────────────────────────
+let _icsCache = null;
+let _icsCacheTime = 0;
+
+function parseICS(text) {
+  const events = [];
+  const blocks = text.split('BEGIN:VEVENT');
+  blocks.shift(); // alles vor dem ersten VEVENT entfernen
+  for (const block of blocks) {
+    const get = (key) => {
+      const re = new RegExp(`${key}[^:]*:([^\r\n]+)`, 'i');
+      const m = block.match(re);
+      return m ? m[1].trim() : null;
+    };
+    const subject  = (get('SUMMARY') || '(Kein Titel)').replace(/\\,/g, ',').replace(/\\n/g, ' ');
+    const org      = get('ORGANIZER;CN') || get('ORGANIZER') || '';
+    const orgName  = org.replace(/mailto:.*/i, '').replace(/^:/, '').trim();
+
+    // Datum auslesen – ganztägig (VALUE=DATE) oder mit Uhrzeit
+    const dtStartRaw = get('DTSTART;VALUE=DATE') || get('DTSTART;TZID=[^:]+') || get('DTSTART');
+    const dtEndRaw   = get('DTEND;VALUE=DATE')   || get('DTEND;TZID=[^:]+')   || get('DTEND');
+    const isAllDay   = !!(block.match(/DTSTART;VALUE=DATE:/i));
+
+    function parseDate(raw) {
+      if (!raw) return null;
+      if (raw.length === 8) return raw.slice(0,4) + '-' + raw.slice(4,6) + '-' + raw.slice(6,8);
+      // YYYYMMDDTHHmmssZ oder YYYYMMDDTHHmmss
+      return raw.slice(0,4)+'-'+raw.slice(4,6)+'-'+raw.slice(6,8)+'T'+
+             raw.slice(9,11)+':'+raw.slice(11,13)+':'+raw.slice(13,15)+(raw.endsWith('Z')?'Z':'');
+    }
+
+    const start = parseDate(dtStartRaw);
+    const end   = parseDate(dtEndRaw);
+    if (!start) continue;
+
+    // Nur zukünftige Events (ab heute)
+    const startDate = new Date(start);
+    const cutoff = new Date(); cutoff.setHours(0,0,0,0);
+    const future  = new Date(); future.setDate(future.getDate() + 7);
+    if (startDate < cutoff || startDate > future) continue;
+
+    events.push({ subject, start, end: end || start, organizer: orgName, isAllDay });
+  }
+  // Nach Startdatum sortieren
+  events.sort((a, b) => new Date(a.start) - new Date(b.start));
+  return events.slice(0, 20);
+}
+
+async function fetchICS(url) {
+  if (_icsCache && Date.now() - _icsCacheTime < 5 * 60 * 1000) return _icsCache;
+  const res = await fetch(url, { headers: { 'User-Agent': 'satisfy-dashboard/1.0' } });
+  if (!res.ok) throw new Error('ICS fetch HTTP ' + res.status);
+  const text = await res.text();
+  _icsCache = parseICS(text);
+  _icsCacheTime = Date.now();
+  return _icsCache;
+}
 
 // ── Teams Calendar – OAuth2 + Microsoft Graph ────────────────────────────────
 const TOKENS_FILE = path.join(__dirname, 'data', 'tokens.json');
@@ -386,10 +473,19 @@ app.post('/api/teams-logout', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
-// Calendar endpoint
+// Calendar endpoint – ICS Abo oder Teams
 app.get('/api/calendar', async (req, res) => {
   try {
     const data = readData();
+
+    // ── ICS Abo (hat Vorrang) ──────────────────────────────────────────────
+    const icsUrl = data.calendar?.icsUrl;
+    if (icsUrl) {
+      const events = await fetchICS(icsUrl);
+      return res.json(events);
+    }
+
+    // ── Microsoft Teams (Fallback) ─────────────────────────────────────────
     if (!data.teams?.enabled) return res.json([]);
     if (_calendarCache && Date.now() - _calendarCacheTime < 5 * 60 * 1000) return res.json(_calendarCache);
     const token = await getValidAccessToken();
@@ -467,6 +563,8 @@ async function ensureDefaultUser() {
 app.listen(PORT, '0.0.0.0', async () => {
   await pullFromGitHub(); // neueste Daten laden
   await ensureDefaultUser();
+  // Letzten Ping-Zeitstempel aus gespeicherten Daten wiederherstellen
+  try { lastExternalPing = readData().meta?.lastPingAt || null; } catch {}
   const { networkInterfaces } = require('os');
   const nets = networkInterfaces();
   let localIP = 'localhost';
