@@ -17,7 +17,7 @@
     "embedUrl": "",
     "infoboard": false,
     "showPing": false,
-    "calendar": true,
+    "calendar": false,
     "embedSlots": [
       {
         "id": 2,
