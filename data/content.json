@@ -17,12 +17,48 @@
     "embedUrl": ""
   },
   "kpis": [
-    { "id": 1, "label": "", "value": "", "unit": "", "active": false },
-    { "id": 2, "label": "", "value": "", "unit": "", "active": false },
-    { "id": 3, "label": "", "value": "", "unit": "", "active": false },
-    { "id": 4, "label": "", "value": "", "unit": "", "active": false },
-    { "id": 5, "label": "", "value": "", "unit": "", "active": false },
-    { "id": 6, "label": "", "value": "", "unit": "", "active": false }
+    {
+      "id": 1,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    },
+    {
+      "id": 2,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    },
+    {
+      "id": 3,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    },
+    {
+      "id": 4,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    },
+    {
+      "id": 5,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    },
+    {
+      "id": 6,
+      "label": "",
+      "value": "",
+      "unit": "",
+      "active": false
+    }
   ],
   "messages": [
     {
@@ -33,7 +69,9 @@
     }
   ],
   "calendar": [],
-  "pages": { "active": "display" },
+  "pages": {
+    "active": "display"
+  },
   "teams": {
     "enabled": false,
     "tenantId": "",
