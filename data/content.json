@@ -13,17 +13,17 @@
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
-    "embedUrl": "https://www.lasso.io/",
-    "infoboard": false,
-    "showPing": true,
+    "animals": false,
+    "embedUrl": "",
+    "infoboard": true,
+    "showPing": false,
     "calendar": true,
     "embedSlots": [
       {
         "id": 2,
         "label": "Embed 2",
-        "url": "https://esahubble.org/wordbank/saturn/",
-        "active": true
+        "url": "",
+        "active": false
       },
       {
         "id": 3,
@@ -115,7 +115,7 @@
   },
   "pages": {
     "active": "auto",
-    "rotationSec": 6
+    "rotationSec": 30
   },
   "teams": {
     "enabled": false,
@@ -124,6 +124,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T06:30:03.072Z"
+    "lastPingAt": "2026-03-12T18:20:02.593Z"
   }
 }
