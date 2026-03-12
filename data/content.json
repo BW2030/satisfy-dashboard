@@ -14,10 +14,10 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://www.lasso.io/",
-    "infoboard": false,
-    "showPing": true,
-    "calendar": false,
+    "embedUrl": "https://planner.cloud.microsoft/webui/plan/T_z0Nonaoki-PRa864NedZYAHGDl/view/board?tid=4f8651fc-44cc-49c6-83d1-ca55c5197f34",
+    "infoboard": true,
+    "showPing": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
