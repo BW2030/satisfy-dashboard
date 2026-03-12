@@ -109,7 +109,7 @@
   },
   "pages": {
     "active": "display",
-    "rotationSec": 30
+    "rotationSec": 5
   },
   "teams": {
     "enabled": false,
