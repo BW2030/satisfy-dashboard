@@ -13,7 +13,8 @@
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": false
+    "animals": false,
+    "embedUrl": ""
   },
   "kpis": [
     { "id": 1, "label": "", "value": "", "unit": "", "active": false },
@@ -32,12 +33,11 @@
     }
   ],
   "calendar": [],
-  "pages": { "display": true, "calendar": true, "embed": true },
+  "pages": { "active": "display" },
   "teams": {
     "enabled": false,
     "tenantId": "",
     "clientId": "",
-    "clientSecret": "",
     "userEmail": ""
   }
 }

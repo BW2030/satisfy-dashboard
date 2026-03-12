@@ -87,8 +87,22 @@ async function verifyPin(pin, stored) {
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
+const DEFAULT_DATA = {
+  users: [],
+  widgets: { clock: true, weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 }, animals: false, embedUrl: '' },
+  kpis: [1,2,3,4,5,6].map(id => ({ id, label: '', value: '', unit: '', active: false })),
+  messages: [{ id: 1, text: 'Willkommen! Inhalte im Admin-Bereich anpassen.', priority: 'normal', active: true }],
+  calendar: [],
+  pages: { active: 'display' },
+  teams: { enabled: false, tenantId: '', clientId: '', userEmail: '' }
+};
+
 function readData() {
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  try {
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  } catch {
+    return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
 }
 
 function writeData(data) {
