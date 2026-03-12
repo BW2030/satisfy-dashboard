@@ -111,7 +111,7 @@
     }
   ],
   "calendar": {
-    "icsUrl": "https://m4.lasso.io/calendars/feed/98c84890-62ee-40a1-ac2d-76f2932f0580/lasso_account.ics"
+    "icsUrl": ""
   },
   "pages": {
     "active": "auto",
@@ -124,6 +124,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T18:50:02.117Z"
+    "lastPingAt": "2026-03-12T19:20:12.976Z"
   }
 }
