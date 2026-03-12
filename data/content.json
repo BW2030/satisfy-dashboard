@@ -16,7 +16,7 @@
     "animals": true,
     "embedUrl": "https://www.lasso.io/",
     "infoboard": false,
-    "showPing": false,
+    "showPing": true,
     "calendar": true,
     "embedSlots": [
       {
