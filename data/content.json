@@ -15,7 +15,7 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": false,
+    "infoboard": true,
     "showPing": false,
     "calendar": false,
     "embedSlots": [
@@ -95,18 +95,24 @@
       "id": 1,
       "text": "Willkommen! Inhalte im Admin-Bereich anpassen.",
       "priority": "normal",
-      "active": false
+      "active": true
     },
     {
       "id": 2,
       "text": "lkjob",
       "priority": "normal",
-      "active": false
+      "active": true
     },
     {
       "id": 3,
       "text": "qwffrfre",
       "priority": "important",
+      "active": true
+    },
+    {
+      "id": 4,
+      "text": "hallo",
+      "priority": "normal",
       "active": true
     }
   ],
