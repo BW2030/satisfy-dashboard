@@ -554,6 +554,7 @@ async function ensureDefaultUser() {
     if (!data.users || !data.users[0]?.pin) {
       data.users = [{ name: 'admin', pin: await hashPin('1234') }];
       writeData(data);
+      await pushToGitHub(data); // dauerhaft speichern
       console.log('\n  ⚠  Standard-Login angelegt: admin / 1234  ⚠');
       console.log('  Bitte PIN nach dem ersten Login ändern!\n');
     }

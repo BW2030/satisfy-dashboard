@@ -1,10 +1,5 @@
 {
-  "users": [
-    {
-      "name": "admin",
-      "pin": "dd97c4cdacf559fa802ef47ee3a0122e:c9d87482a49b5185449ba90a0f7f020e07d252708adc6dbd434e2cb9ff6c89cf"
-    }
-  ],
+  "users": [],
   "widgets": {
     "clock": false,
     "weather": {
