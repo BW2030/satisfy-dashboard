@@ -15,7 +15,7 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
+    "infoboard": false,
     "showPing": false,
     "calendar": false,
     "embedSlots": [
@@ -114,7 +114,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "display",
+    "active": "calendar",
     "rotationSec": 30
   },
   "teams": {
