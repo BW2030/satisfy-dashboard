@@ -65,7 +65,13 @@
       "id": 1,
       "text": "Willkommen! Inhalte im Admin-Bereich anpassen.",
       "priority": "normal",
-      "active": true
+      "active": false
+    },
+    {
+      "id": 2,
+      "text": "lkjob",
+      "priority": "normal",
+      "active": false
     }
   ],
   "calendar": [],
