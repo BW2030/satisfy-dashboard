@@ -95,18 +95,16 @@
       font-style: italic;
     }
 
-    /* running right → left */
-    @keyframes run-rtl {
-      from { transform: translateX(110vw) scaleX(1); }
-      to   { transform: translateX(-30vw) scaleX(1); }
-    }
-    /* running left → right (mirrored) */
-    @keyframes run-ltr {
-      from { transform: translateX(-30vw) scaleX(-1); }
-      to   { transform: translateX(110vw) scaleX(-1); }
-    }
+    /* Horizontal */
+    @keyframes run-rtl { from { transform: translateX(110vw)  scaleX(1);  } to { transform: translateX(-30vw)  scaleX(1);  } }
+    @keyframes run-ltr { from { transform: translateX(-30vw)  scaleX(-1); } to { transform: translateX(110vw)  scaleX(-1); } }
+    /* Vertikal */
+    @keyframes run-ttb { from { transform: translateY(-20vh) rotate(90deg);  } to { transform: translateY(110vh) rotate(90deg);  } }
+    @keyframes run-btt { from { transform: translateY(110vh)  rotate(-90deg); } to { transform: translateY(-20vh) rotate(-90deg); } }
+    /* Diagonal */
+    @keyframes run-diag1 { from { transform: translate(-20vw,-20vh) rotate(45deg);  } to { transform: translate(110vw,110vh) rotate(45deg);  } }
+    @keyframes run-diag2 { from { transform: translate(110vw,-20vh)  rotate(-45deg); } to { transform: translate(-20vw,110vh) rotate(-45deg); } }
 
-    /* Bounce animation for the logo trail */
     @keyframes logo-bounce {
       0%, 100% { transform: translateY(0) rotate(-5deg); }
       50%       { transform: translateY(-6px) rotate(5deg); }
@@ -314,25 +312,32 @@
     const ANIMALS = ['🐱','🐶','🦊','🐰','🐻','🦁','🐯','🐸','🦄','🐮','🐼','🐨','🦘','🐺','🦝','🐙','🦋','🦔','🦭','🐧'];
     let animalTimer = null;
 
+    const DIRECTIONS = ['rtl','ltr','ttb','btt','diag1','diag2'];
+
     function spawnAnimal() {
       const layer = document.getElementById('animalLayer');
-      const goRTL = Math.random() > 0.4; // 60% run right→left
+      const dir   = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
       const emoji = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-      const size  = 2.5 + Math.random() * 2.5;   // 2.5–5rem
-      const top   = 10 + Math.random() * 70;       // 10–80% from top
-      const dur   = 4 + Math.random() * 6;         // 4–10s
+      const size  = 2.5 + Math.random() * 3;
+      const dur   = 3 + Math.random() * 5;
 
       const el = document.createElement('div');
       el.className = 'animal';
-      el.style.cssText = `top:${top}%; font-size:${size}rem;`;
-      el.style.animation = `${goRTL ? 'run-rtl' : 'run-ltr'} ${dur}s linear forwards`;
 
-      // Emoji
+      // Position & Animation je nach Richtung
+      if (dir === 'rtl' || dir === 'ltr') {
+        el.style.cssText = `top:${5 + Math.random() * 80}%; font-size:${size}rem;`;
+      } else if (dir === 'ttb' || dir === 'btt') {
+        el.style.cssText = `left:${5 + Math.random() * 85}%; font-size:${size}rem;`;
+      } else {
+        el.style.cssText = `font-size:${size}rem;`;
+      }
+      el.style.animation = `run-${dir} ${dur}s linear forwards`;
+
       const emojiEl = document.createElement('span');
       emojiEl.className = 'animal-emoji';
       emojiEl.textContent = emoji;
 
-      // Logo trail – bounces behind the animal
       const logoEl = document.createElement('img');
       logoEl.src = 'https://satis-fy.com/favicon.svg';
       logoEl.className = 'animal-logo';
@@ -340,26 +345,22 @@
       logoEl.style.cssText = `height:${size * 0.9}rem; animation: logo-bounce ${0.4 + Math.random()*0.3}s ease-in-out infinite;`;
       logoEl.onerror = () => { logoEl.style.display = 'none'; };
 
-      // If RTL: emoji first, then logo behind (logo appears to the right = trailing)
-      // If LTR (mirrored): logo appears before emoji in DOM but visually trails
-      if (goRTL) {
-        el.appendChild(emojiEl);
-        el.appendChild(logoEl);
+      // Logo läuft hinter dem Tier
+      if (['rtl','ttb','diag1'].includes(dir)) {
+        el.appendChild(emojiEl); el.appendChild(logoEl);
       } else {
-        el.appendChild(logoEl);
-        el.appendChild(emojiEl);
+        el.appendChild(logoEl); el.appendChild(emojiEl);
       }
 
       layer.appendChild(el);
-      // Remove after animation
       el.addEventListener('animationend', () => el.remove());
     }
 
     function startAnimals() {
       if (animalTimer) return;
       // Spawn first animal quickly, then every 2-4s
-      spawnAnimal();
-      animalTimer = setInterval(spawnAnimal, 2000 + Math.random() * 2000);
+      for (let i = 0; i < 3; i++) setTimeout(spawnAnimal, i * 300); // 3 auf einmal zum Start
+      animalTimer = setInterval(spawnAnimal, 500 + Math.random() * 1000);
     }
 
     function stopAnimals() {
@@ -371,7 +372,7 @@
     setInterval(() => {
       if (animalTimer) {
         clearInterval(animalTimer);
-        animalTimer = setInterval(spawnAnimal, 2000 + Math.random() * 2000);
+        animalTimer = setInterval(spawnAnimal, 500 + Math.random() * 1000);
       }
     }, 10000);
 
