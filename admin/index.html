@@ -172,6 +172,18 @@
         </label>
       </div>
 
+      <!-- Info-Tafel -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label">📋 Info-Tafel</div>
+          <div class="widget-desc">Nachrichten-Ticker auf dem Display anzeigen</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetInfoboard" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <!-- Embed URL -->
       <div class="widget-row" style="align-items:flex-start;flex-wrap:wrap;gap:12px">
         <div class="widget-info">
@@ -530,8 +542,9 @@
     function syncFormToState() {
       // Direkt vor dem Speichern alle Felder auslesen – unabhängig von Events
       if (!state.widgets) state.widgets = {};
-      state.widgets.clock   = document.getElementById('widgetClock').checked;
-      state.widgets.animals = document.getElementById('widgetAnimals').checked;
+      state.widgets.clock     = document.getElementById('widgetClock').checked;
+      state.widgets.animals   = document.getElementById('widgetAnimals').checked;
+      state.widgets.infoboard = document.getElementById('widgetInfoboard').checked;
       if (!state.widgets.weather) state.widgets.weather = {};
       state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
       state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
@@ -699,9 +712,10 @@
       const wWeather = document.getElementById('widgetWeather');
       const wAnimals = document.getElementById('widgetAnimals');
 
-      wClock.checked   = w.clock   !== false;
+      wClock.checked   = w.clock     !== false;
       wWeather.checked = !!(w.weather?.enabled);
       wAnimals.checked = !!(w.animals);
+      document.getElementById('widgetInfoboard').checked = w.infoboard !== false;
 
       document.getElementById('weatherCity').value = w.weather?.city || 'New York';
       document.getElementById('embedUrl').value = w.embedUrl || '';
@@ -709,6 +723,7 @@
       toggleWeatherExtra(wWeather.checked);
 
       wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
+      document.getElementById('widgetInfoboard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.infoboard = e.target.checked; });
       wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; toggleWeatherExtra(wWeather.checked); });
       wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
       const embedUrlEl = document.getElementById('embedUrl');

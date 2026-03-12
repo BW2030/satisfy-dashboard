@@ -435,6 +435,7 @@
         _lastWidgets = data.widgets || {};
 
         applyClockVisibility(_lastWidgets);
+        document.querySelector('.info-board').style.display = _lastWidgets.infoboard !== false ? '' : 'none';
         renderKPIs(data.kpis || []);
         messages = (data.messages || []).filter(m => m.active && m.text);
         renderNextMessage();
@@ -448,7 +449,7 @@
         const allOff = _lastWidgets.clock === false
           && !_lastWidgets.weather?.enabled
           && !(data.kpis || []).some(k => k.active && k.label)
-          && !messages.length;
+          && (!messages.length || _lastWidgets.infoboard === false);
         const logoScreen = document.getElementById('logoScreen');
         logoScreen.style.display = allOff ? 'flex' : 'none';
         document.getElementById('displayHeader').style.visibility = allOff ? 'hidden' : '';
