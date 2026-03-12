@@ -115,7 +115,7 @@
   },
   "pages": {
     "active": "auto",
-    "rotationSec": 30
+    "rotationSec": 6
   },
   "teams": {
     "enabled": false,
