@@ -96,6 +96,23 @@
     </form>
 
     <hr class="divider">
+
+    <!-- Microsoft Login -->
+    <a id="msLoginBtn" href="/auth/microsoft/admin-login"
+       style="display:flex;align-items:center;justify-content:center;gap:10px;
+              margin-top:16px;padding:12px;border-radius:8px;text-decoration:none;
+              background:#fff;border:1px solid #d0d0d0;color:#1a1a1a;font-weight:600;font-size:0.95rem;
+              transition:background 0.2s">
+      <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+      </svg>
+      Mit Microsoft anmelden
+    </a>
+    <div id="msError" style="color:var(--danger);font-size:0.82rem;margin-top:8px;text-align:center"></div>
+
     <p class="powered-by" data-i18n="login.session.note">Session läuft nach 8 Stunden ab.</p>
   </div>
 
@@ -103,6 +120,19 @@
   <script src="../shared/auth.js"></script>
   <script src="../shared/i18n.js"></script>
   <script>
+    // Microsoft OAuth Redirect zurück
+    const _p = new URLSearchParams(location.search);
+    if (_p.get('_t') && _p.get('_n')) {
+      Auth.setFromToken(decodeURIComponent(_p.get('_n')), _p.get('_t'));
+      window.location.href = 'index.html';
+    }
+    if (_p.get('ms_error')) {
+      const err = _p.get('ms_error');
+      document.getElementById('msError').textContent =
+        err === 'not_configured' ? '⚠ Teams nicht konfiguriert (Tenant/Client ID fehlt)' : '✗ Microsoft-Login fehlgeschlagen: ' + err;
+      history.replaceState({}, '', location.pathname);
+    }
+
     // Redirect if already logged in
     if (Auth.isLoggedIn()) window.location.href = 'index.html';
 

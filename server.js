@@ -410,7 +410,58 @@ async function getValidAccessToken() {
   return t.access_token;
 }
 
-// Initiate OAuth login
+// ── Admin Login via Microsoft (Identity only, kein Kalender-Scope) ───────────
+const _adminOauthStates = new Map();
+
+app.get('/auth/microsoft/admin-login', (req, res) => {
+  const cfg = readData().teams || {};
+  if (!cfg.tenantId || !cfg.clientId) {
+    return res.redirect('/admin/login.html?ms_error=not_configured');
+  }
+  const state = crypto.randomBytes(16).toString('hex');
+  _adminOauthStates.set(state, Date.now());
+  setTimeout(() => _adminOauthStates.delete(state), 10 * 60 * 1000);
+  const redirectUri = `${req.protocol}://${req.get('host')}/auth/microsoft/admin-callback`;
+  const params = new URLSearchParams({
+    client_id: cfg.clientId, response_type: 'code', redirect_uri: redirectUri,
+    scope: 'openid profile email User.Read', state, response_mode: 'query'
+  });
+  res.redirect(`https://login.microsoftonline.com/${cfg.tenantId}/oauth2/v2.0/authorize?${params}`);
+});
+
+app.get('/auth/microsoft/admin-callback', async (req, res) => {
+  const { code, state, error } = req.query;
+  if (error) return res.redirect('/admin/login.html?ms_error=' + encodeURIComponent(error));
+  if (!_adminOauthStates.has(state)) return res.redirect('/admin/login.html?ms_error=invalid_state');
+  _adminOauthStates.delete(state);
+  try {
+    const cfg = readData().teams || {};
+    const redirectUri = `${req.protocol}://${req.get('host')}/auth/microsoft/admin-callback`;
+    const body = new URLSearchParams({
+      grant_type: 'authorization_code', code, client_id: cfg.clientId,
+      client_secret: cfg.clientSecret, redirect_uri: redirectUri,
+      scope: 'openid profile email User.Read'
+    });
+    const tokenRes = await fetch(`https://login.microsoftonline.com/${cfg.tenantId}/oauth2/v2.0/token`, {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString()
+    });
+    if (!tokenRes.ok) throw new Error('Token exchange failed');
+    const tokens = await tokenRes.json();
+    const meRes = await fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,mail,userPrincipalName', {
+      headers: { Authorization: 'Bearer ' + tokens.access_token }
+    });
+    if (!meRes.ok) throw new Error('Graph /me failed');
+    const me = await meRes.json();
+    const name = me.displayName || me.mail || me.userPrincipalName || 'MS-User';
+    const sessionToken = createSession(name);
+    res.redirect(`/admin/login.html?_t=${sessionToken}&_n=${encodeURIComponent(name)}`);
+  } catch (e) {
+    console.error('Admin OAuth error:', e.message);
+    res.redirect('/admin/login.html?ms_error=' + encodeURIComponent(e.message));
+  }
+});
+
+// Initiate OAuth login (Kalender)
 app.get('/auth/microsoft/login', (req, res) => {
   const cfg = readData().teams || {};
   if (!cfg.tenantId || !cfg.clientId) return res.redirect('/admin/index.html?teams_error=missing_config');

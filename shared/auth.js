@@ -149,5 +149,9 @@ const Auth = (() => {
     return true;
   }
 
-  return { login, logout, isLoggedIn, requireLogin, getCurrentUser, getToken, changePin, createHash, verifyPin };
+  function setFromToken(name, token) {
+    _setSession(name, token);
+  }
+
+  return { login, logout, isLoggedIn, requireLogin, getCurrentUser, getToken, changePin, createHash, verifyPin, setFromToken };
 })();
