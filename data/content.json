@@ -15,9 +15,9 @@
     },
     "animals": false,
     "embedUrl": "https://www.lasso.io/",
-    "infoboard": false,
+    "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
@@ -108,8 +108,8 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "auto",
-    "rotationSec": 5
+    "active": "display",
+    "rotationSec": 30
   },
   "teams": {
     "enabled": false,
