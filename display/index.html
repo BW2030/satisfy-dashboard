@@ -464,7 +464,8 @@
         if (active === 'embed')    { location.replace('embed.html');    return; }
         if (active === 'web') {
           const seq = buildSequence(data);
-          location.replace(seq[0].url); return;
+          if (seq[0].id !== 'display') { location.replace(seq[0].url); return; }
+          // web mode but no active embed slots – stay on display, no reload
         }
         if (active === 'auto') {
           const seq = buildSequence(data);
