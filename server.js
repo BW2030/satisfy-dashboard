@@ -109,6 +109,53 @@ function writeData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
+// ── GitHub Mini-Datenbank ─────────────────────────────────────────────────────
+const GH_TOKEN = process.env.GITHUB_TOKEN;
+const GH_REPO  = 'BW2030/satisfy-dashboard';
+const GH_FILE  = 'data/content.json';
+const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+
+async function pullFromGitHub() {
+  if (!GH_TOKEN) return false;
+  try {
+    const res = await fetch(GH_API, {
+      headers: { Authorization: `Bearer ${GH_TOKEN}`, 'User-Agent': 'satisfy-dashboard' }
+    });
+    if (!res.ok) return false;
+    const file = await res.json();
+    const content = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8'));
+    writeData(content);
+    console.log('✓ Daten von GitHub geladen');
+    return true;
+  } catch (e) {
+    console.error('GitHub pull Fehler:', e.message);
+    return false;
+  }
+}
+
+async function pushToGitHub(data) {
+  if (!GH_TOKEN) return;
+  try {
+    // Aktuelle SHA holen (nötig für Update)
+    const getRes = await fetch(GH_API, {
+      headers: { Authorization: `Bearer ${GH_TOKEN}`, 'User-Agent': 'satisfy-dashboard' }
+    });
+    const sha = getRes.ok ? (await getRes.json()).sha : undefined;
+    const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
+    await fetch(GH_API, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${GH_TOKEN}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'satisfy-dashboard'
+      },
+      body: JSON.stringify({ message: 'auto-save: dashboard content', content, sha })
+    });
+  } catch (e) {
+    console.error('GitHub push Fehler:', e.message);
+  }
+}
+
 // ── Auth Middleware ────────────────────────────────────────────────────────────
 
 function requireAuth(req, res, next) {
@@ -225,6 +272,7 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
     // Preserve PIN hashes – never overwrite from client
     const saved = { ...req.body, users: existing.users, calendar: existing.calendar || [], teams };
     writeData(saved);
+    pushToGitHub(saved); // nicht-blockierend
     pushUpdate();
     res.json({ ok: true });
   } catch {
@@ -393,6 +441,7 @@ app.post('/api/change-pin', requireAuth, async (req, res) => {
     }
     user.pin = await hashPin(newPin);
     writeData(data);
+    pushToGitHub(data); // nicht-blockierend
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Serverfehler.' });
@@ -416,6 +465,7 @@ async function ensureDefaultUser() {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', async () => {
+  await pullFromGitHub(); // neueste Daten laden
   await ensureDefaultUser();
   const { networkInterfaces } = require('os');
   const nets = networkInterfaces();
