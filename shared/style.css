@@ -452,6 +452,20 @@ body {
   flex-shrink: 0;
 }
 .message-item--inactive { opacity: 0.4; }
+.message-item--current {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(220,38,38,0.25);
+}
+.msg-now-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(220,38,38,0.12);
+  border-radius: 4px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
 
 .message-list { display: flex; flex-direction: column; gap: 12px; }
 

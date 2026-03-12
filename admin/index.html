@@ -388,7 +388,7 @@
         </div>
         <div class="message-list" id="messageList"></div>
         <div class="add-message-row">
-        <input type="text" id="newMsgInput" data-i18n-placeholder="msg.placeholder" placeholder="Neue Nachricht eingeben..." maxlength="200">
+        <input type="text" id="newMsgInput" data-i18n-placeholder="msg.placeholder" placeholder="Add new message..." maxlength="200">
         <select id="newMsgPriority" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:0.9rem;outline:none">
           <option value="normal"    data-i18n="msg.priority.normal">Normal</option>
           <option value="important" data-i18n="msg.priority.important">Wichtig</option>
@@ -656,6 +656,7 @@
       (state.messages || []).forEach(msg => {
         const item = document.createElement('div');
         item.className = 'message-item' + (msg.active ? '' : ' message-item--inactive');
+        item.dataset.msgId = msg.id;
 
         const textInp = makeInput('text', msg.text, 'msg.placeholder', null);
         textInp.style.flex = '1';
@@ -701,6 +702,11 @@
         delBtn.textContent = '🗑';
         delBtn.addEventListener('click', () => deleteMessage(msg.id));
 
+        const nowBadge = document.createElement('span');
+        nowBadge.className = 'msg-now-badge';
+        nowBadge.textContent = '▶ Jetzt';
+        nowBadge.style.display = 'none';
+        item.appendChild(nowBadge);
         item.appendChild(textInp);
         item.appendChild(sel);
         item.appendChild(toggleLabel);
@@ -732,15 +738,32 @@
       const active = (state.messages || []).filter(m => m.active && m.text);
       const textEl    = document.getElementById('msgPreviewText');
       const counterEl = document.getElementById('msgPreviewCounter');
+
+      // Reset all highlights
+      document.querySelectorAll('.message-item').forEach(el => {
+        el.classList.remove('message-item--current');
+        const badge = el.querySelector('.msg-now-badge');
+        if (badge) badge.style.display = 'none';
+      });
+
       if (!textEl) return;
       if (!active.length) {
-        textEl.textContent    = 'Keine aktiven Nachrichten';
+        textEl.textContent    = 'No active messages';
         counterEl.textContent = '';
         return;
       }
       _previewIdx = _previewIdx % active.length;
-      textEl.textContent    = active[_previewIdx].text;
+      const current = active[_previewIdx];
+      textEl.textContent    = current.text;
       counterEl.textContent = active.length > 1 ? `${_previewIdx + 1} / ${active.length}` : '';
+
+      // Highlight current item in list
+      const currentItem = document.querySelector(`.message-item[data-msg-id="${current.id}"]`);
+      if (currentItem) {
+        currentItem.classList.add('message-item--current');
+        const badge = currentItem.querySelector('.msg-now-badge');
+        if (badge) badge.style.display = '';
+      }
       _previewIdx++;
     }
     setInterval(updateMsgPreview, 10000);
