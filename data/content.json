@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://planner.cloud.microsoft/webui/plan/T_z0Nonaoki-PRa864NedZYAHGDl/view/board?tid=4f8651fc-44cc-49c6-83d1-ca55c5197f34",
+    "embedUrl": "",
     "infoboard": true,
     "showPing": false,
     "calendar": true,
@@ -118,6 +118,6 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-12T20:22:26.578Z"
+    "lastPingAt": "2026-03-12T20:40:35.617Z"
   }
 }
