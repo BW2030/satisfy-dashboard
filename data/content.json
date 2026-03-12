@@ -1,7 +1,12 @@
 {
-  "users": [],
+  "users": [
+    {
+      "name": "admin",
+      "pin": "dd97c4cdacf559fa802ef47ee3a0122e:c9d87482a49b5185449ba90a0f7f020e07d252708adc6dbd434e2cb9ff6c89cf"
+    }
+  ],
   "widgets": {
-    "clock": false,
+    "clock": true,
     "weather": {
       "enabled": false,
       "city": "New York",
@@ -10,8 +15,35 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": false,
-    "showPing": false
+    "infoboard": true,
+    "showPing": false,
+    "calendar": false,
+    "embedSlots": [
+      {
+        "id": 2,
+        "label": "Embed 2",
+        "url": "",
+        "active": false
+      },
+      {
+        "id": 3,
+        "label": "Embed 3",
+        "url": "",
+        "active": false
+      },
+      {
+        "id": 4,
+        "label": "Embed 4",
+        "url": "",
+        "active": false
+      },
+      {
+        "id": 5,
+        "label": "Embed 5",
+        "url": "",
+        "active": false
+      }
+    ]
   },
   "kpis": [
     {
@@ -77,7 +109,9 @@
       "active": true
     }
   ],
-  "calendar": {},
+  "calendar": {
+    "icsUrl": ""
+  },
   "pages": {
     "active": "display",
     "rotationSec": 30
@@ -87,5 +121,8 @@
     "tenantId": "",
     "clientId": "",
     "userEmail": ""
+  },
+  "meta": {
+    "lastPingAt": "2026-03-12T05:20:02.325Z"
   }
 }
