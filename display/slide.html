@@ -445,12 +445,20 @@
     }
 
     // ── SSE Live-Updates ─────────────────────────────────────────────────
+    let _sseConnected = false;
     function connectSSE() {
       const es = new EventSource('/api/events');
-      es.onmessage = (e) => { if (e.data === 'update') loadSlide(); };
-      es.onerror   = () => { es.close(); setTimeout(connectSSE, 10000); };
+      es.onmessage = (e) => {
+        if (e.data === 'connected') {
+          if (_sseConnected) { DataStore.resetServerCheck(); loadSlide(); }
+          _sseConnected = true;
+        }
+        if (e.data === 'update') loadSlide();
+      };
+      es.onerror = () => { _sseConnected = false; es.close(); setTimeout(connectSSE, 10000); };
     }
     connectSSE();
+    setInterval(loadSlide, 60000);
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') { DataStore.resetServerCheck(); loadSlide(); }
