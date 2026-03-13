@@ -6,7 +6,7 @@
     }
   ],
   "widgets": {
-    "clock": false,
+    "clock": true,
     "weather": {
       "enabled": false,
       "city": "New York",
@@ -17,7 +17,7 @@
     "embedUrl": "",
     "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
