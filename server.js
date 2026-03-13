@@ -223,15 +223,21 @@ function pushUpdate() {
 
 // ── Keep-Alive Ping (prevents Render free tier from sleeping) ────────────────
 let lastExternalPing = null;
+let _lastPingGitHubPush = 0; // Throttle: max 1 GitHub-Push pro 10 Min
 
 app.get('/ping', (req, res) => {
   lastExternalPing = new Date().toISOString();
-  // Zeitstempel dauerhaft in content.json speichern
+  // Zeitstempel lokal speichern
   try {
     const data = readData();
     if (!data.meta) data.meta = {};
     data.meta.lastPingAt = lastExternalPing;
     writeData(data);
+    // GitHub-Push max alle 10 Minuten (damit Timestamp Restarts überlebt)
+    if (Date.now() - _lastPingGitHubPush > 10 * 60 * 1000) {
+      _lastPingGitHubPush = Date.now();
+      pushToGitHub(data);
+    }
   } catch {}
   res.json({ ok: true, time: lastExternalPing });
 });
