@@ -13,11 +13,11 @@
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
+    "animals": false,
     "embedUrl": "",
-    "infoboard": false,
+    "infoboard": true,
     "showPing": false,
-    "calendar": true,
+    "calendar": false,
     "embedSlots": [
       {
         "id": 2,
@@ -44,7 +44,7 @@
         "active": false
       }
     ],
-    "embedSlot1Active": false,
+    "embedSlot1Active": true,
     "lassoBoard": false
   },
   "kpis": [
