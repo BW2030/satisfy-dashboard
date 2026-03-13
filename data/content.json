@@ -6,18 +6,18 @@
     }
   ],
   "widgets": {
-    "clock": true,
+    "clock": false,
     "weather": {
       "enabled": false,
       "city": "New York",
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
+    "animals": false,
     "embedUrl": "",
-    "infoboard": false,
-    "showPing": true,
-    "calendar": false,
+    "infoboard": true,
+    "showPing": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
@@ -45,7 +45,7 @@
       }
     ],
     "embedSlot1Active": true,
-    "lassoBoard": true
+    "lassoBoard": false
   },
   "kpis": [
     {
