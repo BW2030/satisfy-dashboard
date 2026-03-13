@@ -6,18 +6,18 @@
     }
   ],
   "widgets": {
-    "clock": true,
+    "clock": false,
     "weather": {
       "enabled": false,
       "city": "New York",
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
-    "embedUrl": "https://www.lasso.io/",
-    "infoboard": false,
+    "animals": false,
+    "embedUrl": "",
+    "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
