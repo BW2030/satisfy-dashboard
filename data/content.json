@@ -115,7 +115,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "display",
+    "active": "auto",
     "rotationSec": 30
   },
   "teams": {
