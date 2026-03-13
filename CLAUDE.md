@@ -236,9 +236,9 @@ Das Claude-Tool `WebFetch` cached URLs 15 Minuten. Ping-Checks können veraltet 
 
 ---
 
-## Stand letzter Session (2026-03-13)
+## Stand letzter Session (2026-03-13 – Session 2)
 
-### In dieser Session implementiert (v2 Feature-Branch → main)
+### In Session 1 implementiert (v2 Feature-Branch → main)
 
 1. **Zapier Webhook + LASSO Info-Tafel**
    - `POST /webhook/kpi?key=SECRET` – KPI per Webhook aktualisieren
@@ -251,7 +251,7 @@ Das Claude-Tool `WebFetch` cached URLs 15 Minuten. Ping-Checks können veraltet 
 
 2. **CSS Grid Fix** – `.info-boards-wrap` Flex-Container verhindert Kalender-Overflow
 
-3. **SSE Fix in slide.html** – `_sseConnected` Flag, reconnect reload, 60s Fallback-Timer
+3. **SSE Fix** – BOOT_ID-Ansatz: Logout nur bei echtem Server-Restart (Deploy), nicht bei kurzen Netzwerkaussetzern
 
 4. **Ping-Persistenz** – `/ping` pusht max alle 10 Min zu GitHub, überlebt Server-Restarts
 
@@ -259,10 +259,23 @@ Das Claude-Tool `WebFetch` cached URLs 15 Minuten. Ping-Checks können veraltet 
    - `?preview=1` URL-Parameter in allen 4 Display-Seiten (deaktiviert Rotation)
    - Admin zeigt alle aktiven Ausgänge als 320×180px Thumbnails mit Öffnen-Link
 
+### In Session 2 implementiert
+
+6. **Bug-Fixes in admin/index.html**
+   - `_listenersAdded` Flag verhindert Event-Listener-Stacking beim mehrfachen `loadData()`-Aufruf
+   - `DataStore.resetServerCheck()` vor jedem Save → behebt "speichert in localStorage statt Server"
+   - BOOT_ID-SSE-Logik: `_adminBootId` wird beim ersten `connected` gesetzt, Logout nur bei ID-Wechsel
+   - Slide-Titel: JS setzt `document.title` nach Laden der Slide-Daten (statt statisch "Slide")
+   - iframe-Thumbnails: `.display-thumb-inner { position: absolute; width: 1600px; height: 900px; transform: scale(0.2); transform-origin: top left; }` + `isolation: isolate` für Safari
+
+7. **Admin-Layout Reorg** – KPI-Kacheln + Zapier/LASSO zusammen ganz unten (nach Account Settings, vor Save-Bar)
+   - Reihenfolge: Aktive Ausgänge → Widgets → Info-Tafel → Kalender → Slides → Account → Zapier/LASSO → KPIs → Save-Bar
+
 ### Bekannte Fallstricke
-- Nach jedem Render.com Deploy: Session abgelaufen → neu einloggen
+- Nach jedem Render.com Deploy: Session abgelaufen → neu einloggen (gewollt durch BOOT_ID-Mechanismus)
 - `WEBHOOK_SECRET` muss in Render.com Environment Variables gesetzt sein
-- `pages.active` muss auf `display` oder `auto` stehen (nicht `web`) damit Display läuft
+- `pages.active` muss auf `display` oder `auto` stehen (nicht `web`) damit Haupt-Display läuft
+- `?preview=1` deaktiviert Rotation – für Admin-iframe-Vorschau gedacht, nie im echten Kiosk-Betrieb nutzen
 
 ---
 
