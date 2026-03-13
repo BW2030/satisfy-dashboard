@@ -131,11 +131,11 @@
   "slides": [
     {
       "id": 1,
-      "name": "5t",
-      "type": "embed",
-      "url": "tv1",
+      "name": "Slide 1",
+      "type": "calendar",
+      "url": "",
       "content": "",
-      "active": true
+      "active": false
     },
     {
       "id": 2,
