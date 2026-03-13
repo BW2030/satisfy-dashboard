@@ -45,7 +45,7 @@
       }
     ],
     "embedSlot1Active": true,
-    "lassoBoard": true
+    "lassoBoard": false
   },
   "kpis": [
     {
