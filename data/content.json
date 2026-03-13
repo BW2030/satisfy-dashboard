@@ -15,9 +15,9 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": false,
+    "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
@@ -44,7 +44,7 @@
         "active": false
       }
     ],
-    "embedSlot1Active": false,
+    "embedSlot1Active": true,
     "lassoBoard": false
   },
   "kpis": [
