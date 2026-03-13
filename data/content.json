@@ -6,7 +6,7 @@
     }
   ],
   "widgets": {
-    "clock": false,
+    "clock": true,
     "weather": {
       "enabled": false,
       "city": "New York",
@@ -15,9 +15,9 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": false,
+    "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
@@ -45,7 +45,7 @@
       }
     ],
     "embedSlot1Active": true,
-    "lassoBoard": true
+    "lassoBoard": false
   },
   "kpis": [
     {
@@ -109,7 +109,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "calendar",
+    "active": "display",
     "rotationSec": 30
   },
   "teams": {
