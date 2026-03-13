@@ -105,6 +105,9 @@
   "calendar": { "icsUrl": "" },
   "pages": { "active": "display|calendar|embed|auto|web", "rotationSec": 30 },
   "teams": { "enabled": false, "tenantId": "", "clientId": "", "userEmail": "" },
+  "lassoMessages": [
+    { "id": 1, "text": "...", "source": "lasso", "active": true, "updatedAt": "ISO" }
+  ],
   "meta": { "lastPingAt": "ISO-8601-Timestamp" }
 }
 ```
@@ -233,19 +236,33 @@ Das Claude-Tool `WebFetch` cached URLs 15 Minuten. Ping-Checks können veraltet 
 
 ---
 
-## Stand letzter Session (2026-03-12)
+## Stand letzter Session (2026-03-13)
 
-### Login-Problem – was untersucht wurde
-- **Server funktioniert**: `curl -X POST /api/login -d '{"name":"admin","pin":"1234"}'` → HTTP 200 + Token ✓
-- **content.json ist korrekt**: admin-User mit PBKDF2-Hash vorhanden, PIN = `1234`
-- **auth.js ist korrekt**: `clearFail`-Bug wurde bereits entfernt (commit `a971d69`)
-- **HTML-Struktur OK**, **JS-Syntax OK**
-- **Vermutung**: Browser-Cache hat alte auth.js (mit clearFail-Bug). Lösung: Hard Refresh (Strg+Shift+R) oder Cache leeren
+### In dieser Session implementiert (v2 Feature-Branch → main)
 
-### Was in dieser Session gemacht wurde
-1. Design-Überarbeitung: satis&fy-Rot als Accent, Nav-Streifen, cleane Section-Karten
-2. Login-Bug behoben: `clearFail(name)` entfernt aus auth.js
-3. Embed-Slots: Alle 5 gleich groß, Nummerierung, Toggle für Embed 1
+1. **Zapier Webhook + LASSO Info-Tafel**
+   - `POST /webhook/kpi?key=SECRET` – KPI per Webhook aktualisieren
+   - `POST /webhook/lasso-message?key=SECRET` – LASSO-Nachricht pushen (max 10, FIFO)
+   - `GET /api/webhook-info` (auth) – Webhook-URLs + Key-Preview
+   - `DELETE /api/lasso-message/:id` (auth) – LASSO-Nachricht löschen
+   - `WEBHOOK_SECRET` Env-Variable in Render.com setzen
+   - Zweite Info-Tafel auf display/index.html und display/slide.html
+   - Admin: LASSO-Toggle + Webhook-Info-Box + LASSO-Nachrichten-Vorschau
+
+2. **CSS Grid Fix** – `.info-boards-wrap` Flex-Container verhindert Kalender-Overflow
+
+3. **SSE Fix in slide.html** – `_sseConnected` Flag, reconnect reload, 60s Fallback-Timer
+
+4. **Ping-Persistenz** – `/ping` pusht max alle 10 Min zu GitHub, überlebt Server-Restarts
+
+5. **Display-Vorschau im Admin** – `📺 Aktive Ausgänge` Sektion mit skalierten iframes
+   - `?preview=1` URL-Parameter in allen 4 Display-Seiten (deaktiviert Rotation)
+   - Admin zeigt alle aktiven Ausgänge als 320×180px Thumbnails mit Öffnen-Link
+
+### Bekannte Fallstricke
+- Nach jedem Render.com Deploy: Session abgelaufen → neu einloggen
+- `WEBHOOK_SECRET` muss in Render.com Environment Variables gesetzt sein
+- `pages.active` muss auf `display` oder `auto` stehen (nicht `web`) damit Display läuft
 
 ---
 
@@ -255,7 +272,6 @@ Das Claude-Tool `WebFetch` cached URLs 15 Minuten. Ping-Checks können veraltet 
 |-----------|---------|
 | Mittel | Azure AD App einrichten (Tenant ID, Client ID, Client Secret) für Teams-Login |
 | Niedrig | Display-Design weiterer Feinschliff |
-| Hoch | Login-Bug weiter debuggen: Server OK, vermutlich Browser-Cache. Nächster Schritt: Hard Refresh (Strg+Shift+R) testen, dann Login-Form try-catch hinzufügen für besseres Fehler-Feedback |
 
 ### Azure AD Setup (wenn bereit)
 1. Azure Portal → App-Registrierungen → Neu
