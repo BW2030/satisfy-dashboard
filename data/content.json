@@ -44,7 +44,7 @@
         "active": false
       }
     ],
-    "embedSlot1Active": true,
+    "embedSlot1Active": false,
     "lassoBoard": false
   },
   "kpis": [
