@@ -15,9 +15,9 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
+    "infoboard": false,
     "showPing": false,
-    "calendar": true,
+    "calendar": false,
     "embedSlots": [
       {
         "id": 2,
@@ -44,7 +44,7 @@
         "active": false
       }
     ],
-    "embedSlot1Active": true,
+    "embedSlot1Active": false,
     "lassoBoard": false
   },
   "kpis": [
@@ -115,7 +115,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "auto",
+    "active": "display",
     "rotationSec": 30
   },
   "teams": {
