@@ -6,7 +6,7 @@
     }
   ],
   "widgets": {
-    "clock": true,
+    "clock": false,
     "weather": {
       "enabled": false,
       "city": "New York",
@@ -44,7 +44,8 @@
         "active": false
       }
     ],
-    "embedSlot1Active": true
+    "embedSlot1Active": true,
+    "lassoBoard": false
   },
   "kpis": [
     {
@@ -119,5 +120,48 @@
   },
   "meta": {
     "lastPingAt": "2026-03-12T21:20:16.949Z"
-  }
+  },
+  "lassoMessages": [],
+  "slides": [
+    {
+      "id": 1,
+      "name": "Slide 1",
+      "type": "calendar",
+      "url": "",
+      "content": "",
+      "active": false
+    },
+    {
+      "id": 2,
+      "name": "Slide 2",
+      "type": "calendar",
+      "url": "",
+      "content": "",
+      "active": false
+    },
+    {
+      "id": 3,
+      "name": "Slide 3",
+      "type": "calendar",
+      "url": "",
+      "content": "",
+      "active": false
+    },
+    {
+      "id": 4,
+      "name": "Slide 4",
+      "type": "calendar",
+      "url": "",
+      "content": "",
+      "active": false
+    },
+    {
+      "id": 5,
+      "name": "Slide 5",
+      "type": "calendar",
+      "url": "",
+      "content": "",
+      "active": false
+    }
+  ]
 }
