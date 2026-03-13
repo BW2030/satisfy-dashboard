@@ -33,6 +33,7 @@
 
   <script>
     const SLOT = new URLSearchParams(location.search).get('slot') || '1';
+    const PREVIEW_MODE = new URLSearchParams(location.search).get('preview') === '1';
 
     function buildSequence(data) {
       const webOnly = data.pages?.active === 'web';
@@ -61,18 +62,19 @@
         const noUrlMsg = document.getElementById('noUrlMsg');
 
         const active = data.pages?.active;
-        if (active && active !== 'embed' && active !== 'auto' && active !== 'web') {
-          location.replace(active === 'calendar' ? 'calendar.html' : 'index.html');
-          return;
-        }
-
-        if (active === 'auto' || active === 'web') {
-          const seq = buildSequence(data);
-          if (seq.length > 1) {
-            const myId = SLOT === '1' ? 'embed' : 'embed' + SLOT;
-            const idx  = seq.findIndex(p => p.id === myId);
-            const next = seq[(idx + 1) % seq.length];
-            setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+        if (!PREVIEW_MODE) {
+          if (active && active !== 'embed' && active !== 'auto' && active !== 'web') {
+            location.replace(active === 'calendar' ? 'calendar.html' : 'index.html');
+            return;
+          }
+          if (active === 'auto' || active === 'web') {
+            const seq = buildSequence(data);
+            if (seq.length > 1) {
+              const myId = SLOT === '1' ? 'embed' : 'embed' + SLOT;
+              const idx  = seq.findIndex(p => p.id === myId);
+              const next = seq[(idx + 1) % seq.length];
+              setTimeout(() => location.replace(next.url), (data.pages?.rotationSec || 30) * 1000);
+            }
           }
         }
 

@@ -132,6 +132,7 @@
   <script src="../shared/i18n.js"></script>
   <script>
     const SLIDE_ID = parseInt(new URLSearchParams(location.search).get('id') || '1', 10);
+    const PREVIEW_MODE = new URLSearchParams(location.search).get('preview') === '1';
 
     // ── Rotation Sequence (gleiche Logik wie andere Display-Seiten) ───────
     function buildSequence(data) {
@@ -360,7 +361,7 @@
 
         // Rotation einrichten
         const active = data.pages?.active;
-        if (active === 'auto' || active === 'web') {
+        if (!PREVIEW_MODE && (active === 'auto' || active === 'web')) {
           const seq = buildSequence(data);
           if (seq.length > 1) {
             const myId = 'slide' + SLIDE_ID;

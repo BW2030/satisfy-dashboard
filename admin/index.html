@@ -135,6 +135,68 @@
       flex-shrink: 0;
     }
 
+    /* Display Previews */
+    .display-previews {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .display-preview-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .display-preview-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .display-preview-open {
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .display-preview-open:hover { text-decoration: underline; }
+    .display-thumb {
+      width: 320px;
+      height: 180px;
+      overflow: hidden;
+      border-radius: 8px;
+      position: relative;
+      border: 2px solid var(--border);
+      background: #111;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .display-thumb:hover { border-color: var(--accent); }
+    .display-thumb iframe {
+      width: 1600px;
+      height: 900px;
+      transform: scale(0.2);
+      transform-origin: top left;
+      pointer-events: none;
+      border: none;
+    }
+    .display-thumb-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(220,38,38,0.85);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      padding: 2px 7px;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
     /* Footer */
     .admin-footer {
       text-align: center;
@@ -637,6 +699,19 @@
     </section>
 
     <!-- Save Bar -->
+    <!-- Aktive Ausgänge -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        <div class="section-icon"></div>
+        📺 Aktive Ausgänge
+      </h2>
+      <div class="admin-section-body">
+        <div id="displayPreviews" class="display-previews">
+          <span style="color:var(--muted);font-size:0.9rem">Lade…</span>
+        </div>
+      </div>
+    </section>
+
     <div class="save-bar">
       <button class="btn btn-primary" style="width:auto;padding:12px 36px;font-size:1rem" onclick="saveAll()" data-i18n="save.btn">Speichern</button>
       <span class="save-status" id="saveStatus"></span>
@@ -734,6 +809,76 @@
       loadTeamsStatus();
       loadWebhookInfo();
       renderLassoMessages();
+      renderDisplayPreviews(state);
+    }
+
+    // ── Aktive Ausgänge ──
+    function renderDisplayPreviews(data) {
+      const container = document.getElementById('displayPreviews');
+      if (!container) return;
+
+      const outputs = [];
+      const active = data.pages?.active;
+      const base = '../display/';
+
+      if (active !== 'web') {
+        outputs.push({ label: 'Haupt-Display', previewUrl: base + 'index.html?preview=1', openUrl: base + 'index.html' });
+        if (data.calendar?.icsUrl || data.teams?.enabled)
+          outputs.push({ label: 'Kalender', previewUrl: base + 'calendar.html?preview=1', openUrl: base + 'calendar.html' });
+      }
+      if (data.widgets?.embedUrl)
+        outputs.push({ label: 'Embed 1', previewUrl: base + 'embed.html?slot=1&preview=1', openUrl: base + 'embed.html' });
+      (data.widgets?.embedSlots || []).forEach(s => {
+        if (s.active && s.url)
+          outputs.push({ label: s.label || 'Embed ' + s.id, previewUrl: base + 'embed.html?slot=' + s.id + '&preview=1', openUrl: base + 'embed.html?slot=' + s.id });
+      });
+      (data.slides || []).forEach(s => {
+        if (s.active)
+          outputs.push({ label: s.name || 'Slide ' + s.id, previewUrl: base + 'slide.html?id=' + s.id + '&preview=1', openUrl: base + 'slide.html?id=' + s.id });
+      });
+
+      if (!outputs.length) {
+        container.innerHTML = '<span style="color:var(--muted);font-size:0.9rem">Keine aktiven Ausgänge konfiguriert.</span>';
+        return;
+      }
+
+      container.innerHTML = '';
+      outputs.forEach(out => {
+        const card = document.createElement('div');
+        card.className = 'display-preview-card';
+
+        const label = document.createElement('div');
+        label.className = 'display-preview-label';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = out.label;
+        const link = document.createElement('a');
+        link.className = 'display-preview-open';
+        link.href = out.openUrl;
+        link.target = '_blank';
+        link.textContent = '↗ Öffnen';
+        label.appendChild(nameSpan);
+        label.appendChild(link);
+
+        const thumb = document.createElement('div');
+        thumb.className = 'display-thumb';
+        thumb.onclick = () => window.open(out.openUrl, '_blank');
+
+        const iframe = document.createElement('iframe');
+        iframe.src = out.previewUrl;
+        iframe.setAttribute('loading', 'lazy');
+        iframe.setAttribute('scrolling', 'no');
+        iframe.title = out.label;
+
+        const badge = document.createElement('div');
+        badge.className = 'display-thumb-badge';
+        badge.textContent = 'LIVE';
+
+        thumb.appendChild(iframe);
+        thumb.appendChild(badge);
+        card.appendChild(label);
+        card.appendChild(thumb);
+        container.appendChild(card);
+      });
     }
 
     // ── XSS-safe DOM helper ──
