@@ -381,7 +381,8 @@
           return;
         }
 
-        // Slide-Titel im Kalender setzen
+        // Tab-Titel + Slide-Titel im Kalender setzen
+        document.title = 'satis\u0026fy – ' + (slide.name || 'Slide ' + SLIDE_ID);
         const calTitleEl = document.getElementById('slideCalTitle');
         if (calTitleEl) calTitleEl.textContent = slide.name || 'Kalender';
 
