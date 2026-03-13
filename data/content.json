@@ -16,14 +16,14 @@
     "animals": false,
     "embedUrl": "https://www.lasso.io/",
     "infoboard": true,
-    "showPing": true,
+    "showPing": false,
     "calendar": true,
     "embedSlots": [
       {
         "id": 2,
         "label": "Embed 2",
-        "url": "",
-        "active": false
+        "url": "https://pisignage.com/get-started",
+        "active": true
       },
       {
         "id": 3,
@@ -115,7 +115,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "display",
+    "active": "web",
     "rotationSec": 30
   },
   "teams": {
@@ -131,11 +131,11 @@
   "slides": [
     {
       "id": 1,
-      "name": "TV 1",
-      "type": "text",
+      "name": "Slide 1",
+      "type": "calendar",
       "url": "",
-      "content": "FLoor",
-      "active": true
+      "content": "",
+      "active": false
     },
     {
       "id": 2,
