@@ -16,7 +16,7 @@
     "animals": true,
     "embedUrl": "https://www.lasso.io/",
     "infoboard": false,
-    "showPing": false,
+    "showPing": true,
     "calendar": false,
     "embedSlots": [
       {
@@ -125,17 +125,17 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-13T15:30:03.557Z"
+    "lastPingAt": "2026-03-13T15:20:02.385Z"
   },
   "lassoMessages": [],
   "slides": [
     {
       "id": 1,
-      "name": "Slide 1",
+      "name": "5t",
       "type": "calendar",
       "url": "",
       "content": "",
-      "active": false
+      "active": true
     },
     {
       "id": 2,
