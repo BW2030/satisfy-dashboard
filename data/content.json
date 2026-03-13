@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": true,
-    "embedUrl": "",
+    "embedUrl": "https://www.lasso.io/",
     "infoboard": false,
     "showPing": false,
     "calendar": false,
@@ -45,7 +45,7 @@
       }
     ],
     "embedSlot1Active": true,
-    "lassoBoard": true
+    "lassoBoard": false
   },
   "kpis": [
     {
