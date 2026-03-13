@@ -109,7 +109,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "web",
+    "active": "calendar",
     "rotationSec": 30
   },
   "teams": {
