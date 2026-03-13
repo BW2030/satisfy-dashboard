@@ -6,7 +6,7 @@
     }
   ],
   "widgets": {
-    "clock": false,
+    "clock": true,
     "weather": {
       "enabled": false,
       "city": "New York",
@@ -14,16 +14,16 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://www.lasso.io/",
-    "infoboard": false,
+    "embedUrl": "",
+    "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
         "label": "Embed 2",
-        "url": "https://www.google.com/imgres?q=saturn&imgurl=https%3A%2F%2Fcdn.esahubble.org%2Farchives%2Fimages%2Fscreen%2Fheic1917a.jpg&imgrefurl=https%3A%2F%2Fesahubble.org%2Fwordbank%2Fsaturn%2F&docid=n5gwS1TxtkhMaM&tbnid=FdFhhVjZXnxz8M&vet=12ahUKEwjnwrm635mTAxXpAjQIHRQGHJsQnPAOegQIFBAB..i&w=1280&h=813&hcb=2&ved=2ahUKEwjnwrm635mTAxXpAjQIHRQGHJsQnPAOegQIFBAB",
-        "active": true
+        "url": "",
+        "active": false
       },
       {
         "id": 3,
@@ -125,11 +125,11 @@
   "slides": [
     {
       "id": 1,
-      "name": "Slide 1",
+      "name": "5t",
       "type": "calendar",
       "url": "",
       "content": "",
-      "active": false
+      "active": true
     },
     {
       "id": 2,
