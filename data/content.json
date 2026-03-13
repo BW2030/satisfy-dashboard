@@ -6,7 +6,7 @@
     }
   ],
   "widgets": {
-    "clock": true,
+    "clock": false,
     "weather": {
       "enabled": false,
       "city": "New York",
@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://nike-countdown-clock.vercel.app/",
+    "embedUrl": "",
     "infoboard": true,
     "showPing": false,
     "calendar": true,
