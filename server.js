@@ -91,6 +91,7 @@ const DEFAULT_DATA = {
   users: [],
   widgets: {
     clock: true, infoboard: true, showPing: false, animals: false, calendar: true,
+    lassoBoard: false,
     weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 },
     embedUrl: '',
     embedSlots: [
@@ -102,9 +103,17 @@ const DEFAULT_DATA = {
   },
   kpis: [1,2,3,4,5,6].map(id => ({ id, label: '', value: '', unit: '', active: false })),
   messages: [{ id: 1, text: 'Willkommen! Inhalte im Admin-Bereich anpassen.', priority: 'normal', active: true }],
+  lassoMessages: [],
   calendar: {},
   pages: { active: 'display', rotationSec: 30 },
-  teams: { enabled: false, tenantId: '', clientId: '', userEmail: '' }
+  teams: { enabled: false, tenantId: '', clientId: '', userEmail: '' },
+  slides: [
+    { id: 1, name: 'Termine',   type: 'calendar',  url: '', content: '', active: false },
+    { id: 2, name: 'Dashboard', type: 'dashboard', url: '', content: '', active: false },
+    { id: 3, name: 'Slide 3',   type: 'text',      url: '', content: '', active: false },
+    { id: 4, name: 'Slide 4',   type: 'embed',     url: '', content: '', active: false },
+    { id: 5, name: 'Slide 5',   type: 'text',      url: '', content: '', active: false }
+  ]
 };
 
 function readData() {
@@ -120,7 +129,8 @@ function writeData(data) {
 }
 
 // ── GitHub Mini-Datenbank ─────────────────────────────────────────────────────
-const GH_TOKEN = process.env.GITHUB_TOKEN;
+const GH_TOKEN       = process.env.GITHUB_TOKEN;
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 const GH_REPO  = 'BW2030/satisfy-dashboard';
 const GH_FILE  = 'data/content.json';
 const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
@@ -233,6 +243,11 @@ app.get('/api/last-ping', (req, res) => {
   })();
   res.json({ time });
 });
+
+// ── Kurze TV-URLs /tv/1 bis /tv/5 ────────────────────────────────────────
+for (let i = 1; i <= 5; i++) {
+  app.get('/tv/' + i, (req, res) => res.redirect('/display/slide.html?id=' + i));
+}
 
 // ── Static Files ──────────────────────────────────────────────────────────────
 app.use('/shared', express.static(path.join(__dirname, 'shared')));
@@ -592,6 +607,91 @@ app.post('/api/change-pin', requireAuth, async (req, res) => {
     user.pin = await hashPin(newPin);
     writeData(data);
     pushToGitHub(data); // nicht-blockierend
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
+// ── Webhook Auth ─────────────────────────────────────────────────────────────
+
+function requireWebhookAuth(req, res, next) {
+  if (!WEBHOOK_SECRET) return res.status(503).json({ error: 'Webhooks deaktiviert (WEBHOOK_SECRET nicht gesetzt).' });
+  if (req.query.key !== WEBHOOK_SECRET) return res.status(401).json({ error: 'Ungültiger Webhook-Key.' });
+  next();
+}
+
+// ── Webhook: KPI Update ───────────────────────────────────────────────────────
+app.post('/webhook/kpi', requireWebhookAuth, (req, res) => {
+  const { id, label, value, unit } = req.body;
+  if (!id) return res.status(400).json({ error: 'id fehlt.' });
+  try {
+    const data = readData();
+    if (!data.kpis) data.kpis = [];
+    const kpi = data.kpis.find(k => k.id === Number(id));
+    if (!kpi) return res.status(404).json({ error: 'KPI nicht gefunden.' });
+    if (label !== undefined) kpi.label = String(label).slice(0, 100);
+    if (value !== undefined) kpi.value = String(value).slice(0, 50);
+    if (unit  !== undefined) kpi.unit  = String(unit).slice(0, 20);
+    kpi.active = true;
+    writeData(data);
+    pushToGitHub(data);
+    pushUpdate();
+    res.json({ ok: true, kpi });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
+// ── Webhook: LASSO-Nachricht ──────────────────────────────────────────────────
+app.post('/webhook/lasso-message', requireWebhookAuth, (req, res) => {
+  const { text } = req.body;
+  if (!text || typeof text !== 'string') return res.status(400).json({ error: 'text fehlt.' });
+  try {
+    const data = readData();
+    if (!data.lassoMessages) data.lassoMessages = [];
+    const maxId = data.lassoMessages.reduce((m, msg) => Math.max(m, msg.id || 0), 0);
+    const newMsg = {
+      id: maxId + 1,
+      text: String(text).slice(0, 500),
+      source: 'lasso',
+      active: true,
+      updatedAt: new Date().toISOString()
+    };
+    data.lassoMessages.push(newMsg);
+    // Max 10 – älteste entfernen (FIFO)
+    if (data.lassoMessages.length > 10) data.lassoMessages = data.lassoMessages.slice(-10);
+    writeData(data);
+    pushToGitHub(data);
+    pushUpdate();
+    res.json({ ok: true, message: newMsg });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
+// ── API: Webhook-Info (auth required) ────────────────────────────────────────
+app.get('/api/webhook-info', requireAuth, (req, res) => {
+  if (!WEBHOOK_SECRET) return res.status(503).json({ error: 'Webhooks deaktiviert.' });
+  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const host  = req.get('host');
+  const base  = `${proto}://${host}`;
+  res.json({
+    kpiUrl:      `${base}/webhook/kpi`,
+    lassoUrl:    `${base}/webhook/lasso-message`,
+    keyPreview:  WEBHOOK_SECRET.slice(0, 4) + '****'
+  });
+});
+
+// ── API: LASSO-Nachricht löschen (auth required) ──────────────────────────────
+app.delete('/api/lasso-message/:id', requireAuth, (req, res) => {
+  try {
+    const data = readData();
+    const id = parseInt(req.params.id, 10);
+    data.lassoMessages = (data.lassoMessages || []).filter(m => m.id !== id);
+    writeData(data);
+    pushToGitHub(data);
+    pushUpdate();
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Serverfehler.' });
