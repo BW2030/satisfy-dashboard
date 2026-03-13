@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://www.lasso.io/",
+    "embedUrl": "",
     "infoboard": true,
     "showPing": false,
     "calendar": true,
@@ -22,8 +22,8 @@
       {
         "id": 2,
         "label": "Embed 2",
-        "url": "https://pisignage.com/get-started",
-        "active": true
+        "url": "",
+        "active": false
       },
       {
         "id": 3,
@@ -115,7 +115,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "web",
+    "active": "display",
     "rotationSec": 30
   },
   "teams": {
