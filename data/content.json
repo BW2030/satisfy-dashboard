@@ -15,7 +15,7 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
+    "infoboard": false,
     "showPing": false,
     "calendar": true,
     "embedSlots": [
