@@ -13,8 +13,8 @@
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": false,
-    "embedUrl": "https://app.smartsheet.com/sheets/R6qV7c82VRV3CcC2GjQW26gr96j6x9jxcxF96V71?view=grid&filterId=7818884240330628",
+    "animals": true,
+    "embedUrl": "",
     "infoboard": true,
     "showPing": false,
     "calendar": true,
