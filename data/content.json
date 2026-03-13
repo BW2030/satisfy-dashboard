@@ -13,11 +13,11 @@
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
-    "embedUrl": "https://www.lasso.io/",
-    "infoboard": false,
+    "animals": false,
+    "embedUrl": "",
+    "infoboard": true,
     "showPing": false,
-    "calendar": false,
+    "calendar": true,
     "embedSlots": [
       {
         "id": 2,
@@ -116,7 +116,7 @@
   },
   "pages": {
     "active": "auto",
-    "rotationSec": 5
+    "rotationSec": 30
   },
   "teams": {
     "enabled": false,
