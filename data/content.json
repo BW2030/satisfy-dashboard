@@ -131,11 +131,11 @@
   "slides": [
     {
       "id": 1,
-      "name": "Slide 1",
-      "type": "calendar",
+      "name": "rew",
+      "type": "text",
       "url": "",
-      "content": "",
-      "active": false
+      "content": "sfd",
+      "active": true
     },
     {
       "id": 2,
