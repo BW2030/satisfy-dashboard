@@ -115,7 +115,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "embed",
+    "active": "display",
     "rotationSec": 30
   },
   "teams": {
@@ -125,7 +125,7 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-13T04:22:44.688Z"
+    "lastPingAt": "2026-03-13T04:30:02.988Z"
   },
   "lassoMessages": [],
   "slides": [
