@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "",
+    "embedUrl": "https://www.lasso.io/",
     "infoboard": false,
     "showPing": false,
     "calendar": false,
@@ -22,7 +22,7 @@
       {
         "id": 2,
         "label": "Embed 2",
-        "url": "",
+        "url": "https://www.google.com/imgres?q=saturn&imgurl=https%3A%2F%2Fcdn.esahubble.org%2Farchives%2Fimages%2Fscreen%2Fheic1917a.jpg&imgrefurl=https%3A%2F%2Fesahubble.org%2Fwordbank%2Fsaturn%2F&docid=n5gwS1TxtkhMaM&tbnid=FdFhhVjZXnxz8M&vet=12ahUKEwjnwrm635mTAxXpAjQIHRQGHJsQnPAOegQIFBAB..i&w=1280&h=813&hcb=2&ved=2ahUKEwjnwrm635mTAxXpAjQIHRQGHJsQnPAOegQIFBAB",
         "active": false
       },
       {
@@ -45,7 +45,7 @@
       }
     ],
     "embedSlot1Active": true,
-    "lassoBoard": true
+    "lassoBoard": false
   },
   "kpis": [
     {
