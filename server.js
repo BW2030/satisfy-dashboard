@@ -200,6 +200,7 @@ function validateContent(req, res, next) {
 }
 
 // ── Server-Sent Events (live update push to display) ─────────────────────────
+const BOOT_ID = Date.now().toString(36); // unique per server start
 const sseClients = new Set();
 
 app.get('/api/events', (req, res) => {
@@ -208,7 +209,7 @@ app.get('/api/events', (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no'); // disable nginx buffering on Render
   res.flushHeaders();
-  res.write('data: connected\n\n');
+  res.write('data: connected:' + BOOT_ID + '\n\n');
   sseClients.add(res);
   // Heartbeat every 25s to keep connection alive through proxies
   const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 25000);

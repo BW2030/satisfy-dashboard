@@ -173,6 +173,7 @@
       cursor: pointer;
       transition: border-color 0.2s;
       flex-shrink: 0;
+      isolation: isolate;
     }
     .display-thumb:hover { border-color: var(--accent); }
     /* Inner wrapper gets the scale transform – iframe fills it 100% */
@@ -264,6 +265,19 @@
         <div id="pingCardTime" class="ping-status-time">–</div>
       </div>
     </div>
+
+    <!-- Aktive Ausgänge -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        <div class="section-icon"></div>
+        📺 Aktive Ausgänge
+      </h2>
+      <div class="admin-section-body">
+        <div id="displayPreviews" class="display-previews">
+          <span style="color:var(--muted);font-size:0.9rem">Lade…</span>
+        </div>
+      </div>
+    </section>
 
     <!-- Widgets -->
     <section class="admin-section">
@@ -444,17 +458,6 @@
       </div><!-- /admin-section-body -->
     </section>
 
-    <!-- KPIs -->
-    <section class="admin-section">
-      <h2 class="admin-section-title">
-        <div class="section-icon"></div>
-        <span data-i18n="section.kpis">KPI-Kacheln</span>
-      </h2>
-      <div class="admin-section-body">
-        <div class="kpi-grid" id="kpiGrid"></div>
-      </div>
-    </section>
-
     <!-- Zapier Webhook -->
     <section class="admin-section">
       <h2 class="admin-section-title">
@@ -471,6 +474,17 @@
         <div id="lassoMsgEmpty" style="color:var(--muted);font-size:0.88rem;font-style:italic;display:none;padding:8px 0">
           Noch keine LASSO-Nachrichten. Webhook-Test ausführen um Nachrichten zu pushen.
         </div>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        <div class="section-icon"></div>
+        <span data-i18n="section.kpis">KPI-Kacheln</span>
+      </h2>
+      <div class="admin-section-body">
+        <div class="kpi-grid" id="kpiGrid"></div>
       </div>
     </section>
 
@@ -707,20 +721,6 @@
       </div><!-- /admin-section-body -->
     </section>
 
-    <!-- Save Bar -->
-    <!-- Aktive Ausgänge -->
-    <section class="admin-section">
-      <h2 class="admin-section-title">
-        <div class="section-icon"></div>
-        📺 Aktive Ausgänge
-      </h2>
-      <div class="admin-section-body">
-        <div id="displayPreviews" class="display-previews">
-          <span style="color:var(--muted);font-size:0.9rem">Lade…</span>
-        </div>
-      </div>
-    </section>
-
     <div class="save-bar">
       <button class="btn btn-primary" style="width:auto;padding:12px 36px;font-size:1rem" onclick="saveAll()" data-i18n="save.btn">Speichern</button>
       <span class="save-status" id="saveStatus"></span>
@@ -790,6 +790,7 @@
 
     // ── State ──
     let state = { kpis: [], messages: [] };
+    let _listenersAdded = false;
 
     // ── Load ──
     async function loadData() {
@@ -830,11 +831,10 @@
       const active = data.pages?.active;
       const base = '../display/';
 
-      if (active !== 'web') {
-        outputs.push({ label: 'Haupt-Display', previewUrl: base + 'index.html?preview=1', openUrl: base + 'index.html' });
-        if (data.calendar?.icsUrl || data.teams?.enabled)
-          outputs.push({ label: 'Kalender', previewUrl: base + 'calendar.html?preview=1', openUrl: base + 'calendar.html' });
-      }
+      // Haupt-Display immer anzeigen (unabhängig vom Rotationsmodus)
+      outputs.push({ label: 'Haupt-Display', previewUrl: base + 'index.html?preview=1', openUrl: base + 'index.html' });
+      if (data.calendar?.icsUrl || data.teams?.enabled)
+        outputs.push({ label: 'Kalender', previewUrl: base + 'calendar.html?preview=1', openUrl: base + 'calendar.html' });
       if (data.widgets?.embedUrl)
         outputs.push({ label: 'Embed 1', previewUrl: base + 'embed.html?slot=1&preview=1', openUrl: base + 'embed.html' });
       (data.widgets?.embedSlots || []).forEach(s => {
@@ -1301,20 +1301,33 @@
         document.getElementById('slideContent' + id).value   = s.url || s.content || '';
         document.getElementById('slideActive'  + id).checked = !!s.active;
         updateSlideContentPlaceholder(id, s.type || 'text');
-        document.getElementById('slideType' + id).addEventListener('change', e => updateSlideContentPlaceholder(id, e.target.value));
       });
 
-      wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
-      document.getElementById('widgetCalendar').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.calendar  = e.target.checked; });
-      document.getElementById('widgetInfoboard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.infoboard = e.target.checked; });
-      document.getElementById('widgetShowPing').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.showPing  = e.target.checked; });
-      wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; });
-      wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
-      document.getElementById('widgetLassoBoard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.lassoBoard = e.target.checked; });
-      const embedUrlEl = document.getElementById('embedUrl');
-      const syncEmbedUrl = () => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = embedUrlEl.value.trim(); };
-      embedUrlEl.addEventListener('input',  syncEmbedUrl);
-      embedUrlEl.addEventListener('change', syncEmbedUrl);
+      if (!_listenersAdded) {
+        _listenersAdded = true;
+        [1,2,3,4,5].forEach(id => {
+          document.getElementById('slideType' + id).addEventListener('change', e => updateSlideContentPlaceholder(id, e.target.value));
+        });
+        wClock.addEventListener('change',   () => { if (!state.widgets) state.widgets = {}; state.widgets.clock = wClock.checked; });
+        document.getElementById('widgetCalendar').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.calendar  = e.target.checked; });
+        document.getElementById('widgetInfoboard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.infoboard = e.target.checked; });
+        document.getElementById('widgetShowPing').addEventListener('change',  e => { if (!state.widgets) state.widgets = {}; state.widgets.showPing  = e.target.checked; });
+        wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; });
+        wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
+        document.getElementById('widgetLassoBoard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.lassoBoard = e.target.checked; });
+        const embedUrlEl = document.getElementById('embedUrl');
+        const syncEmbedUrl = () => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = embedUrlEl.value.trim(); };
+        embedUrlEl.addEventListener('input',  syncEmbedUrl);
+        embedUrlEl.addEventListener('change', syncEmbedUrl);
+
+        document.querySelectorAll('input[name="activePage"]').forEach(radio => {
+          radio.addEventListener('change', e => {
+            if (!state.pages) state.pages = {};
+            state.pages.active = e.target.value;
+            highlightActiveRow(e.target.value);
+          });
+        });
+      }
 
       // Active page radio buttons
       const pages = state.pages || {};
@@ -1323,14 +1336,6 @@
       if (activeRadio) activeRadio.checked = true;
       document.getElementById('rotationSec').value = pages.rotationSec || 30;
       highlightActiveRow(activePage);
-
-      document.querySelectorAll('input[name="activePage"]').forEach(radio => {
-        radio.addEventListener('change', e => {
-          if (!state.pages) state.pages = {};
-          state.pages.active = e.target.value;
-          highlightActiveRow(e.target.value);
-        });
-      });
     }
 
     function updateSlideContentPlaceholder(id, type) {
@@ -1493,24 +1498,27 @@
     setInterval(loadNavPing, 60000);
 
     // ── SSE: Live-Sync + Server-Restart erkennen ──
-    let _adminSseConnected = false;
+    let _adminBootId = null;
     function connectAdminSSE() {
       const es = new EventSource('/api/events');
       es.onmessage = (e) => {
-        if (e.data === 'connected') {
-          if (_adminSseConnected) {
-            // Server wurde neu gestartet (Deploy/Restart) → Session ungültig → neu einloggen
+        if (e.data.startsWith('connected')) {
+          const bootId = e.data.split(':')[1] || null;
+          if (_adminBootId && bootId && _adminBootId !== bootId) {
+            // Boot-ID hat sich geändert → Server neu gestartet (Deploy) → Session abgelaufen
             Auth.logout();
             return;
           }
-          _adminSseConnected = true;
+          _adminBootId = bootId;
+          DataStore.resetServerCheck();
+          loadData();
         }
         if (e.data === 'update') {
           DataStore.resetServerCheck();
           loadData();
         }
       };
-      es.onerror = () => { _adminSseConnected = false; es.close(); setTimeout(connectAdminSSE, 10000); };
+      es.onerror = () => { es.close(); setTimeout(connectAdminSSE, 10000); };
     }
     connectAdminSSE();
 

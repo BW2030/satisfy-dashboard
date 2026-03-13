@@ -594,7 +594,7 @@
     function connectSSE() {
       const es = new EventSource('/api/events');
       es.onmessage = (e) => {
-        if (e.data === 'connected') {
+        if (e.data.startsWith('connected')) {
           if (_sseConnected) loadContent(); // reload on reconnect
           _sseConnected = true;
         }
