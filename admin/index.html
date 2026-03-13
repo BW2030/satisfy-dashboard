@@ -1119,6 +1119,7 @@
 
     async function saveAll() {
       syncFormToState();
+      DataStore.resetServerCheck(); // stale cache vermeiden (Server evtl. gerade aufgewacht)
       const result = await DataStore.save(state);
       const status = document.getElementById('saveStatus');
       if (result.authExpired) {
@@ -1491,16 +1492,25 @@
     loadNavPing();
     setInterval(loadNavPing, 60000);
 
-    // ── SSE: Live-Sync wenn Display-Daten sich ändern ──
+    // ── SSE: Live-Sync + Server-Restart erkennen ──
+    let _adminSseConnected = false;
     function connectAdminSSE() {
       const es = new EventSource('/api/events');
       es.onmessage = (e) => {
+        if (e.data === 'connected') {
+          if (_adminSseConnected) {
+            // Server wurde neu gestartet (Deploy/Restart) → Session ungültig → neu einloggen
+            Auth.logout();
+            return;
+          }
+          _adminSseConnected = true;
+        }
         if (e.data === 'update') {
           DataStore.resetServerCheck();
           loadData();
         }
       };
-      es.onerror = () => { es.close(); setTimeout(connectAdminSSE, 10000); };
+      es.onerror = () => { _adminSseConnected = false; es.close(); setTimeout(connectAdminSSE, 10000); };
     }
     connectAdminSSE();
 
