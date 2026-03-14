@@ -6,14 +6,14 @@
     }
   ],
   "widgets": {
-    "clock": true,
+    "clock": false,
     "weather": {
       "enabled": false,
       "city": "New York",
       "lat": 40.7128,
       "lon": -74.006
     },
-    "animals": true,
+    "animals": false,
     "embedUrl": "",
     "infoboard": true,
     "showPing": false,
