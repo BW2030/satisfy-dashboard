@@ -15,6 +15,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   // Inline styles needed for the dashboard; scripts only from same origin
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://satis-fy.com; connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com; frame-src *;");
@@ -46,9 +47,35 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000);
 
-// ── Rate Limiting (currently disabled) ───────────────────────────────────────
-function checkRateLimit()      { return { blocked: false, key: null }; }
-function recordFailedAttempt() {}
+// ── Rate Limiting ─────────────────────────────────────────────────────────────
+const _loginAttempts = new Map(); // "ip:name" → { count, resetAt }
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS   = 15 * 60 * 1000; // 15 Minuten
+
+// Cleanup abgelaufener Einträge stündlich
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of _loginAttempts) if (now > v.resetAt) _loginAttempts.delete(k);
+}, 60 * 60 * 1000);
+
+function checkRateLimit(ip, name) {
+  const key = (ip || 'unknown') + ':' + (name || '').toLowerCase();
+  const now  = Date.now();
+  let rec = _loginAttempts.get(key);
+  if (!rec || now > rec.resetAt) {
+    rec = { count: 0, resetAt: now + LOGIN_LOCKOUT_MS };
+    _loginAttempts.set(key, rec);
+  }
+  if (rec.count >= LOGIN_MAX_ATTEMPTS) {
+    return { blocked: true, key, retryAfter: Math.ceil((rec.resetAt - now) / 1000) };
+  }
+  return { blocked: false, key };
+}
+
+function recordFailedAttempt(key) {
+  const rec = _loginAttempts.get(key);
+  if (rec) rec.count++;
+}
 
 // ── PIN Hashing ───────────────────────────────────────────────────────────────
 
@@ -660,7 +687,17 @@ app.post('/api/change-pin', requireAuth, async (req, res) => {
 
 function requireWebhookAuth(req, res, next) {
   if (!WEBHOOK_SECRET) return res.status(503).json({ error: 'Webhooks deaktiviert (WEBHOOK_SECRET nicht gesetzt).' });
-  if (req.query.key !== WEBHOOK_SECRET) return res.status(401).json({ error: 'Ungültiger Webhook-Key.' });
+  const provided = req.query.key || '';
+  let match = false;
+  try {
+    // Timing-safe Vergleich (verhindert Timing-Attacken auf den Key)
+    const a = Buffer.alloc(WEBHOOK_SECRET.length, 0);
+    const b = Buffer.alloc(WEBHOOK_SECRET.length, 0);
+    a.write(provided.slice(0, WEBHOOK_SECRET.length));
+    b.write(WEBHOOK_SECRET);
+    match = provided.length === WEBHOOK_SECRET.length && crypto.timingSafeEqual(a, b);
+  } catch {}
+  if (!match) return res.status(401).json({ error: 'Ungültiger Webhook-Key.' });
   next();
 }
 

@@ -176,21 +176,17 @@
       isolation: isolate;
     }
     .display-thumb:hover { border-color: var(--accent); }
-    /* Inner wrapper gets the scale transform – iframe fills it 100% */
-    .display-thumb-inner {
+    /* Transform direkt auf iframe – kein Wrapper nötig */
+    .display-thumb iframe {
       position: absolute;
       top: 0; left: 0;
       width: 1600px;
       height: 900px;
       transform: scale(0.2);
       transform-origin: top left;
-      pointer-events: none;
-    }
-    .display-thumb-inner iframe {
-      width: 100%;
-      height: 100%;
       border: none;
       display: block;
+      pointer-events: none;
     }
     .display-thumb-badge {
       position: absolute;
@@ -873,9 +869,6 @@
         thumb.className = 'display-thumb';
         thumb.onclick = () => window.open(out.openUrl, '_blank');
 
-        const inner = document.createElement('div');
-        inner.className = 'display-thumb-inner';
-
         const iframe = document.createElement('iframe');
         iframe.src = out.previewUrl;
         iframe.setAttribute('scrolling', 'no');
@@ -885,8 +878,7 @@
         badge.className = 'display-thumb-badge';
         badge.textContent = 'LIVE';
 
-        inner.appendChild(iframe);
-        thumb.appendChild(inner);
+        thumb.appendChild(iframe);
         thumb.appendChild(badge);
         card.appendChild(label);
         card.appendChild(thumb);
