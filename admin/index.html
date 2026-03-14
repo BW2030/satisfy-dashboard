@@ -794,6 +794,7 @@
 
     // ── Load ──
     async function loadData() {
+      DataStore.resetServerCheck(); // immer frisch vom Server laden, nie stale Cache
       state = await DataStore.get();
       if (!state.widgets) state.widgets = {};
       const wd = state.widgets;
@@ -1427,6 +1428,7 @@
           method: 'DELETE',
           headers: { Authorization: 'Bearer ' + Auth.getToken() }
         });
+        if (res.status === 401) { Auth.logout(); return; }
         if (res.ok) {
           state.lassoMessages = (state.lassoMessages || []).filter(m => m.id !== id);
           renderLassoMessages();
@@ -1505,8 +1507,12 @@
         if (e.data.startsWith('connected')) {
           const bootId = e.data.split(':')[1] || null;
           if (_adminBootId && bootId && _adminBootId !== bootId) {
-            // Boot-ID hat sich geändert → Server neu gestartet (Deploy) → Session abgelaufen
-            Auth.logout();
+            // Boot-ID hat sich geändert → Server neu gestartet (Deploy)
+            // Session ist server-seitig abgelaufen, aber wir loggen NICHT sofort aus.
+            // Der nächste authentifizierte Request (Speichern/Löschen) gibt 401 → dann logout.
+            _adminBootId = bootId;
+            DataStore.resetServerCheck();
+            loadData();
             return;
           }
           _adminBootId = bootId;

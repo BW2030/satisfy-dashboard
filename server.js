@@ -12,7 +12,7 @@ app.use(express.json({ limit: '100kb' }));
 // ── Security Headers ─────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   // Inline styles needed for the dashboard; scripts only from same origin
@@ -224,7 +224,8 @@ function pushUpdate() {
 
 // ── Keep-Alive Ping (prevents Render free tier from sleeping) ────────────────
 let lastExternalPing = null;
-let _lastPingGitHubPush = 0; // Throttle: max 1 GitHub-Push pro 10 Min
+let _lastPingGitHubPush = 0;    // Throttle für Ping: max 1 Push pro 10 Min
+let _lastContentGitHubPush = 0; // Throttle für Save/Delete: max 1 Push pro 5 Min
 
 app.get('/ping', (req, res) => {
   lastExternalPing = new Date().toISOString();
@@ -326,7 +327,11 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
     const calendarNew = req.body.calendar || {};
     const saved = { ...req.body, users: existing.users, calendar: calendarNew, teams };
     writeData(saved);
-    pushToGitHub(saved); // nicht-blockierend
+    // GitHub-Push max alle 5 Min um Render Auto-Deploy-Floods zu verhindern
+    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
+      _lastContentGitHubPush = Date.now();
+      pushToGitHub(saved);
+    }
     pushUpdate();
     res.json({ ok: true });
   } catch {
@@ -642,7 +647,10 @@ app.post('/webhook/kpi', requireWebhookAuth, (req, res) => {
     if (unit  !== undefined) kpi.unit  = String(unit).slice(0, 20);
     kpi.active = true;
     writeData(data);
-    pushToGitHub(data);
+    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
+      _lastContentGitHubPush = Date.now();
+      pushToGitHub(data);
+    }
     pushUpdate();
     res.json({ ok: true, kpi });
   } catch {
@@ -669,7 +677,10 @@ app.post('/webhook/lasso-message', requireWebhookAuth, (req, res) => {
     // Max 10 – älteste entfernen (FIFO)
     if (data.lassoMessages.length > 10) data.lassoMessages = data.lassoMessages.slice(-10);
     writeData(data);
-    pushToGitHub(data);
+    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
+      _lastContentGitHubPush = Date.now();
+      pushToGitHub(data);
+    }
     pushUpdate();
     res.json({ ok: true, message: newMsg });
   } catch {
@@ -697,7 +708,11 @@ app.delete('/api/lasso-message/:id', requireAuth, (req, res) => {
     const id = parseInt(req.params.id, 10);
     data.lassoMessages = (data.lassoMessages || []).filter(m => m.id !== id);
     writeData(data);
-    pushToGitHub(data);
+    // GitHub-Push max alle 5 Min (LASSO-Nachrichten sind ephemer – Throttle reicht)
+    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
+      _lastContentGitHubPush = Date.now();
+      pushToGitHub(data);
+    }
     pushUpdate();
     res.json({ ok: true });
   } catch {
