@@ -386,6 +386,12 @@
         const calTitleEl = document.getElementById('slideCalTitle');
         if (calTitleEl) calTitleEl.textContent = slide.name || 'Kalender';
 
+        // Alle Typ-Container zurücksetzen bevor der richtige eingeblendet wird
+        ['slideDashboard', 'slideCalendar', 'slideEmbed', 'slideText'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
+
         // Typ rendern
         switch (slide.type) {
           case 'dashboard':

@@ -124,8 +124,18 @@ function readData() {
   }
 }
 
+// Atomic write: erst in .tmp schreiben, dann umbenennen.
+// Verhindert korrupte Daten wenn der Prozess mid-write abstürzt.
 function writeData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  const tmp = DATA_FILE + '.tmp';
+  try {
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tmp, DATA_FILE);
+  } catch (e) {
+    try { fs.unlinkSync(tmp); } catch {}
+    console.error('writeData Fehler:', e.message);
+    throw e;
+  }
 }
 
 // ── GitHub Mini-Datenbank ─────────────────────────────────────────────────────
@@ -153,16 +163,16 @@ async function pullFromGitHub() {
   }
 }
 
-async function pushToGitHub(data) {
+// pushToGitHub mit SHA-Konflikt-Retry (max 2 Versuche)
+async function pushToGitHub(data, _retries = 2) {
   if (!GH_TOKEN) return;
   try {
-    // Aktuelle SHA holen (nötig für Update)
     const getRes = await fetch(GH_API, {
       headers: { Authorization: `Bearer ${GH_TOKEN}`, 'User-Agent': 'satisfy-dashboard' }
     });
     const sha = getRes.ok ? (await getRes.json()).sha : undefined;
     const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
-    await fetch(GH_API, {
+    const putRes = await fetch(GH_API, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${GH_TOKEN}`,
@@ -171,8 +181,34 @@ async function pushToGitHub(data) {
       },
       body: JSON.stringify({ message: 'auto-save: dashboard content', content, sha })
     });
+    if (!putRes.ok && _retries > 0 && putRes.status === 409) {
+      // SHA-Konflikt (paralleler Push) → kurz warten und nochmal versuchen
+      await new Promise(r => setTimeout(r, 1500));
+      return pushToGitHub(data, _retries - 1);
+    }
+    if (!putRes.ok) console.error('GitHub push HTTP', putRes.status);
   } catch (e) {
     console.error('GitHub push Fehler:', e.message);
+  }
+}
+
+// scheduleContentPush: throttle + Debounce-Timer für garantierten finalen Push.
+// Verhindert Datenverlust: auch wenn viele Saves in kurzer Zeit passieren,
+// wird der letzte Stand sicher nach 5 Min zu GitHub gepusht.
+let _lastContentGitHubPush = 0;
+let _contentPushDebounceTimer = null;
+function scheduleContentPush(data) {
+  if (_contentPushDebounceTimer) clearTimeout(_contentPushDebounceTimer);
+  if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
+    // Mehr als 5 Min seit letztem Push → sofort
+    _lastContentGitHubPush = Date.now();
+    pushToGitHub(data);
+  } else {
+    // Debounce: Push 5 Min nach der letzten Aktivität (neueste Daten lesen)
+    _contentPushDebounceTimer = setTimeout(() => {
+      _lastContentGitHubPush = Date.now();
+      pushToGitHub(readData());
+    }, 5 * 60 * 1000);
   }
 }
 
@@ -224,8 +260,7 @@ function pushUpdate() {
 
 // ── Keep-Alive Ping (prevents Render free tier from sleeping) ────────────────
 let lastExternalPing = null;
-let _lastPingGitHubPush = 0;    // Throttle für Ping: max 1 Push pro 10 Min
-let _lastContentGitHubPush = 0; // Throttle für Save/Delete: max 1 Push pro 5 Min
+let _lastPingGitHubPush = 0; // Throttle für Ping: max 1 Push pro 10 Min
 
 app.get('/ping', (req, res) => {
   lastExternalPing = new Date().toISOString();
@@ -327,11 +362,7 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
     const calendarNew = req.body.calendar || {};
     const saved = { ...req.body, users: existing.users, calendar: calendarNew, teams };
     writeData(saved);
-    // GitHub-Push max alle 5 Min um Render Auto-Deploy-Floods zu verhindern
-    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
-      _lastContentGitHubPush = Date.now();
-      pushToGitHub(saved);
-    }
+    scheduleContentPush(saved);
     pushUpdate();
     res.json({ ok: true });
   } catch {
@@ -647,10 +678,7 @@ app.post('/webhook/kpi', requireWebhookAuth, (req, res) => {
     if (unit  !== undefined) kpi.unit  = String(unit).slice(0, 20);
     kpi.active = true;
     writeData(data);
-    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
-      _lastContentGitHubPush = Date.now();
-      pushToGitHub(data);
-    }
+    scheduleContentPush(data);
     pushUpdate();
     res.json({ ok: true, kpi });
   } catch {
@@ -677,10 +705,7 @@ app.post('/webhook/lasso-message', requireWebhookAuth, (req, res) => {
     // Max 10 – älteste entfernen (FIFO)
     if (data.lassoMessages.length > 10) data.lassoMessages = data.lassoMessages.slice(-10);
     writeData(data);
-    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
-      _lastContentGitHubPush = Date.now();
-      pushToGitHub(data);
-    }
+    scheduleContentPush(data);
     pushUpdate();
     res.json({ ok: true, message: newMsg });
   } catch {
@@ -708,11 +733,7 @@ app.delete('/api/lasso-message/:id', requireAuth, (req, res) => {
     const id = parseInt(req.params.id, 10);
     data.lassoMessages = (data.lassoMessages || []).filter(m => m.id !== id);
     writeData(data);
-    // GitHub-Push max alle 5 Min (LASSO-Nachrichten sind ephemer – Throttle reicht)
-    if (Date.now() - _lastContentGitHubPush > 5 * 60 * 1000) {
-      _lastContentGitHubPush = Date.now();
-      pushToGitHub(data);
-    }
+    scheduleContentPush(data);
     pushUpdate();
     res.json({ ok: true });
   } catch {
