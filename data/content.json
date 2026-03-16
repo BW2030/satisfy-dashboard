@@ -46,7 +46,7 @@
     ],
     "embedSlot1Active": true,
     "lassoBoard": false,
-    "rotate90": false
+    "rotate90": true
   },
   "kpis": [
     {
