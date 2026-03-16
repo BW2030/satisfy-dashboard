@@ -759,6 +759,61 @@ app.post('/webhook/kpi', requireWebhookAuth, (req, res) => {
   }
 });
 
+// ── Webhook: Smartsheet via Zapier ───────────────────────────────────────────
+// Zapier sendet bei Smartsheet-Änderung: { "SpaltenName": "Wert", ... }
+// Mapping wird aus smartsheet.kpiMapping + smartsheet.messageMapping gelesen.
+app.post('/webhook/smartsheet', requireWebhookAuth, (req, res) => {
+  try {
+    const data = readData();
+    if (!data.kpis) data.kpis = [];
+    const ss = data.smartsheet || {};
+    const updatedKpis = [];
+
+    // KPI-Mapping: Spaltennamen → KPI-Slots
+    const kpiMapping = ss.kpiMapping || [];
+    kpiMapping.forEach(m => {
+      if (!m.columnName || !(m.columnName in req.body)) return;
+      const kpi = data.kpis.find(k => k.id === m.kpiId);
+      if (!kpi) return;
+      kpi.value  = String(req.body[m.columnName] ?? '').slice(0, 50);
+      kpi.active = true;
+      updatedKpis.push(m.kpiId);
+    });
+
+    // Nachrichten-Mapping: einzelne Zeile via Zapier
+    const mm = ss.messageMapping;
+    if (mm?.enabled && mm.columnName && mm.columnName in req.body) {
+      const text = String(req.body[mm.columnName] ?? '').slice(0, 500);
+      const isActive = mm.activeColumnName && mm.activeColumnName in req.body
+        ? Boolean(req.body[mm.activeColumnName])
+        : true;
+      if (text) {
+        if (!data.messages) data.messages = [];
+        const existing = data.messages.find(m => m.source === 'smartsheet-zapier');
+        if (existing) {
+          existing.text   = text;
+          existing.active = isActive;
+        } else {
+          const maxId = data.messages.reduce((n, m) => Math.max(n, m.id || 0), 0);
+          data.messages.push({ id: maxId + 1, text, priority: 'normal', active: isActive, source: 'smartsheet-zapier' });
+        }
+      }
+    }
+
+    if (!updatedKpis.length && !(mm?.enabled && mm.columnName in req.body)) {
+      return res.status(400).json({ error: 'Keine passenden Spalten im Mapping gefunden.' });
+    }
+
+    data.smartsheet = { ...ss, lastSyncAt: new Date().toISOString(), lastSyncStatus: 'ok' };
+    writeData(data);
+    scheduleContentPush(data);
+    pushUpdate();
+    res.json({ ok: true, updatedKpis });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
 // ── Webhook: LASSO-Nachricht ──────────────────────────────────────────────────
 app.post('/webhook/lasso-message', requireWebhookAuth, (req, res) => {
   const { text } = req.body;
@@ -793,9 +848,10 @@ app.get('/api/webhook-info', requireAuth, (req, res) => {
   const host  = req.get('host');
   const base  = `${proto}://${host}`;
   res.json({
-    kpiUrl:      `${base}/webhook/kpi`,
-    lassoUrl:    `${base}/webhook/lasso-message`,
-    keyPreview:  WEBHOOK_SECRET.slice(0, 4) + '****'
+    kpiUrl:          `${base}/webhook/kpi`,
+    lassoUrl:        `${base}/webhook/lasso-message`,
+    smartsheetUrl:   `${base}/webhook/smartsheet`,
+    keyPreview:      WEBHOOK_SECRET.slice(0, 4) + '****'
   });
 });
 
