@@ -14,7 +14,7 @@
       "lon": -74.006
     },
     "animals": false,
-    "embedUrl": "https://www.lasso.io/",
+    "embedUrl": "",
     "infoboard": true,
     "showPing": false,
     "calendar": true,
@@ -115,7 +115,7 @@
     "icsUrl": ""
   },
   "pages": {
-    "active": "web",
+    "active": "display",
     "rotationSec": 30
   },
   "teams": {
@@ -169,5 +169,15 @@
       "content": "",
       "active": false
     }
-  ]
+  ],
+  "smartsheet": {
+    "enabled": false,
+    "sheetId": "",
+    "kpiMapping": [],
+    "messageMapping": {
+      "enabled": false,
+      "columnName": "",
+      "activeColumnName": ""
+    }
+  }
 }
