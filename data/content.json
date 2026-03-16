@@ -203,6 +203,23 @@
       "enabled": true,
       "columnName": "",
       "activeColumnName": ""
+    },
+    "lastSyncAt": "2026-03-16T04:21:27.812Z",
+    "lastSyncStatus": "ok"
+  },
+  "smartsheetRows": [
+    {
+      "id": 1,
+      "active": true,
+      "fields": {
+        " Client  ": "Nike",
+        "Location": "Mexico City",
+        "Go Live Date ": "2026-03-01",
+        "Status": "Red",
+        "PJ Name": "Nike Mad Research Lab Mexico",
+        "PJ Number": "25-5506"
+      },
+      "updatedAt": "2026-03-16T04:21:27.812Z"
     }
-  }
+  ]
 }
