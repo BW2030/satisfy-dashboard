@@ -715,12 +715,35 @@ function requireWebhookAuth(req, res, next) {
 }
 
 // ── Webhook: KPI Update ───────────────────────────────────────────────────────
+// Unterstützt zwei Formate:
+// 1. Einzelner KPI:  { id, label, value, unit }
+// 2. Alle Spalten:   { "Spaltenname": "Wert", ... } → Mapping aus smartsheet.kpiMapping
 app.post('/webhook/kpi', requireWebhookAuth, (req, res) => {
   const { id, label, value, unit } = req.body;
-  if (!id) return res.status(400).json({ error: 'id fehlt.' });
   try {
     const data = readData();
     if (!data.kpis) data.kpis = [];
+
+    // Format 2: Alle Spalten auf einmal (kein "id" im Body)
+    if (!id) {
+      const mapping = data.smartsheet?.kpiMapping || [];
+      const updated = [];
+      mapping.forEach(m => {
+        if (!m.columnName || !(m.columnName in req.body)) return;
+        const kpi = data.kpis.find(k => k.id === m.kpiId);
+        if (!kpi) return;
+        kpi.value  = String(req.body[m.columnName] ?? '').slice(0, 50);
+        kpi.active = true;
+        updated.push(m.kpiId);
+      });
+      if (!updated.length) return res.status(400).json({ error: 'Keine passenden Spalten im Mapping gefunden.' });
+      writeData(data);
+      scheduleContentPush(data);
+      pushUpdate();
+      return res.json({ ok: true, updated });
+    }
+
+    // Format 1: Einzelner KPI
     const kpi = data.kpis.find(k => k.id === Number(id));
     if (!kpi) return res.status(404).json({ error: 'KPI nicht gefunden.' });
     if (label !== undefined) kpi.label = String(label).slice(0, 100);
