@@ -130,9 +130,6 @@
     </div>
   </header>
 
-  <!-- KPI Row -->
-  <section class="kpi-row" id="kpiRow"></section>
-
   <!-- Smartsheet Rows Table -->
   <section id="ssRowsSection" style="display:none;padding:0 24px;margin-bottom:8px;overflow-x:auto">
     <table id="ssRowsTable" style="width:100%;border-collapse:collapse;font-size:clamp(0.75rem,1.3vw,1rem)">
@@ -567,7 +564,6 @@
         const pingEl = document.getElementById('pingStatus');
         pingEl.style.display = _lastWidgets.showPing ? 'flex' : 'none';
         if (_lastWidgets.showPing) updatePing();
-        renderKPIs(data.kpis || []);
         renderSmartsheetRows(data.smartsheetRows || [], data.smartsheet?.columnOrder);
         messages = (data.messages || []).filter(m => m.active && m.text);
         renderNextMessage();
