@@ -15,7 +15,7 @@
     },
     "animals": false,
     "embedUrl": "",
-    "infoboard": true,
+    "infoboard": false,
     "showPing": false,
     "calendar": true,
     "embedSlots": [
@@ -126,17 +126,17 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-16T19:00:04.200Z"
+    "lastPingAt": "2026-03-16T19:10:01.864Z"
   },
   "lassoMessages": [],
   "slides": [
     {
       "id": 1,
-      "name": "Slide 1",
-      "type": "calendar",
+      "name": "tv1",
+      "type": "dashboard",
       "url": "",
       "content": "",
-      "active": false
+      "active": true
     },
     {
       "id": 2,
