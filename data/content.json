@@ -125,7 +125,7 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-16T03:40:02.086Z"
+    "lastPingAt": "2026-03-16T03:45:30.941Z"
   },
   "lassoMessages": [],
   "slides": [
@@ -171,11 +171,11 @@
     }
   ],
   "smartsheet": {
-    "enabled": false,
-    "sheetId": "",
+    "enabled": true,
+    "sheetId": "2541863013666692",
     "kpiMapping": [],
     "messageMapping": {
-      "enabled": false,
+      "enabled": true,
       "columnName": "",
       "activeColumnName": ""
     }
