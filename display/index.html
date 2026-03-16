@@ -133,6 +133,14 @@
   <!-- KPI Row -->
   <section class="kpi-row" id="kpiRow"></section>
 
+  <!-- Smartsheet Rows Table -->
+  <section id="ssRowsSection" style="display:none;padding:0 24px;margin-bottom:8px;overflow-x:auto">
+    <table id="ssRowsTable" style="width:100%;border-collapse:collapse;font-size:clamp(0.75rem,1.3vw,1rem)">
+      <thead id="ssRowsHead" style="color:var(--muted);font-size:0.8em;text-transform:uppercase;letter-spacing:0.5px"></thead>
+      <tbody id="ssRowsBody"></tbody>
+    </table>
+  </section>
+
   <!-- Info Boards -->
   <div class="info-boards-wrap">
     <section class="info-board">
@@ -298,6 +306,24 @@
         }
         row.appendChild(card);
       });
+    }
+
+    // ── Smartsheet Rows Table ─────────────────────────────────────────────
+    function renderSmartsheetRows(rows) {
+      const section = document.getElementById('ssRowsSection');
+      const head    = document.getElementById('ssRowsHead');
+      const body    = document.getElementById('ssRowsBody');
+      const active  = (rows || []).filter(r => r.active);
+      if (!active.length) { section.style.display = 'none'; return; }
+      const cols = [...new Set(active.flatMap(r => Object.keys(r.fields || {})))];
+      head.innerHTML = '<tr>' + cols.map(c =>
+        `<th style="padding:4px 12px 4px 0;font-weight:600;text-align:left">${c}</th>`).join('') + '</tr>';
+      body.innerHTML = active.map(r =>
+        '<tr>' + cols.map(c =>
+          `<td style="padding:5px 12px 5px 0;border-top:1px solid var(--border)">${r.fields[c] || '–'}</td>`
+        ).join('') + '</tr>'
+      ).join('');
+      section.style.display = '';
     }
 
     // ── Messages ──────────────────────────────────────────────────────────
@@ -527,6 +553,7 @@
         pingEl.style.display = _lastWidgets.showPing ? 'flex' : 'none';
         if (_lastWidgets.showPing) updatePing();
         renderKPIs(data.kpis || []);
+        renderSmartsheetRows(data.smartsheetRows || []);
         messages = (data.messages || []).filter(m => m.active && m.text);
         renderNextMessage();
         applyStaticLabels();

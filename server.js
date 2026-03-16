@@ -761,68 +761,78 @@ app.post('/webhook/kpi', requireWebhookAuth, (req, res) => {
 
 // ── Webhook: Smartsheet via Zapier ───────────────────────────────────────────
 // Zapier sendet bei Smartsheet-Änderung: { "SpaltenName": "Wert", ... }
-// Mapping wird aus smartsheet.kpiMapping + smartsheet.messageMapping gelesen.
+// Jede eingehende Zeile wird in smartsheetRows[] gespeichert (max 50).
+// Bestehende Zeile (gleicher "Client"-Wert) wird aktualisiert, sonst neu angelegt.
 app.post('/webhook/smartsheet', requireWebhookAuth, (req, res) => {
   try {
     const data = readData();
-    if (!data.kpis) data.kpis = [];
-    const ss = data.smartsheet || {};
-    const updatedKpis = [];
+    if (!data.smartsheetRows) data.smartsheetRows = [];
 
-    // KPI-Mapping: Spaltennamen → KPI-Slots
-    const kpiMapping = ss.kpiMapping || [];
-    kpiMapping.forEach(m => {
-      if (!m.columnName || !(m.columnName in req.body)) return;
-      const kpi = data.kpis.find(k => k.id === m.kpiId);
-      if (!kpi) return;
-      kpi.value  = String(req.body[m.columnName] ?? '').slice(0, 50);
-      kpi.active = true;
-      if (!kpi.label) kpi.label = m.columnName; // Label aus Spaltenname setzen falls leer
-      updatedKpis.push(m.kpiId);
+    // Alle Felder aus dem Body übernehmen (interne _-Keys ausschliessen)
+    const fields = {};
+    Object.entries(req.body).forEach(([k, v]) => {
+      if (!k.startsWith('_')) fields[k] = String(v ?? '').slice(0, 200);
     });
-
-    // Nachrichten-Mapping: einzelne Zeile via Zapier
-    const mm = ss.messageMapping;
-    if (mm?.enabled && mm.columnName && mm.columnName in req.body) {
-      const text = String(req.body[mm.columnName] ?? '').slice(0, 500);
-      const isActive = mm.activeColumnName && mm.activeColumnName in req.body
-        ? Boolean(req.body[mm.activeColumnName])
-        : true;
-      if (text) {
-        if (!data.messages) data.messages = [];
-        const existing = data.messages.find(m => m.source === 'smartsheet-zapier');
-        if (existing) {
-          existing.text   = text;
-          existing.active = isActive;
-        } else {
-          const maxId = data.messages.reduce((n, m) => Math.max(n, m.id || 0), 0);
-          data.messages.push({ id: maxId + 1, text, priority: 'normal', active: isActive, source: 'smartsheet-zapier' });
-        }
-      }
+    if (!Object.keys(fields).length) {
+      return res.status(400).json({ error: 'Leerer Body.' });
     }
 
-    // Fallback: kpi_1 … kpi_6 direkt im Body (kein Mapping nötig)
-    for (let i = 1; i <= 6; i++) {
-      const key = `kpi_${i}`;
-      if (!(key in req.body)) continue;
-      if (updatedKpis.includes(i)) continue; // bereits per Mapping gesetzt
-      const kpi = data.kpis.find(k => k.id === i);
-      if (!kpi) continue;
-      kpi.value  = String(req.body[key] ?? '').slice(0, 50);
-      kpi.active = true;
-      if (!kpi.label) kpi.label = req.body[`kpi_${i}_label`] || key;
-      updatedKpis.push(i);
-    }
+    // Identifier: erster Feldwert als eindeutiger Key (z.B. "Client" oder "Project Name")
+    const identifierKey = Object.keys(fields)[0];
+    const identifierVal = fields[identifierKey];
 
-    if (!updatedKpis.length && !(mm?.enabled && mm.columnName in req.body)) {
-      return res.status(400).json({ error: 'Keine passenden Spalten im Mapping gefunden. Nutze kpi_1…kpi_6 als Keys oder kpiMapping im Admin konfigurieren.' });
+    const existing = data.smartsheetRows.find(r => r.fields[identifierKey] === identifierVal);
+    if (existing) {
+      existing.fields     = fields;
+      existing.updatedAt  = new Date().toISOString();
+    } else {
+      const maxId = data.smartsheetRows.reduce((n, r) => Math.max(n, r.id || 0), 0);
+      data.smartsheetRows.push({
+        id:        maxId + 1,
+        active:    true,
+        fields,
+        updatedAt: new Date().toISOString()
+      });
     }
+    // Max 50 Zeilen (älteste entfernen)
+    if (data.smartsheetRows.length > 50) data.smartsheetRows = data.smartsheetRows.slice(-50);
 
+    const ss = data.smartsheet || {};
     data.smartsheet = { ...ss, lastSyncAt: new Date().toISOString(), lastSyncStatus: 'ok' };
     writeData(data);
     scheduleContentPush(data);
     pushUpdate();
-    res.json({ ok: true, updatedKpis });
+    res.json({ ok: true, rows: data.smartsheetRows.length });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
+// ── API: Smartsheet-Zeile toggle (active/inactive) ────────────────────────────
+app.post('/api/smartsheet-rows/:id/toggle', requireAuth, (req, res) => {
+  try {
+    const data = readData();
+    const row = (data.smartsheetRows || []).find(r => r.id === parseInt(req.params.id, 10));
+    if (!row) return res.status(404).json({ error: 'Zeile nicht gefunden.' });
+    row.active = !row.active;
+    writeData(data);
+    scheduleContentPush(data);
+    pushUpdate();
+    res.json({ ok: true, id: row.id, active: row.active });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
+// ── API: Smartsheet-Zeile löschen ─────────────────────────────────────────────
+app.delete('/api/smartsheet-rows/:id', requireAuth, (req, res) => {
+  try {
+    const data = readData();
+    data.smartsheetRows = (data.smartsheetRows || []).filter(r => r.id !== parseInt(req.params.id, 10));
+    writeData(data);
+    scheduleContentPush(data);
+    pushUpdate();
+    res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Serverfehler.' });
   }

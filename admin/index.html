@@ -654,6 +654,17 @@
                     onclick="syncSmartsheetNow()">🔄 Jetzt synchronisieren</button>
             <span id="ssStatus" style="font-size:0.85rem;color:var(--muted)">–</span>
           </div>
+
+          <!-- Zapier Zeilen -->
+          <div style="margin-top:20px">
+            <div style="font-weight:600;font-size:0.9rem;margin-bottom:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px">
+              Eingehende Zeilen (Zapier)
+            </div>
+            <div id="ssRowsList" style="display:flex;flex-direction:column;gap:6px"></div>
+            <div id="ssRowsEmpty" style="color:var(--muted);font-size:0.88rem;font-style:italic;padding:8px 0">
+              Noch keine Zeilen empfangen. Zapier Test run ausführen.
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -909,6 +920,7 @@
       renderLassoMessages();
       renderDisplayPreviews(state);
       initSmartsheet();
+      renderSmartsheetRows(state.smartsheetRows || []);
     }
 
     // ── Aktive Ausgänge ──
@@ -1676,6 +1688,65 @@
         if (!state.smartsheet.messageMapping) state.smartsheet.messageMapping = {};
         state.smartsheet.messageMapping.enabled = e.target.checked;
         document.getElementById('ssMsgConfig').style.display = e.target.checked ? 'block' : 'none';
+      });
+    }
+
+    function renderSmartsheetRows(rows) {
+      const list  = document.getElementById('ssRowsList');
+      const empty = document.getElementById('ssRowsEmpty');
+      if (!list) return;
+      list.innerHTML = '';
+      if (!rows || !rows.length) {
+        if (empty) empty.style.display = '';
+        return;
+      }
+      if (empty) empty.style.display = 'none';
+      const cols = [...new Set(rows.flatMap(r => Object.keys(r.fields || {})))];
+      rows.forEach(row => {
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:8px 12px;opacity:' + (row.active ? '1' : '0.45');
+        // Toggle
+        const tog = document.createElement('label');
+        tog.className = 'toggle';
+        tog.style.flexShrink = '0';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = !!row.active;
+        cb.addEventListener('change', async () => {
+          await fetch(`/api/smartsheet-rows/${row.id}/toggle`, { method: 'POST', headers: { Authorization: 'Bearer ' + Auth.getToken() } });
+          row.active = !row.active;
+          div.style.opacity = row.active ? '1' : '0.45';
+        });
+        const sl = document.createElement('span'); sl.className = 'toggle-slider';
+        tog.appendChild(cb); tog.appendChild(sl);
+        div.appendChild(tog);
+        // Felder
+        const fields = document.createElement('div');
+        fields.style.cssText = 'flex:1;display:flex;gap:16px;flex-wrap:wrap;font-size:0.85rem';
+        cols.forEach(col => {
+          const span = document.createElement('span');
+          span.innerHTML = `<span style="color:var(--muted);font-size:0.78rem">${col}:</span> ${row.fields[col] || '–'}`;
+          fields.appendChild(span);
+        });
+        div.appendChild(fields);
+        // Datum
+        if (row.updatedAt) {
+          const ts = document.createElement('span');
+          ts.style.cssText = 'font-size:0.72rem;color:var(--muted);white-space:nowrap;flex-shrink:0';
+          const d = new Date(row.updatedAt);
+          ts.textContent = d.toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+          div.appendChild(ts);
+        }
+        // Löschen
+        const del = document.createElement('button');
+        del.className = 'icon-btn'; del.title = 'Löschen'; del.textContent = '🗑';
+        del.addEventListener('click', async () => {
+          await fetch(`/api/smartsheet-rows/${row.id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + Auth.getToken() } });
+          div.remove();
+          if (!list.children.length && empty) empty.style.display = '';
+        });
+        div.appendChild(del);
+        list.appendChild(div);
       });
     }
 
