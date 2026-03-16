@@ -171,12 +171,33 @@
     }
   ],
   "smartsheet": {
-    "enabled": true,
+    "enabled": false,
     "sheetId": "",
     "kpiMapping": [
-      { "kpiId": 1, "columnName": "Client" },
-      { "kpiId": 2, "columnName": "Location" },
-      { "kpiId": 3, "columnName": "Go Live Date" }
+      {
+        "kpiId": 1,
+        "columnName": ""
+      },
+      {
+        "kpiId": 2,
+        "columnName": ""
+      },
+      {
+        "kpiId": 3,
+        "columnName": ""
+      },
+      {
+        "kpiId": 4,
+        "columnName": ""
+      },
+      {
+        "kpiId": 5,
+        "columnName": ""
+      },
+      {
+        "kpiId": 6,
+        "columnName": ""
+      }
     ],
     "messageMapping": {
       "enabled": true,
