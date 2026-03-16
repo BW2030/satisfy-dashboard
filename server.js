@@ -777,6 +777,7 @@ app.post('/webhook/smartsheet', requireWebhookAuth, (req, res) => {
       if (!kpi) return;
       kpi.value  = String(req.body[m.columnName] ?? '').slice(0, 50);
       kpi.active = true;
+      if (!kpi.label) kpi.label = m.columnName; // Label aus Spaltenname setzen falls leer
       updatedKpis.push(m.kpiId);
     });
 
@@ -800,8 +801,21 @@ app.post('/webhook/smartsheet', requireWebhookAuth, (req, res) => {
       }
     }
 
+    // Fallback: kpi_1 … kpi_6 direkt im Body (kein Mapping nötig)
+    for (let i = 1; i <= 6; i++) {
+      const key = `kpi_${i}`;
+      if (!(key in req.body)) continue;
+      if (updatedKpis.includes(i)) continue; // bereits per Mapping gesetzt
+      const kpi = data.kpis.find(k => k.id === i);
+      if (!kpi) continue;
+      kpi.value  = String(req.body[key] ?? '').slice(0, 50);
+      kpi.active = true;
+      if (!kpi.label) kpi.label = req.body[`kpi_${i}_label`] || key;
+      updatedKpis.push(i);
+    }
+
     if (!updatedKpis.length && !(mm?.enabled && mm.columnName in req.body)) {
-      return res.status(400).json({ error: 'Keine passenden Spalten im Mapping gefunden.' });
+      return res.status(400).json({ error: 'Keine passenden Spalten im Mapping gefunden. Nutze kpi_1…kpi_6 als Keys oder kpiMapping im Admin konfigurieren.' });
     }
 
     data.smartsheet = { ...ss, lastSyncAt: new Date().toISOString(), lastSyncStatus: 'ok' };
