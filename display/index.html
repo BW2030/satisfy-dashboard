@@ -321,11 +321,23 @@
       const cols    = [...ordered, ...rest];
       head.innerHTML = '<tr>' + cols.map(c =>
         `<th style="padding:4px 12px 4px 0;font-weight:600;text-align:left">${c}</th>`).join('') + '</tr>';
-      body.innerHTML = active.map(r =>
-        '<tr>' + cols.map(c =>
+      const STATUS_COLORS = {
+        'red':    'rgba(239,68,68,0.15)',
+        'green':  'rgba(34,197,94,0.15)',
+        'yellow': 'rgba(234,179,8,0.15)',
+        'orange': 'rgba(249,115,22,0.15)',
+        'blue':   'rgba(59,130,246,0.15)',
+      };
+      body.innerHTML = active.map(r => {
+        const statusVal = (r.fields['Status'] || r.fields['status'] || '').toLowerCase().trim();
+        const bg = STATUS_COLORS[statusVal] || '';
+        const indicator = STATUS_COLORS[statusVal]
+          ? `<td style="padding:5px 4px 5px 0;border-top:1px solid var(--border);width:6px"><div style="width:6px;height:100%;min-height:20px;border-radius:3px;background:${STATUS_COLORS[statusVal].replace('0.15','0.9')}"></div></td>`
+          : '<td style="width:6px;border-top:1px solid var(--border)"></td>';
+        return '<tr style="background:' + bg + '">' + indicator + cols.map(c =>
           `<td style="padding:5px 12px 5px 0;border-top:1px solid var(--border)">${r.fields[c] || '–'}</td>`
-        ).join('') + '</tr>'
-      ).join('');
+        ).join('') + '</tr>';
+      }).join('');
       section.style.display = '';
     }
 
