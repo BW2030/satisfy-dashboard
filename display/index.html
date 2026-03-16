@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -200,18 +200,12 @@
 
     function updateClock() {
       const now = new Date();
-      const lang = I18n.getLang();
-      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
-      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
-
       document.getElementById('clock').textContent =
         now.getHours().toString().padStart(2,'0') + ':' +
         now.getMinutes().toString().padStart(2,'0') + ':' +
         now.getSeconds().toString().padStart(2,'0');
-
-      document.getElementById('date').innerHTML = lang === 'en'
-        ? days[now.getDay()] + '<br>' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
-        : days[now.getDay()] + '<br>' + now.getDate() + '. ' + months[now.getMonth()] + ' ' + now.getFullYear();
+      document.getElementById('date').innerHTML =
+        DAYS_EN[now.getDay()] + '<br>' + MONTHS_EN[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
     }
 
     setInterval(updateClock, 1000);
@@ -274,8 +268,7 @@
       if (!current) { el.style.display = 'none'; return; }
 
       const code = current.weather_code;
-      const lang = I18n.getLang();
-      const desc = lang === 'en' ? WEATHER_DESC_EN[code] : WEATHER_DESC_DE[code];
+      const desc = WEATHER_DESC_EN[code];
 
       document.getElementById('weatherIcon').textContent  = WEATHER_ICONS[code] || '🌡️';
       document.getElementById('weatherTemp').textContent  = Math.round(current.temperature_2m) + '°F';
@@ -455,7 +448,7 @@
         if (!events.length) {
           const em = document.createElement('span');
           em.className = 'cal-empty';
-          em.textContent = I18n.getLang() === 'en' ? 'No meetings today' : 'Keine Termine heute';
+          em.textContent = 'No meetings today';
           container.appendChild(em);
           return;
         }
@@ -466,7 +459,7 @@
           const timeEl = document.createElement('div');
           timeEl.className = 'cal-event-time';
           if (ev.isAllDay) {
-            timeEl.textContent = lang === 'en' ? 'All day' : 'Ganztägig';
+            timeEl.textContent = 'All day';
           } else {
             const s = new Date(ev.start);
             const e = new Date(ev.end);
@@ -489,8 +482,7 @@
 
     // ── Static Labels ─────────────────────────────────────────────────────
     function applyStaticLabels() {
-      document.getElementById('reconnectOverlay').textContent =
-        I18n.getLang() === 'en' ? '⚠ Connection lost – Reconnecting...' : '⚠ Verbindung unterbrochen – Verbinde neu...';
+      document.getElementById('reconnectOverlay').textContent = '⚠ Connection lost – Reconnecting...';
     }
 
     // ── Preview Mode (disables rotation when used as iframe in admin) ────
@@ -585,7 +577,7 @@
         const txt  = document.getElementById('pingTime');
         if (!data.time) {
           dot.style.background = '#f59e0b';
-          txt.textContent = 'Kein Ping erhalten';
+          txt.textContent = 'No ping received';
           return;
         }
         const t = new Date(data.time);

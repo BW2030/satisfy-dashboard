@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>satis&amp;fy – Kalender</title>
+  <title>satis&amp;fy – Calendar</title>
   <link rel="icon" type="image/svg+xml" href="https://satis-fy.com/favicon.svg">
   <link rel="stylesheet" href="../shared/style.css">
   <style>
@@ -114,14 +114,14 @@
 
   <div class="cal-page-header">
     <div>
-      <div class="cal-page-title">📅 Kalender</div>
+      <div class="cal-page-title">📅 Calendar</div>
     </div>
     <div class="cal-page-date" id="calPageDate">–</div>
     <div class="cal-page-clock" id="calPageClock">00:00</div>
   </div>
 
   <div class="cal-page-body" id="calPageBody">
-    <div class="cal-no-events">Lade Termine…</div>
+    <div class="cal-no-events">Loading events…</div>
   </div>
 
   <script src="../shared/i18n.js"></script>
@@ -133,15 +133,11 @@
     const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     function updateClock() {
-      const now  = new Date();
-      const lang = I18n.getLang();
-      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
-      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
+      const now = new Date();
       document.getElementById('calPageClock').textContent =
         now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-      document.getElementById('calPageDate').textContent = lang === 'en'
-        ? days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate()
-        : days[now.getDay()] + ', ' + now.getDate() + '. ' + months[now.getMonth()];
+      document.getElementById('calPageDate').textContent =
+        DAYS_EN[now.getDay()] + ', ' + MONTHS_EN[now.getMonth()] + ' ' + now.getDate();
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -160,14 +156,9 @@
       const d = new Date(dateStr);
       const today = new Date();
       const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-      const lang = I18n.getLang();
-      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
-      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
-      if (d.toDateString() === today.toDateString())    return lang === 'en' ? 'Today' : 'Heute';
-      if (d.toDateString() === tomorrow.toDateString()) return lang === 'en' ? 'Tomorrow' : 'Morgen';
-      return lang === 'en'
-        ? days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate()
-        : days[d.getDay()] + ', ' + d.getDate() + '. ' + months[d.getMonth()];
+      if (d.toDateString() === today.toDateString())    return 'Today';
+      if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+      return DAYS_EN[d.getDay()] + ', ' + MONTHS_EN[d.getMonth()] + ' ' + d.getDate();
     }
 
     function buildSequence(data) {
@@ -220,7 +211,7 @@
         if (!events.length) {
           const el = document.createElement('div');
           el.className = 'cal-no-events';
-          el.textContent = I18n.getLang() === 'en' ? 'No upcoming meetings' : 'Keine bevorstehenden Termine';
+          el.textContent = 'No upcoming meetings';
           body.appendChild(el);
           return;
         }
@@ -249,7 +240,7 @@
 
             const timeEl = document.createElement('div');
             timeEl.className = 'cal-row-time';
-            timeEl.textContent = ev.isAllDay ? (I18n.getLang() === 'en' ? 'All day' : 'Ganztägig') : fmt(ev.start) + ' – ' + fmt(ev.end);
+            timeEl.textContent = ev.isAllDay ? 'All day' : fmt(ev.start) + ' – ' + fmt(ev.end);
 
             const titleEl = document.createElement('div');
             titleEl.className = 'cal-row-title';
@@ -273,9 +264,7 @@
         const err = document.createElement('div');
         err.className = 'cal-error';
         err.innerHTML = '<div style="font-size:2rem">📅</div><div>' +
-          (I18n.getLang() === 'en'
-            ? 'Teams Calendar not configured.<br>Set it up in the Admin panel.'
-            : 'Teams Kalender nicht eingerichtet.<br>Im Admin-Bereich konfigurieren.') +
+          'Teams Calendar not configured.<br>Set it up in the Admin panel.' +
           '</div>';
         body.appendChild(err);
       }

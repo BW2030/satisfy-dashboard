@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -110,7 +110,7 @@
       <div class="cal-page-clock" id="calPageClock">00:00</div>
     </div>
     <div class="cal-page-body" id="calPageBody">
-      <div class="cal-no-events">Lade Termine…</div>
+      <div class="cal-no-events">Loading events…</div>
     </div>
   </div>
 
@@ -160,26 +160,21 @@
     const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     function updateClock() {
-      const now  = new Date();
-      const lang = I18n.getLang();
-      const days   = lang === 'en' ? DAYS_EN   : DAYS_DE;
-      const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
+      const now = new Date();
       const clockEl = document.getElementById('clock');
       const dateEl  = document.getElementById('date');
+      const calClock = document.getElementById('calPageClock');
+      const calDate  = document.getElementById('calPageDate');
       if (clockEl) clockEl.textContent =
         now.getHours().toString().padStart(2,'0') + ':' +
         now.getMinutes().toString().padStart(2,'0') + ':' +
         now.getSeconds().toString().padStart(2,'0');
-      const calClock = document.getElementById('calPageClock');
-      const calDate  = document.getElementById('calPageDate');
       if (calClock) calClock.textContent =
         now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-      if (dateEl) dateEl.innerHTML = lang === 'en'
-        ? days[now.getDay()] + '<br>' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
-        : days[now.getDay()] + '<br>' + now.getDate() + '. ' + months[now.getMonth()] + ' ' + now.getFullYear();
-      if (calDate) calDate.textContent = lang === 'en'
-        ? days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate()
-        : days[now.getDay()] + ', ' + now.getDate() + '. ' + months[now.getMonth()];
+      if (dateEl) dateEl.innerHTML =
+        DAYS_EN[now.getDay()] + '<br>' + MONTHS_EN[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+      if (calDate) calDate.textContent =
+        DAYS_EN[now.getDay()] + ', ' + MONTHS_EN[now.getMonth()] + ' ' + now.getDate();
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -209,8 +204,7 @@
       const current = await fetchWeather(w.lat, w.lon);
       if (!current) { el.style.display = 'none'; return; }
       const code = current.weather_code;
-      const lang = I18n.getLang();
-      const desc = lang === 'en' ? WEATHER_DESC_EN[code] : WEATHER_DESC_DE[code];
+      const desc = WEATHER_DESC_EN[code];
       document.getElementById('weatherIcon').textContent = WEATHER_ICONS[code] || '🌡️';
       document.getElementById('weatherTemp').textContent = Math.round(current.temperature_2m) + '°F';
       document.getElementById('weatherDesc').textContent = desc || '';
@@ -286,13 +280,13 @@
         container.innerHTML = '';
         if (!events.length) {
           const em = document.createElement('span'); em.className = 'cal-empty';
-          em.textContent = I18n.getLang() === 'en' ? 'No meetings today' : 'Keine Termine heute';
+          em.textContent = 'No meetings today';
           container.appendChild(em); return;
         }
         events.forEach(ev => {
           const card = document.createElement('div'); card.className = 'cal-event';
           const timeEl = document.createElement('div'); timeEl.className = 'cal-event-time';
-          if (ev.isAllDay) { timeEl.textContent = I18n.getLang() === 'en' ? 'All day' : 'Ganztägig'; }
+          if (ev.isAllDay) { timeEl.textContent = 'All day'; }
           else {
             const s = new Date(ev.start); const e = new Date(ev.end);
             timeEl.textContent = s.getHours().toString().padStart(2,'0') + ':' + s.getMinutes().toString().padStart(2,'0') + ' – ' + e.getHours().toString().padStart(2,'0') + ':' + e.getMinutes().toString().padStart(2,'0');
@@ -309,12 +303,9 @@
     function dayLabel(dateStr) {
       const d = new Date(dateStr); const today = new Date(); const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      const lang = I18n.getLang();
-      const days = lang === 'en' ? DAYS_EN : DAYS_DE; const months = lang === 'en' ? MONTHS_EN : MONTHS_DE;
-      if (d.toDateString() === today.toDateString())    return lang === 'en' ? 'Today'    : 'Heute';
-      if (d.toDateString() === tomorrow.toDateString()) return lang === 'en' ? 'Tomorrow' : 'Morgen';
-      return lang === 'en' ? days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate()
-                           : days[d.getDay()] + ', ' + d.getDate() + '. ' + months[d.getMonth()];
+      if (d.toDateString() === today.toDateString())    return 'Today';
+      if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+      return DAYS_EN[d.getDay()] + ', ' + MONTHS_EN[d.getMonth()] + ' ' + d.getDate();
     }
 
     async function loadCalendarPage() {
@@ -327,7 +318,7 @@
         body.innerHTML = '';
         if (!events.length) {
           const el = document.createElement('div'); el.className = 'cal-no-events';
-          el.textContent = I18n.getLang() === 'en' ? 'No upcoming meetings' : 'Keine bevorstehenden Termine';
+          el.textContent = 'No upcoming meetings';
           body.appendChild(el); return;
         }
         const groups = new Map();
@@ -341,7 +332,7 @@
             const row = document.createElement('div');
             row.className = 'cal-row' + (key === todayStr ? ' today' : '') + (ev.isAllDay ? ' allday' : '');
             const timeEl = document.createElement('div'); timeEl.className = 'cal-row-time';
-            timeEl.textContent = ev.isAllDay ? (I18n.getLang() === 'en' ? 'All day' : 'Ganztägig') : fmtTime(new Date(ev.start)) + ' – ' + fmtTime(new Date(ev.end));
+            timeEl.textContent = ev.isAllDay ? 'All day' : fmtTime(new Date(ev.start)) + ' – ' + fmtTime(new Date(ev.end));
             const titleEl = document.createElement('div'); titleEl.className = 'cal-row-title'; titleEl.textContent = ev.subject;
             row.appendChild(timeEl); row.appendChild(titleEl);
             if (ev.organizer) { const o = document.createElement('div'); o.className = 'cal-row-org'; o.textContent = ev.organizer; row.appendChild(o); }
@@ -350,7 +341,7 @@
           body.appendChild(group);
         }
       } catch {
-        if (body) { body.innerHTML = ''; const err = document.createElement('div'); err.className = 'cal-no-events'; err.textContent = I18n.getLang() === 'en' ? 'Calendar not available' : 'Kalender nicht verfügbar'; body.appendChild(err); }
+        if (body) { body.innerHTML = ''; const err = document.createElement('div'); err.className = 'cal-no-events'; err.textContent = 'Calendar not available'; body.appendChild(err); }
       }
     }
 
@@ -378,14 +369,14 @@
         if (!slide) {
           document.getElementById('slideText').style.display = 'flex';
           document.getElementById('slideTextTitle').textContent = 'Slide ' + SLIDE_ID;
-          document.getElementById('slideTextBody').textContent  = 'Nicht konfiguriert';
+          document.getElementById('slideTextBody').textContent  = 'Not configured';
           return;
         }
 
         // Tab-Titel + Slide-Titel im Kalender setzen
         document.title = 'satis\u0026fy – ' + (slide.name || 'Slide ' + SLIDE_ID);
         const calTitleEl = document.getElementById('slideCalTitle');
-        if (calTitleEl) calTitleEl.textContent = slide.name || 'Kalender';
+        if (calTitleEl) calTitleEl.textContent = slide.name || 'Calendar';
 
         // Alle Typ-Container zurücksetzen bevor der richtige eingeblendet wird
         ['slideDashboard', 'slideCalendar', 'slideEmbed', 'slideText'].forEach(id => {
@@ -423,7 +414,7 @@
             } else {
               document.getElementById('slideText').style.display = 'flex';
               document.getElementById('slideTextTitle').textContent = slide.name || 'Embed';
-              document.getElementById('slideTextBody').textContent  = 'Keine URL konfiguriert';
+              document.getElementById('slideTextBody').textContent  = 'No URL configured';
             }
             break;
 
@@ -446,7 +437,7 @@
     let reconnectTimer = null;
 
     function showReconnectOverlay() {
-      overlay.textContent = I18n.getLang() === 'en' ? '⚠ Connection lost – Reconnecting...' : '⚠ Verbindung unterbrochen – Verbinde neu...';
+      overlay.textContent = '⚠ Connection lost – Reconnecting...';
       overlay.classList.add('visible');
       if (!reconnectTimer) reconnectTimer = setInterval(() => { DataStore.resetServerCheck(); loadSlide(); }, 10000);
     }

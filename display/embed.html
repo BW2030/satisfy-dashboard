@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +27,7 @@
 
   <div id="noUrl" style="display:none">
     <div class="icon">🔗</div>
-    <div id="noUrlMsg">Keine URL konfiguriert.<br>Im Admin unter <strong>Widgets → Embed-URL</strong> eintragen.</div>
+    <div id="noUrlMsg">No URL configured.<br>Enter it in the Admin panel under <strong>Widgets → Embed-URL</strong>.</div>
   </div>
   <iframe id="embedFrame" src="" allowfullscreen allow="autoplay; fullscreen" style="display:none"></iframe>
 
@@ -93,7 +93,7 @@
           noUrl.style.display = 'none';
         } else {
           frame.style.display = 'none';
-          noUrlMsg.innerHTML = 'Keine URL konfiguriert.<br>Im Admin unter <strong>Widgets → Embed ' + SLOT + '</strong> eintragen.';
+          noUrlMsg.innerHTML = 'No URL configured.<br>Enter it in the Admin panel under <strong>Widgets → Embed ' + SLOT + '</strong>.';
           noUrl.style.display = 'flex';
         }
       } catch {
