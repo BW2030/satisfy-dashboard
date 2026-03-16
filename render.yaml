@@ -7,4 +7,6 @@ services:
     envVars:
       - key: PORT
         value: 3000
-    autoDeploy: false
+    autoDeploy: true
+    ignoredPaths:
+      - data/content.json
