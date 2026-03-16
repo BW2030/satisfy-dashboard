@@ -319,7 +319,7 @@
       const ordered = columnOrder?.length ? columnOrder.filter(c => allCols.includes(c)) : [];
       const rest    = allCols.filter(c => !ordered.includes(c));
       const cols    = [...ordered, ...rest];
-      head.innerHTML = '<tr>' + cols.map(c =>
+      head.innerHTML = '<tr><th style="width:6px;padding:0"></th>' + cols.map(c =>
         `<th style="padding:4px 12px 4px 0;font-weight:600;text-align:left">${c}</th>`).join('') + '</tr>';
       const STATUS_COLORS = {
         'red':    'rgba(239,68,68,0.15)',
