@@ -172,10 +172,10 @@
   ],
   "smartsheet": {
     "enabled": true,
-    "sheetId": "2541863013666692",
+    "sheetId": "",
     "kpiMapping": [],
     "messageMapping": {
-      "enabled": true,
+      "enabled": false,
       "columnName": "",
       "activeColumnName": ""
     }
