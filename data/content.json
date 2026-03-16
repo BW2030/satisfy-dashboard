@@ -171,11 +171,36 @@
     }
   ],
   "smartsheet": {
-    "enabled": true,
+    "enabled": false,
     "sheetId": "",
-    "kpiMapping": [],
+    "kpiMapping": [
+      {
+        "kpiId": 1,
+        "columnName": ""
+      },
+      {
+        "kpiId": 2,
+        "columnName": ""
+      },
+      {
+        "kpiId": 3,
+        "columnName": ""
+      },
+      {
+        "kpiId": 4,
+        "columnName": ""
+      },
+      {
+        "kpiId": 5,
+        "columnName": ""
+      },
+      {
+        "kpiId": 6,
+        "columnName": ""
+      }
+    ],
     "messageMapping": {
-      "enabled": false,
+      "enabled": true,
       "columnName": "",
       "activeColumnName": ""
     }
