@@ -200,7 +200,7 @@
       }
     ],
     "messageMapping": {
-      "enabled": false,
+      "enabled": true,
       "columnName": "",
       "activeColumnName": ""
     },
