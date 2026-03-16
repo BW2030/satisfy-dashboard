@@ -367,6 +367,18 @@
         </label>
       </div>
 
+      <!-- Hochkant-Modus -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label">🔄 Hochkant-Modus</div>
+          <div class="widget-desc">Display um 90° drehen – für Monitore im Hochformat (Portrait)</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetRotate90">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <!-- Embed URLs -->
       <div class="widget-row" style="align-items:flex-start;flex-direction:column;gap:0;border-bottom:none;padding-bottom:0">
         <div class="widget-info" style="margin-bottom:12px">
@@ -847,7 +859,6 @@
       document.getElementById('accountSubtitle').textContent =
         I18n.t('account.subtitle', { user: user.name });
       // Re-render dynamic content with new language
-      renderKPIs();
       renderMessages();
       // Re-translate priority select in add-row
       const sel = document.getElementById('newMsgPriority');
@@ -973,47 +984,6 @@
       el.placeholder = I18n.t(placeholderKey);
       if (style) el.style.cssText = style;
       return el;
-    }
-
-    // ── KPIs ──
-    function renderKPIs() {
-      const grid = document.getElementById('kpiGrid');
-      grid.innerHTML = '';
-      (state.kpis || []).forEach(kpi => {
-        const card = document.createElement('div');
-        card.className = 'kpi-edit-card';
-
-        const labelInp = makeInput('text', kpi.label, 'kpi.placeholder.label', null);
-        const valueInp = makeInput('text', kpi.value, 'kpi.placeholder.value', null);
-        const unitInp  = makeInput('text', kpi.unit,  'kpi.placeholder.unit',  'width:60px');
-
-        [['label', labelInp], ['value', valueInp], ['unit', unitInp]].forEach(([field, inp]) => {
-          inp.addEventListener('input', () => {
-            const item = state.kpis.find(k => k.id === kpi.id);
-            if (item) item[field] = inp.value;
-          });
-        });
-
-        const toggleLabel = document.createElement('label');
-        toggleLabel.className = 'toggle';
-        const toggleInp = document.createElement('input');
-        toggleInp.type = 'checkbox';
-        toggleInp.checked = !!kpi.active;
-        toggleInp.addEventListener('change', () => {
-          const item = state.kpis.find(k => k.id === kpi.id);
-          if (item) item.active = toggleInp.checked;
-        });
-        const toggleSpan = document.createElement('span');
-        toggleSpan.className = 'toggle-slider';
-        toggleLabel.appendChild(toggleInp);
-        toggleLabel.appendChild(toggleSpan);
-
-        card.appendChild(labelInp);
-        card.appendChild(valueInp);
-        card.appendChild(unitInp);
-        card.appendChild(toggleLabel);
-        grid.appendChild(card);
-      });
     }
 
     // ── Messages ──
@@ -1145,6 +1115,7 @@
       state.widgets.infoboard  = document.getElementById('widgetInfoboard').checked;
       state.widgets.showPing   = document.getElementById('widgetShowPing').checked;
       state.widgets.lassoBoard = document.getElementById('widgetLassoBoard').checked;
+      state.widgets.rotate90   = document.getElementById('widgetRotate90').checked;
       if (!state.widgets.weather) state.widgets.weather = {};
       state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
       state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
@@ -1370,6 +1341,7 @@
       document.getElementById('widgetInfoboard').checked = w.infoboard !== false;
       document.getElementById('widgetShowPing').checked  = !!(w.showPing);
       document.getElementById('widgetLassoBoard').checked = !!(w.lassoBoard);
+      document.getElementById('widgetRotate90').checked   = !!(w.rotate90);
 
       document.getElementById('embedUrl').value = w.embedUrl || '';
       document.getElementById('embedSlotActive1').checked = w.embedSlot1Active !== false;
@@ -1404,6 +1376,13 @@
         wWeather.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; if (!state.widgets.weather) state.widgets.weather = {}; state.widgets.weather.enabled = wWeather.checked; });
         wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
         document.getElementById('widgetLassoBoard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.lassoBoard = e.target.checked; });
+        document.getElementById('widgetRotate90').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.rotate90 = e.target.checked; });
+        document.getElementById('ssMsgEnabled').addEventListener('change', e => {
+          if (!state.smartsheet) state.smartsheet = {};
+          if (!state.smartsheet.messageMapping) state.smartsheet.messageMapping = {};
+          state.smartsheet.messageMapping.enabled = e.target.checked;
+          document.getElementById('ssMsgConfig').style.display = e.target.checked ? 'block' : 'none';
+        });
         const embedUrlEl = document.getElementById('embedUrl');
         const syncEmbedUrl = () => { if (!state.widgets) state.widgets = {}; state.widgets.embedUrl = embedUrlEl.value.trim(); };
         embedUrlEl.addEventListener('input',  syncEmbedUrl);
@@ -1597,16 +1576,15 @@
       es.onmessage = (e) => {
         if (e.data.startsWith('connected')) {
           const bootId = e.data.split(':')[1] || null;
-          if (_adminBootId && bootId && _adminBootId !== bootId) {
-            // Boot-ID hat sich geändert → Server neu gestartet (Deploy)
-            // Session ist server-seitig abgelaufen, aber wir loggen NICHT sofort aus.
-            // Der nächste authentifizierte Request (Speichern/Löschen) gibt 401 → dann logout.
-            _adminBootId = bootId;
-            DataStore.resetServerCheck();
-            loadData();
+          if (_adminBootId !== null && bootId && _adminBootId !== bootId) {
+            // Boot-ID hat sich geändert → Server neu gestartet → Session ungültig
+            // Sofort ausloggen damit keine Änderungen verloren gehen durch späteren 401
+            Auth.logout();
             return;
           }
+          const isFirstConnect = _adminBootId === null;
           _adminBootId = bootId;
+          if (isFirstConnect) return; // Daten wurden bereits bei Init geladen
           DataStore.resetServerCheck();
           loadData();
         }
@@ -1657,13 +1635,6 @@
       document.getElementById('ssMsgActiveColumn').value = mm.activeColumnName || '';
       document.getElementById('ssMsgConfig').style.display = mm.enabled ? 'block' : 'none';
 
-      if (!_listenersAdded) return; // Listener werden nur einmal registriert
-      document.getElementById('ssMsgEnabled').addEventListener('change', e => {
-        if (!state.smartsheet) state.smartsheet = {};
-        if (!state.smartsheet.messageMapping) state.smartsheet.messageMapping = {};
-        state.smartsheet.messageMapping.enabled = e.target.checked;
-        document.getElementById('ssMsgConfig').style.display = e.target.checked ? 'block' : 'none';
-      });
     }
 
     function renderColumnOrder(rows) {

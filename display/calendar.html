@@ -211,6 +211,7 @@
             }
           }
         }
+        document.body.classList.toggle('display-rotate', !!cfg.widgets?.rotate90);
         const res = await fetch('/api/calendar');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const events = await res.json();

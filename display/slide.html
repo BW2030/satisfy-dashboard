@@ -359,6 +359,7 @@
       try {
         const data = await fetch('/api/content').then(r => r.json());
 
+        document.body.classList.toggle('display-rotate', !!data.widgets?.rotate90);
         // Rotation einrichten
         const active = data.pages?.active;
         if (!PREVIEW_MODE && (active === 'auto' || active === 'web')) {

@@ -61,6 +61,7 @@
         const noUrl   = document.getElementById('noUrl');
         const noUrlMsg = document.getElementById('noUrlMsg');
 
+        document.body.classList.toggle('display-rotate', !!data.widgets?.rotate90);
         const active = data.pages?.active;
         if (!PREVIEW_MODE) {
           if (active && active !== 'embed' && active !== 'auto' && active !== 'web') {

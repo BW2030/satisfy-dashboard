@@ -27,6 +27,10 @@ const sessions = new Map(); // token → { name, expiresAt }
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 function createSession(name) {
+  // Alle bestehenden Sessions dieses Users ungültig machen – nur 1 gleichzeitig erlaubt
+  for (const [token, session] of sessions) {
+    if (session.name.toLowerCase() === name.toLowerCase()) sessions.delete(token);
+  }
   const token = crypto.randomBytes(32).toString('hex');
   sessions.set(token, { name, expiresAt: Date.now() + SESSION_DURATION_MS });
   return token;
@@ -118,7 +122,7 @@ const DEFAULT_DATA = {
   users: [],
   widgets: {
     clock: true, infoboard: true, showPing: false, animals: false, calendar: true,
-    lassoBoard: false,
+    lassoBoard: false, rotate90: false,
     weather: { enabled: false, city: 'New York', lat: 40.7128, lon: -74.006 },
     embedUrl: '',
     embedSlots: [

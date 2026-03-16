@@ -664,6 +664,22 @@ body {
 /* Kiosk: Cursor ausblenden */
 .kiosk-hide-cursor, .kiosk-hide-cursor * { cursor: none !important; }
 
+/* ── Hochkant-Modus: Display um 90° drehen ─────────────────────────────────
+   Für TV-Sticks an Hochformat-Monitoren (Portrait).
+   Landscape-Inhalt wird 90° im Uhrzeigersinn gedreht und füllt den Screen. */
+body.display-rotate {
+  position: fixed !important;
+  overflow: hidden !important;
+  width: 100vh !important;
+  height: 100vw !important;
+  top: 50% !important;
+  left: 50% !important;
+  margin-top: calc(-100vw / 2) !important;
+  margin-left: calc(-100vh / 2) !important;
+  transform: rotate(90deg) !important;
+  transform-origin: center center !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .kpi-row { grid-template-columns: 1fr 1fr; }

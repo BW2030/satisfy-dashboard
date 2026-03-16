@@ -286,25 +286,6 @@
     // Refresh weather every 10 min
     setInterval(() => { if (_lastWidgets) updateWeather(_lastWidgets); }, 10 * 60 * 1000);
 
-    // ── KPI Rendering ─────────────────────────────────────────────────────
-    function renderKPIs(kpis) {
-      const active = (kpis || []).filter(k => k.active && k.label);
-      const row    = document.getElementById('kpiRow');
-      row.innerHTML = '';
-      active.slice(0, 6).forEach(kpi => {
-        const card = document.createElement('div');
-        card.className = 'kpi-card';
-        const lbl = document.createElement('div'); lbl.className = 'kpi-label'; lbl.textContent = kpi.label;
-        const val = document.createElement('div'); val.className = 'kpi-value'; val.textContent = kpi.value;
-        card.appendChild(lbl); card.appendChild(val);
-        if (kpi.unit) {
-          const unit = document.createElement('div'); unit.className = 'kpi-unit'; unit.textContent = kpi.unit;
-          card.appendChild(unit);
-        }
-        row.appendChild(card);
-      });
-    }
-
     // ── Smartsheet Rows Table ─────────────────────────────────────────────
     function renderSmartsheetRows(rows, columnOrder) {
       const section = document.getElementById('ssRowsSection');
@@ -558,6 +539,7 @@
         }
         _lastWidgets = data.widgets || {};
 
+        document.body.classList.toggle('display-rotate', !!_lastWidgets.rotate90);
         applyClockVisibility(_lastWidgets);
         document.querySelector('.calendar-section').style.display = _lastWidgets.calendar !== false ? '' : 'none';
         document.querySelector('.info-board').style.display = _lastWidgets.infoboard !== false ? '' : 'none';
@@ -578,14 +560,12 @@
         const lassoActive = _lastWidgets.lassoBoard && lassoMessages.length > 0;
         const allOff = _lastWidgets.clock === false
           && !_lastWidgets.weather?.enabled
-          && !(data.kpis || []).some(k => k.active && k.label)
           && (!messages.length || _lastWidgets.infoboard === false)
           && _lastWidgets.calendar === false
           && !lassoActive;
         const logoScreen = document.getElementById('logoScreen');
         logoScreen.style.display = allOff ? 'flex' : 'none';
         document.getElementById('displayHeader').style.visibility = allOff ? 'hidden' : '';
-        document.getElementById('kpiRow').style.visibility        = allOff ? 'hidden' : '';
         document.querySelector('.info-board').style.visibility    = allOff ? 'hidden' : '';
         document.getElementById('lassoBoardSection').style.visibility = allOff ? 'hidden' : '';
         document.querySelector('.calendar-section').style.visibility = allOff ? 'hidden' : '';
