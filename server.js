@@ -190,8 +190,8 @@ async function pullFromGitHub() {
   }
 }
 
-// pushToGitHub mit SHA-Konflikt-Retry (max 2 Versuche)
-async function pushToGitHub(data, _retries = 2) {
+// pushToGitHub mit SHA-Konflikt-Retry (max 3 Versuche) + Netzwerkfehler-Retry
+async function pushToGitHub(data, _retries = 3) {
   if (!GH_TOKEN) return;
   try {
     const getRes = await fetch(GH_API, {
@@ -214,8 +214,13 @@ async function pushToGitHub(data, _retries = 2) {
       return pushToGitHub(data, _retries - 1);
     }
     if (!putRes.ok) console.error('GitHub push HTTP', putRes.status);
-  } catch (e) {
-    console.error('GitHub push Fehler:', e.message);
+  } catch (err) {
+    if (_retries > 0) {
+      const delay = (4 - _retries) * 2000; // 2s, 4s, 6s
+      await new Promise(r => setTimeout(r, delay));
+      return pushToGitHub(data, _retries - 1);
+    }
+    console.error('pushToGitHub endgültig fehlgeschlagen:', err.message);
   }
 }
 
@@ -297,8 +302,8 @@ app.get('/ping', (req, res) => {
     if (!data.meta) data.meta = {};
     data.meta.lastPingAt = lastExternalPing;
     writeData(data);
-    // GitHub-Push max alle 10 Minuten (damit Timestamp Restarts überlebt)
-    if (Date.now() - _lastPingGitHubPush > 10 * 60 * 1000) {
+    // GitHub-Push max alle 5 Minuten (damit Timestamp Restarts überlebt)
+    if (Date.now() - _lastPingGitHubPush > 5 * 60 * 1000) {
       _lastPingGitHubPush = Date.now();
       pushToGitHub(data);
     }
@@ -368,7 +373,10 @@ app.get('/api/content', (req, res) => {
     const data = readData();
     // Strip PIN hashes and Teams client secret before sending to client
     const teams = data.teams ? { ...data.teams, clientSecret: undefined } : undefined;
-    const safe = { ...data, users: data.users.map(u => ({ name: u.name })), teams };
+    // Mask Smartsheet accessToken
+    const ss = data.smartsheet;
+    const smartsheet = ss ? { ...ss, accessToken: ss.accessToken ? '****' : '' } : undefined;
+    const safe = { ...data, users: data.users.map(u => ({ name: u.name })), teams, smartsheet };
     res.json(safe);
   } catch {
     res.status(500).json({ error: 'Fehler beim Lesen der Daten.' });
@@ -384,10 +392,15 @@ app.post('/api/content', requireAuth, validateContent, (req, res) => {
     const teamsExisting = existing.teams || {};
     const teams = { ...teamsExisting, ...teamsNew,
       clientSecret: teamsNew.clientSecret || teamsExisting.clientSecret };
+    // Merge smartsheet config – preserve existing accessToken if "****" sent
+    const ssNew = req.body.smartsheet || {};
+    const ssExisting = existing.smartsheet || {};
+    const smartsheet = { ...ssExisting, ...ssNew,
+      accessToken: (ssNew.accessToken && ssNew.accessToken !== '****') ? ssNew.accessToken : ssExisting.accessToken };
     // Preserve PIN hashes – never overwrite from client
     // calendar.icsUrl aus Body übernehmen, aber alte Struktur beibehalten
     const calendarNew = req.body.calendar || {};
-    const saved = { ...req.body, users: existing.users, calendar: calendarNew, teams };
+    const saved = { ...req.body, users: existing.users, calendar: calendarNew, teams, smartsheet };
     writeData(saved);
     scheduleContentPush(saved);
     pushUpdate();
@@ -778,6 +791,119 @@ app.delete('/api/lasso-message/:id', requireAuth, (req, res) => {
   }
 });
 
+// ── Smartsheet API Integration ────────────────────────────────────────────────
+
+async function syncSmartsheet(data) {
+  const ss = data.smartsheet;
+  if (!ss) return;
+  const { accessToken, sheetId, kpiMapping, messageMapping } = ss;
+  try {
+    const res = await fetch(`https://api.smartsheet.com/2.0/sheets/${sheetId}`, {
+      headers: { Authorization: `Bearer ${accessToken}`, 'User-Agent': 'satisfy-dashboard' }
+    });
+    if (!res.ok) {
+      data.smartsheet.lastSyncStatus = 'error';
+      writeData(data);
+      console.error('Smartsheet sync HTTP', res.status);
+      return;
+    }
+    const sheet = await res.json();
+
+    // Spalten-Index: { "Spaltenname": columnId }
+    const colIndex = {};
+    (sheet.columns || []).forEach(c => { colIndex[c.title] = c.id; });
+
+    // KPI-Mapping: letzte Zeile des Sheets
+    const rows = sheet.rows || [];
+    const lastRow = rows[rows.length - 1];
+    if (lastRow && Array.isArray(kpiMapping)) {
+      kpiMapping.forEach(m => {
+        if (!m.columnName) return;
+        const cell = lastRow.cells.find(c => c.columnId === colIndex[m.columnName]);
+        const kpi = (data.kpis || []).find(k => k.id === m.kpiId);
+        if (kpi && cell) kpi.value = String(cell.displayValue ?? cell.value ?? '');
+      });
+    }
+
+    // Nachrichten-Mapping: alle Zeilen
+    if (messageMapping?.enabled && messageMapping.columnName) {
+      const newMessages = [];
+      rows.forEach((row, i) => {
+        const textCell = row.cells.find(c => c.columnId === colIndex[messageMapping.columnName]);
+        if (!textCell?.value) return;
+        const activeCell = messageMapping.activeColumnName
+          ? row.cells.find(c => c.columnId === colIndex[messageMapping.activeColumnName])
+          : null;
+        newMessages.push({
+          id: i + 1,
+          text: String(textCell.value),
+          priority: 'normal',
+          active: activeCell ? Boolean(activeCell.value) : true
+        });
+      });
+      data.messages = newMessages.slice(0, 50);
+    }
+
+    data.smartsheet.lastSyncAt = new Date().toISOString();
+    data.smartsheet.lastSyncStatus = 'ok';
+    data.smartsheet.sheetTitle = sheet.name || '';
+    writeData(data);
+    pushUpdate();
+    scheduleContentPush(data);
+    console.log('✓ Smartsheet sync erfolgreich:', sheet.name);
+  } catch (e) {
+    console.error('Smartsheet sync Fehler:', e.message);
+    try {
+      data.smartsheet.lastSyncStatus = 'error';
+      writeData(data);
+    } catch {}
+  }
+}
+
+function startSmartsheetPoller() {
+  async function poll() {
+    const data = readData();
+    if (!data.smartsheet?.enabled || !data.smartsheet?.accessToken) return;
+    await syncSmartsheet(data);
+  }
+  poll();
+  setInterval(poll, 5 * 60 * 1000);
+}
+
+// ── API: Smartsheet Status + manueller Sync ──────────────────────────────────
+app.get('/api/smartsheet/status', requireAuth, (req, res) => {
+  try {
+    const data = readData();
+    const ss = data.smartsheet || {};
+    res.json({
+      enabled: !!ss.enabled,
+      lastSyncAt: ss.lastSyncAt || null,
+      lastSyncStatus: ss.lastSyncStatus || 'never',
+      sheetTitle: ss.sheetTitle || ''
+    });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
+app.post('/api/smartsheet/sync', requireAuth, async (req, res) => {
+  try {
+    const data = readData();
+    if (!data.smartsheet?.enabled || !data.smartsheet?.accessToken) {
+      return res.status(400).json({ error: 'Smartsheet nicht aktiviert oder kein Token.' });
+    }
+    await syncSmartsheet(data);
+    const updated = readData();
+    res.json({
+      ok: true,
+      lastSyncAt: updated.smartsheet?.lastSyncAt || null,
+      lastSyncStatus: updated.smartsheet?.lastSyncStatus || 'error'
+    });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler.' });
+  }
+});
+
 // ── Initialize default user if missing ───────────────────────────────────────
 async function ensureDefaultUser() {
   try {
@@ -798,6 +924,7 @@ async function ensureDefaultUser() {
 app.listen(PORT, '0.0.0.0', async () => {
   await pullFromGitHub(); // neueste Daten laden
   await ensureDefaultUser();
+  startSmartsheetPoller();
   // Letzten Ping-Zeitstempel aus gespeicherten Daten wiederherstellen
   try { lastExternalPing = readData().meta?.lastPingAt || null; } catch {}
   const { networkInterfaces } = require('os');

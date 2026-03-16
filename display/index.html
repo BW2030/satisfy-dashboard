@@ -624,6 +624,25 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') { DataStore.resetServerCheck(); loadContent(); }
     });
+
+    // ── Kiosk-Modus ──────────────────────────────────────────────────────
+    (function initKiosk() {
+      if (new URLSearchParams(location.search).has('preview')) return;
+      function enterFullscreen() {
+        if (!document.fullscreenElement)
+          document.documentElement.requestFullscreen().catch(() => {});
+      }
+      document.addEventListener('click', enterFullscreen, { once: true });
+      document.addEventListener('keydown', enterFullscreen, { once: true });
+      let cursorTimer;
+      function resetCursor() {
+        document.body.classList.remove('kiosk-hide-cursor');
+        clearTimeout(cursorTimer);
+        cursorTimer = setTimeout(() => document.body.classList.add('kiosk-hide-cursor'), 3000);
+      }
+      document.addEventListener('mousemove', resetCursor);
+      resetCursor();
+    })();
   </script>
 </body>
 </html>

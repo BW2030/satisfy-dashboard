@@ -567,6 +567,74 @@
       </div><!-- /admin-section-body -->
     </section>
 
+    <!-- Smartsheet -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">
+        <div class="section-icon"></div>
+        📊 Smartsheet
+      </h2>
+      <div class="admin-section-body">
+        <div class="widget-row">
+          <div class="widget-info">
+            <div class="widget-label">Smartsheet Integration</div>
+            <div class="widget-desc">KPIs und Nachrichten aus einem Smartsheet laden (Polling alle 5 Min)</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="ssEnabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div id="ssConfig" style="display:none;margin-top:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:700px;margin-bottom:16px">
+            <div class="form-group" style="margin:0">
+              <label>Access Token</label>
+              <input type="password" id="ssAccessToken" placeholder="•••••••• (leer lassen = unverändert)">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Sheet ID</label>
+              <input type="text" id="ssSheetId" placeholder="z.B. 1234567890123456">
+            </div>
+          </div>
+
+          <div style="font-weight:600;font-size:0.9rem;margin-bottom:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px">KPI-Mapping</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:700px;margin-bottom:16px" id="ssKpiMappingGrid">
+            <!-- dynamisch befüllt -->
+          </div>
+
+          <div class="widget-row" style="border-bottom:none;padding-bottom:0;margin-bottom:12px">
+            <div class="widget-info">
+              <div class="widget-label">Nachrichten aus Sheet</div>
+              <div class="widget-desc">Alle Zeilen der Text-Spalte werden als Nachrichten importiert</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="ssMsgEnabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div id="ssMsgConfig" style="display:none;margin-bottom:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:700px">
+              <div class="form-group" style="margin:0">
+                <label>Text-Spalte</label>
+                <input type="text" id="ssMsgColumn" placeholder="z.B. Nachricht">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label>Aktiv-Spalte <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+                <input type="text" id="ssMsgActiveColumn" placeholder="z.B. Aktiv">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+            <button class="btn btn-secondary" style="width:auto;padding:8px 18px;font-size:0.85rem"
+                    onclick="syncSmartsheetNow()">🔄 Jetzt synchronisieren</button>
+            <span id="ssStatus" style="font-size:0.85rem;color:var(--muted)">–</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Slides -->
     <section class="admin-section">
       <h2 class="admin-section-title">
@@ -817,6 +885,7 @@
       loadWebhookInfo();
       renderLassoMessages();
       renderDisplayPreviews(state);
+      initSmartsheet();
     }
 
     // ── Aktive Ausgänge ──
@@ -1102,6 +1171,23 @@
         s.content = typeEl.value === 'text'  ? val : '';
         s.active  = activeEl.checked;
       });
+
+      // Smartsheet aus DOM auslesen
+      if (!state.smartsheet) state.smartsheet = {};
+      state.smartsheet.enabled  = document.getElementById('ssEnabled').checked;
+      state.smartsheet.sheetId  = document.getElementById('ssSheetId').value.trim();
+      const tokenVal = document.getElementById('ssAccessToken').value.trim();
+      if (tokenVal) state.smartsheet.accessToken = tokenVal; // leer = unverändert
+      const kpiMapping = [];
+      for (let i = 1; i <= 6; i++) {
+        const el = document.getElementById('ssKpiCol' + i);
+        if (el) kpiMapping.push({ kpiId: i, columnName: el.value.trim() });
+      }
+      state.smartsheet.kpiMapping = kpiMapping;
+      if (!state.smartsheet.messageMapping) state.smartsheet.messageMapping = {};
+      state.smartsheet.messageMapping.enabled = document.getElementById('ssMsgEnabled').checked;
+      state.smartsheet.messageMapping.columnName       = (document.getElementById('ssMsgColumn')?.value || '').trim();
+      state.smartsheet.messageMapping.activeColumnName = (document.getElementById('ssMsgActiveColumn')?.value || '').trim();
 
       if (!state.pages) state.pages = {};
       const activeRadio = document.querySelector('input[name="activePage"]:checked');
@@ -1519,6 +1605,115 @@
       es.onerror = () => { es.close(); setTimeout(connectAdminSSE, 10000); };
     }
     connectAdminSSE();
+
+    // ── Smartsheet ──
+    function initSmartsheet() {
+      const ss = state.smartsheet || {};
+      document.getElementById('ssEnabled').checked = !!ss.enabled;
+      document.getElementById('ssSheetId').value   = ss.sheetId || '';
+      document.getElementById('ssAccessToken').value = ''; // Token nie vorausfüllen
+      toggleSsConfig(!!ss.enabled);
+
+      // KPI-Mapping Grid rendern
+      const grid = document.getElementById('ssKpiMappingGrid');
+      grid.innerHTML = '';
+      const mapping = ss.kpiMapping || [];
+      for (let i = 1; i <= 6; i++) {
+        const m   = mapping.find(x => x.kpiId === i) || { kpiId: i, columnName: '' };
+        const kpi = (state.kpis || []).find(k => k.id === i);
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:8px;padding:8px 12px';
+        const lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:0.8rem;color:var(--muted);min-width:46px;flex-shrink:0';
+        lbl.textContent = 'KPI ' + i + (kpi?.label ? ' (' + kpi.label + ')' : '');
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.id   = 'ssKpiCol' + i;
+        inp.value = m.columnName || '';
+        inp.placeholder = 'Spaltenname';
+        inp.style.cssText = 'flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.85rem;padding:6px 10px;outline:none';
+        row.appendChild(lbl);
+        row.appendChild(inp);
+        grid.appendChild(row);
+      }
+
+      // Nachrichten-Mapping
+      const mm = ss.messageMapping || {};
+      document.getElementById('ssMsgEnabled').checked    = !!mm.enabled;
+      document.getElementById('ssMsgColumn').value       = mm.columnName       || '';
+      document.getElementById('ssMsgActiveColumn').value = mm.activeColumnName || '';
+      document.getElementById('ssMsgConfig').style.display = mm.enabled ? 'block' : 'none';
+
+      if (!_listenersAdded) return; // Listener werden nur einmal registriert
+      document.getElementById('ssEnabled').addEventListener('change', e => {
+        if (!state.smartsheet) state.smartsheet = {};
+        state.smartsheet.enabled = e.target.checked;
+        toggleSsConfig(e.target.checked);
+      });
+      document.getElementById('ssMsgEnabled').addEventListener('change', e => {
+        if (!state.smartsheet) state.smartsheet = {};
+        if (!state.smartsheet.messageMapping) state.smartsheet.messageMapping = {};
+        state.smartsheet.messageMapping.enabled = e.target.checked;
+        document.getElementById('ssMsgConfig').style.display = e.target.checked ? 'block' : 'none';
+      });
+    }
+
+    function toggleSsConfig(show) {
+      document.getElementById('ssConfig').style.display = show ? 'block' : 'none';
+      if (show) loadSmartsheetStatus();
+    }
+
+    async function loadSmartsheetStatus() {
+      const status = document.getElementById('ssStatus');
+      try {
+        const res = await fetch('/api/smartsheet/status', { headers: { Authorization: 'Bearer ' + Auth.getToken() } });
+        if (!res.ok) return;
+        const s = await res.json();
+        if (s.lastSyncAt) {
+          const t = new Date(s.lastSyncAt);
+          const timeStr = t.toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+          const icon = s.lastSyncStatus === 'ok' ? '✅' : '❌';
+          status.textContent = 'Letzter Sync: ' + timeStr + ' – ' + icon + ' ' + s.lastSyncStatus;
+          status.style.color = s.lastSyncStatus === 'ok' ? 'var(--success)' : 'var(--danger)';
+        } else {
+          status.textContent = 'Noch kein Sync durchgeführt';
+          status.style.color = 'var(--muted)';
+        }
+      } catch {
+        status.textContent = 'Status nicht verfügbar';
+        status.style.color = 'var(--muted)';
+      }
+    }
+
+    async function syncSmartsheetNow() {
+      const status = document.getElementById('ssStatus');
+      status.textContent = '🔄 Synchronisiere…';
+      status.style.color = 'var(--muted)';
+      // Erst speichern (damit Token/SheetID aktuell sind)
+      syncFormToState();
+      await DataStore.save(state);
+      try {
+        const res = await fetch('/api/smartsheet/sync', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + Auth.getToken() }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          const t = data.lastSyncAt ? new Date(data.lastSyncAt) : new Date();
+          const timeStr = t.toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+          status.textContent = 'Letzter Sync: ' + timeStr + ' – ✅ ok';
+          status.style.color = 'var(--success)';
+          // Daten neu laden um KPIs/Nachrichten zu aktualisieren
+          await loadData();
+        } else {
+          status.textContent = '❌ ' + (data.error || 'Fehler');
+          status.style.color = 'var(--danger)';
+        }
+      } catch {
+        status.textContent = '❌ Netzwerkfehler';
+        status.style.color = 'var(--danger)';
+      }
+    }
 
     // ── Init ──
     loadData();

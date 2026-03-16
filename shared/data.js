@@ -31,6 +31,22 @@ const DataStore = (() => {
       ]
     },
     pages: { active: 'display', rotationSec: 30 },
+    smartsheet: {
+      enabled: false,
+      accessToken: '',
+      sheetId: '',
+      kpiMapping: [
+        { kpiId: 1, columnName: '' },
+        { kpiId: 2, columnName: '' },
+        { kpiId: 3, columnName: '' },
+        { kpiId: 4, columnName: '' },
+        { kpiId: 5, columnName: '' },
+        { kpiId: 6, columnName: '' }
+      ],
+      messageMapping: { enabled: false, columnName: '', activeColumnName: '' },
+      lastSyncAt: null,
+      lastSyncStatus: 'never'
+    },
     slides: [
       { id: 1, name: 'Termine',   type: 'calendar',  url: '', content: '', active: false },
       { id: 2, name: 'Dashboard', type: 'dashboard', url: '', content: '', active: false },

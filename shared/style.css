@@ -661,6 +661,9 @@ body {
 .badge-local { background: #22c55e22; color: var(--success); border: 1px solid #22c55e66; }
 .badge-static { background: #f59e0b22; color: var(--warning); border: 1px solid #f59e0b66; }
 
+/* Kiosk: Cursor ausblenden */
+.kiosk-hide-cursor, .kiosk-hide-cursor * { cursor: none !important; }
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .kpi-row { grid-template-columns: 1fr 1fr; }
