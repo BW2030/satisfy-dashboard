@@ -45,7 +45,8 @@
       }
     ],
     "embedSlot1Active": true,
-    "lassoBoard": false
+    "lassoBoard": false,
+    "rotate90": true
   },
   "kpis": [
     {
@@ -171,36 +172,11 @@
     }
   ],
   "smartsheet": {
-    "enabled": true,
+    "enabled": false,
     "sheetId": "",
-    "kpiMapping": [
-      {
-        "kpiId": 1,
-        "columnName": ""
-      },
-      {
-        "kpiId": 2,
-        "columnName": ""
-      },
-      {
-        "kpiId": 3,
-        "columnName": ""
-      },
-      {
-        "kpiId": 4,
-        "columnName": ""
-      },
-      {
-        "kpiId": 5,
-        "columnName": ""
-      },
-      {
-        "kpiId": 6,
-        "columnName": ""
-      }
-    ],
+    "kpiMapping": [],
     "messageMapping": {
-      "enabled": true,
+      "enabled": false,
       "columnName": "",
       "activeColumnName": ""
     },
