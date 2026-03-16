@@ -309,13 +309,16 @@
     }
 
     // ── Smartsheet Rows Table ─────────────────────────────────────────────
-    function renderSmartsheetRows(rows) {
+    function renderSmartsheetRows(rows, columnOrder) {
       const section = document.getElementById('ssRowsSection');
       const head    = document.getElementById('ssRowsHead');
       const body    = document.getElementById('ssRowsBody');
       const active  = (rows || []).filter(r => r.active);
       if (!active.length) { section.style.display = 'none'; return; }
-      const cols = [...new Set(active.flatMap(r => Object.keys(r.fields || {})))];
+      const allCols = [...new Set(active.flatMap(r => Object.keys(r.fields || {})))];
+      const ordered = columnOrder?.length ? columnOrder.filter(c => allCols.includes(c)) : [];
+      const rest    = allCols.filter(c => !ordered.includes(c));
+      const cols    = [...ordered, ...rest];
       head.innerHTML = '<tr>' + cols.map(c =>
         `<th style="padding:4px 12px 4px 0;font-weight:600;text-align:left">${c}</th>`).join('') + '</tr>';
       body.innerHTML = active.map(r =>
@@ -553,7 +556,7 @@
         pingEl.style.display = _lastWidgets.showPing ? 'flex' : 'none';
         if (_lastWidgets.showPing) updatePing();
         renderKPIs(data.kpis || []);
-        renderSmartsheetRows(data.smartsheetRows || []);
+        renderSmartsheetRows(data.smartsheetRows || [], data.smartsheet?.columnOrder);
         messages = (data.messages || []).filter(m => m.active && m.text);
         renderNextMessage();
         applyStaticLabels();
