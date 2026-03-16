@@ -897,7 +897,7 @@
       ];
       if (!state.pages) state.pages = { active: 'display', rotationSec: 30 };
       else if (!state.pages.active) state.pages.active = 'display';
-      applyLang();
+      try { applyLang(); } catch (e) { console.error('applyLang:', e); }
       initWidgets();
       initTeams();
       loadTeamsStatus();
