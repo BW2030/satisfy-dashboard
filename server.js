@@ -951,6 +951,19 @@ async function syncSmartsheet(data) {
       data.messages = newMessages.slice(0, 50);
     }
 
+    // Tabellen-Zeilen: alle Zeilen als smartsheetRows speichern
+    const colTitles = (sheet.columns || []).map(c => c.title);
+    const existingRows = data.smartsheetRows || [];
+    data.smartsheetRows = rows.map((row, i) => {
+      const fields = {};
+      (sheet.columns || []).forEach(c => {
+        const cell = row.cells.find(cl => cl.columnId === c.id);
+        fields[c.title] = String(cell?.displayValue ?? cell?.value ?? '');
+      });
+      const existing = existingRows.find(r => r.id === row.id);
+      return { id: row.id || i + 1, fields, active: existing ? existing.active : true };
+    });
+
     data.smartsheet.lastSyncAt = new Date().toISOString();
     data.smartsheet.lastSyncStatus = 'ok';
     data.smartsheet.sheetTitle = sheet.name || '';
