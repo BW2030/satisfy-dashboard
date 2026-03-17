@@ -44,7 +44,7 @@
         "active": false
       }
     ],
-    "embedSlot1Active": true,
+    "embedSlot1Active": false,
     "lassoBoard": false,
     "rotate90": false
   },
@@ -144,31 +144,31 @@
       "type": "calendar",
       "url": "",
       "content": "",
-      "active": false
+      "active": true
     },
     {
       "id": 3,
       "name": "Slide 3",
-      "type": "calendar",
+      "type": "text",
       "url": "",
-      "content": "",
-      "active": false
+      "content": "dfv",
+      "active": true
     },
     {
       "id": 4,
       "name": "Slide 4",
-      "type": "calendar",
-      "url": "",
+      "type": "embed",
+      "url": "https://www.lasso.io/",
       "content": "",
-      "active": false
+      "active": true
     },
     {
       "id": 5,
       "name": "Slide 5",
-      "type": "calendar",
+      "type": "dashboard",
       "url": "",
       "content": "",
-      "active": false
+      "active": true
     }
   ],
   "smartsheet": {
