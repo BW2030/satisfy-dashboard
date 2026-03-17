@@ -191,7 +191,7 @@
       "columnName": "",
       "activeColumnName": ""
     },
-    "lastSyncAt": "2026-03-16T04:21:27.812Z",
+    "lastSyncAt": "2026-03-17T19:26:19.122Z",
     "lastSyncStatus": "ok"
   },
   "smartsheetRows": [
@@ -207,6 +207,19 @@
         "PJ Number": "25-5506"
       },
       "updatedAt": "2026-03-16T04:21:27.812Z"
+    },
+    {
+      "id": 2,
+      "active": true,
+      "fields": {
+        " Client  ": "Eclipse",
+        "Location": "San Fran",
+        "Go Live Date ": "2026-05-08",
+        "Status": "Yellow",
+        "PJ Name": "The Moscone Centre",
+        "PJ Number": "26-0910"
+      },
+      "updatedAt": "2026-03-17T19:26:19.122Z"
     }
   ]
 }
