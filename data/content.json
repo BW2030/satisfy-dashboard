@@ -23,30 +23,36 @@
         "id": 2,
         "label": "Embed 2",
         "url": "",
-        "active": false
+        "active": false,
+        "rotate90": false
       },
       {
         "id": 3,
         "label": "Embed 3",
         "url": "",
-        "active": false
+        "active": false,
+        "rotate90": false
       },
       {
         "id": 4,
         "label": "Embed 4",
         "url": "",
-        "active": false
+        "active": false,
+        "rotate90": false
       },
       {
         "id": 5,
         "label": "Embed 5",
         "url": "",
-        "active": false
+        "active": false,
+        "rotate90": false
       }
     ],
     "embedSlot1Active": false,
     "lassoBoard": false,
-    "rotate90": false
+    "rotate90": false,
+    "calendarRotate90": false,
+    "embedSlot1Rotate90": false
   },
   "kpis": [
     {
@@ -126,7 +132,7 @@
     "userEmail": ""
   },
   "meta": {
-    "lastPingAt": "2026-03-17T17:40:02.404Z"
+    "lastPingAt": "2026-03-17T17:30:02.835Z"
   },
   "lassoMessages": [],
   "slides": [
@@ -136,7 +142,8 @@
       "type": "dashboard",
       "url": "",
       "content": "",
-      "active": true
+      "active": false,
+      "rotate90": false
     },
     {
       "id": 2,
@@ -144,7 +151,8 @@
       "type": "calendar",
       "url": "",
       "content": "",
-      "active": true
+      "active": true,
+      "rotate90": true
     },
     {
       "id": 3,
@@ -152,7 +160,8 @@
       "type": "text",
       "url": "",
       "content": "dfv",
-      "active": true
+      "active": true,
+      "rotate90": false
     },
     {
       "id": 4,
@@ -160,7 +169,8 @@
       "type": "embed",
       "url": "https://www.lasso.io/",
       "content": "",
-      "active": true
+      "active": true,
+      "rotate90": false
     },
     {
       "id": 5,
@@ -168,7 +178,8 @@
       "type": "dashboard",
       "url": "",
       "content": "",
-      "active": true
+      "active": true,
+      "rotate90": false
     }
   ],
   "smartsheet": {
