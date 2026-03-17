@@ -8,5 +8,3 @@ services:
       - key: PORT
         value: 3000
     autoDeploy: true
-    ignoredPaths:
-      - data/content.json
