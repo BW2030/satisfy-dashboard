@@ -114,6 +114,39 @@
     }
     .embed-slot-input:focus { border-color: var(--accent); }
 
+    /* Slide Cards */
+    .slide-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .slide-card-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .slide-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 20px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .slide-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     /* Ping badge in nav */
     .ping-badge {
       display: flex;
@@ -692,86 +725,151 @@
         <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px">
           Aktive Slides werden automatisch in die Rotation eingebaut. Direktlink: <code style="background:var(--surface);padding:2px 6px;border-radius:4px">/tv/1</code> bis <code style="background:var(--surface);padding:2px 6px;border-radius:4px">/tv/5</code>
         </p>
-        <div style="display:flex;flex-direction:column;gap:8px" id="slidesList">
+        <div style="display:flex;flex-direction:column;gap:10px" id="slidesList">
 
           <!-- Slide 1 -->
-          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
-            <span class="embed-slot-num">1</span>
-            <input type="text" id="slideName1" placeholder="Name" class="embed-slot-input" style="max-width:160px">
-            <select id="slideType1" class="embed-slot-input" style="max-width:160px">
-              <option value="calendar">📅 Kalender</option>
-              <option value="dashboard">📺 Dashboard</option>
-              <option value="embed">🔗 Webseite</option>
-              <option value="text">📝 Text</option>
-            </select>
-            <input type="text" id="slideContent1" placeholder="URL oder Text" class="embed-slot-input">
-            <a id="slideLink1" href="/tv/1" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
-            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate1"><span class="toggle-slider"></span></label>
-            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive1"><span class="toggle-slider"></span></label>
+          <div class="slide-card">
+            <div class="slide-card-row">
+              <span class="embed-slot-num">1</span>
+              <input type="text" id="slideName1" placeholder="Name" class="embed-slot-input" style="max-width:180px">
+              <select id="slideType1" class="embed-slot-input" style="max-width:175px">
+                <option value="calendar">📅 Calendar</option>
+                <option value="dashboard">📺 Dashboard</option>
+                <option value="embed">🔗 Website</option>
+                <option value="text">📝 Text</option>
+              </select>
+              <a id="slideLink1" href="/tv/1" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none;margin-left:auto;flex-shrink:0">Öffnen ↗</a>
+            </div>
+            <div class="slide-card-row">
+              <div style="width:30px;flex-shrink:0"></div>
+              <input type="text" id="slideContent1" placeholder="URL oder Text" class="embed-slot-input">
+            </div>
+            <div class="slide-card-footer">
+              <label class="slide-toggle-label">
+                🔄 Hochkant
+                <label class="toggle"><input type="checkbox" id="slideRotate1"><span class="toggle-slider"></span></label>
+              </label>
+              <label class="slide-toggle-label">
+                Aktiv
+                <label class="toggle"><input type="checkbox" id="slideActive1"><span class="toggle-slider"></span></label>
+              </label>
+            </div>
           </div>
 
           <!-- Slide 2 -->
-          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
-            <span class="embed-slot-num">2</span>
-            <input type="text" id="slideName2" placeholder="Name" class="embed-slot-input" style="max-width:160px">
-            <select id="slideType2" class="embed-slot-input" style="max-width:160px">
-              <option value="calendar">📅 Kalender</option>
-              <option value="dashboard">📺 Dashboard</option>
-              <option value="embed">🔗 Webseite</option>
-              <option value="text">📝 Text</option>
-            </select>
-            <input type="text" id="slideContent2" placeholder="URL oder Text" class="embed-slot-input">
-            <a id="slideLink2" href="/tv/2" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
-            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate2"><span class="toggle-slider"></span></label>
-            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive2"><span class="toggle-slider"></span></label>
+          <div class="slide-card">
+            <div class="slide-card-row">
+              <span class="embed-slot-num">2</span>
+              <input type="text" id="slideName2" placeholder="Name" class="embed-slot-input" style="max-width:180px">
+              <select id="slideType2" class="embed-slot-input" style="max-width:175px">
+                <option value="calendar">📅 Calendar</option>
+                <option value="dashboard">📺 Dashboard</option>
+                <option value="embed">🔗 Website</option>
+                <option value="text">📝 Text</option>
+              </select>
+              <a id="slideLink2" href="/tv/2" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none;margin-left:auto;flex-shrink:0">Öffnen ↗</a>
+            </div>
+            <div class="slide-card-row">
+              <div style="width:30px;flex-shrink:0"></div>
+              <input type="text" id="slideContent2" placeholder="URL oder Text" class="embed-slot-input">
+            </div>
+            <div class="slide-card-footer">
+              <label class="slide-toggle-label">
+                🔄 Hochkant
+                <label class="toggle"><input type="checkbox" id="slideRotate2"><span class="toggle-slider"></span></label>
+              </label>
+              <label class="slide-toggle-label">
+                Aktiv
+                <label class="toggle"><input type="checkbox" id="slideActive2"><span class="toggle-slider"></span></label>
+              </label>
+            </div>
           </div>
 
           <!-- Slide 3 -->
-          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
-            <span class="embed-slot-num">3</span>
-            <input type="text" id="slideName3" placeholder="Name" class="embed-slot-input" style="max-width:160px">
-            <select id="slideType3" class="embed-slot-input" style="max-width:160px">
-              <option value="calendar">📅 Kalender</option>
-              <option value="dashboard">📺 Dashboard</option>
-              <option value="embed">🔗 Webseite</option>
-              <option value="text">📝 Text</option>
-            </select>
-            <input type="text" id="slideContent3" placeholder="URL oder Text" class="embed-slot-input">
-            <a id="slideLink3" href="/tv/3" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
-            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate3"><span class="toggle-slider"></span></label>
-            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive3"><span class="toggle-slider"></span></label>
+          <div class="slide-card">
+            <div class="slide-card-row">
+              <span class="embed-slot-num">3</span>
+              <input type="text" id="slideName3" placeholder="Name" class="embed-slot-input" style="max-width:180px">
+              <select id="slideType3" class="embed-slot-input" style="max-width:175px">
+                <option value="calendar">📅 Calendar</option>
+                <option value="dashboard">📺 Dashboard</option>
+                <option value="embed">🔗 Website</option>
+                <option value="text">📝 Text</option>
+              </select>
+              <a id="slideLink3" href="/tv/3" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none;margin-left:auto;flex-shrink:0">Öffnen ↗</a>
+            </div>
+            <div class="slide-card-row">
+              <div style="width:30px;flex-shrink:0"></div>
+              <input type="text" id="slideContent3" placeholder="URL oder Text" class="embed-slot-input">
+            </div>
+            <div class="slide-card-footer">
+              <label class="slide-toggle-label">
+                🔄 Hochkant
+                <label class="toggle"><input type="checkbox" id="slideRotate3"><span class="toggle-slider"></span></label>
+              </label>
+              <label class="slide-toggle-label">
+                Aktiv
+                <label class="toggle"><input type="checkbox" id="slideActive3"><span class="toggle-slider"></span></label>
+              </label>
+            </div>
           </div>
 
           <!-- Slide 4 -->
-          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
-            <span class="embed-slot-num">4</span>
-            <input type="text" id="slideName4" placeholder="Name" class="embed-slot-input" style="max-width:160px">
-            <select id="slideType4" class="embed-slot-input" style="max-width:160px">
-              <option value="calendar">📅 Kalender</option>
-              <option value="dashboard">📺 Dashboard</option>
-              <option value="embed">🔗 Webseite</option>
-              <option value="text">📝 Text</option>
-            </select>
-            <input type="text" id="slideContent4" placeholder="URL oder Text" class="embed-slot-input">
-            <a id="slideLink4" href="/tv/4" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
-            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate4"><span class="toggle-slider"></span></label>
-            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive4"><span class="toggle-slider"></span></label>
+          <div class="slide-card">
+            <div class="slide-card-row">
+              <span class="embed-slot-num">4</span>
+              <input type="text" id="slideName4" placeholder="Name" class="embed-slot-input" style="max-width:180px">
+              <select id="slideType4" class="embed-slot-input" style="max-width:175px">
+                <option value="calendar">📅 Calendar</option>
+                <option value="dashboard">📺 Dashboard</option>
+                <option value="embed">🔗 Website</option>
+                <option value="text">📝 Text</option>
+              </select>
+              <a id="slideLink4" href="/tv/4" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none;margin-left:auto;flex-shrink:0">Öffnen ↗</a>
+            </div>
+            <div class="slide-card-row">
+              <div style="width:30px;flex-shrink:0"></div>
+              <input type="text" id="slideContent4" placeholder="URL oder Text" class="embed-slot-input">
+            </div>
+            <div class="slide-card-footer">
+              <label class="slide-toggle-label">
+                🔄 Hochkant
+                <label class="toggle"><input type="checkbox" id="slideRotate4"><span class="toggle-slider"></span></label>
+              </label>
+              <label class="slide-toggle-label">
+                Aktiv
+                <label class="toggle"><input type="checkbox" id="slideActive4"><span class="toggle-slider"></span></label>
+              </label>
+            </div>
           </div>
 
           <!-- Slide 5 -->
-          <div class="embed-slot-row" style="flex-wrap:wrap;gap:8px;align-items:center">
-            <span class="embed-slot-num">5</span>
-            <input type="text" id="slideName5" placeholder="Name" class="embed-slot-input" style="max-width:160px">
-            <select id="slideType5" class="embed-slot-input" style="max-width:160px">
-              <option value="calendar">📅 Kalender</option>
-              <option value="dashboard">📺 Dashboard</option>
-              <option value="embed">🔗 Webseite</option>
-              <option value="text">📝 Text</option>
-            </select>
-            <input type="text" id="slideContent5" placeholder="URL oder Text" class="embed-slot-input">
-            <a id="slideLink5" href="/tv/5" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
-            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate5"><span class="toggle-slider"></span></label>
-            <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive5"><span class="toggle-slider"></span></label>
+          <div class="slide-card">
+            <div class="slide-card-row">
+              <span class="embed-slot-num">5</span>
+              <input type="text" id="slideName5" placeholder="Name" class="embed-slot-input" style="max-width:180px">
+              <select id="slideType5" class="embed-slot-input" style="max-width:175px">
+                <option value="calendar">📅 Calendar</option>
+                <option value="dashboard">📺 Dashboard</option>
+                <option value="embed">🔗 Website</option>
+                <option value="text">📝 Text</option>
+              </select>
+              <a id="slideLink5" href="/tv/5" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:0.8rem;text-decoration:none;margin-left:auto;flex-shrink:0">Öffnen ↗</a>
+            </div>
+            <div class="slide-card-row">
+              <div style="width:30px;flex-shrink:0"></div>
+              <input type="text" id="slideContent5" placeholder="URL oder Text" class="embed-slot-input">
+            </div>
+            <div class="slide-card-footer">
+              <label class="slide-toggle-label">
+                🔄 Hochkant
+                <label class="toggle"><input type="checkbox" id="slideRotate5"><span class="toggle-slider"></span></label>
+              </label>
+              <label class="slide-toggle-label">
+                Aktiv
+                <label class="toggle"><input type="checkbox" id="slideActive5"><span class="toggle-slider"></span></label>
+              </label>
+            </div>
           </div>
 
         </div>
