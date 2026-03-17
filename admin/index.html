@@ -367,14 +367,26 @@
         </label>
       </div>
 
-      <!-- Hochkant-Modus -->
+      <!-- Hochkant-Modus: Haupt-Display -->
       <div class="widget-row">
         <div class="widget-info">
-          <div class="widget-label">🔄 Hochkant-Modus</div>
-          <div class="widget-desc">Display um 90° drehen – für Monitore im Hochformat (Portrait)</div>
+          <div class="widget-label">🔄 Hochkant – Haupt-Display</div>
+          <div class="widget-desc">Haupt-Display um 90° drehen (Portrait-Monitor)</div>
         </div>
         <label class="toggle">
           <input type="checkbox" id="widgetRotate90">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Hochkant-Modus: Kalender -->
+      <div class="widget-row">
+        <div class="widget-info">
+          <div class="widget-label">🔄 Hochkant – Kalender</div>
+          <div class="widget-desc">Kalender-Seite um 90° drehen (Portrait-Monitor)</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="widgetCalendarRotate90">
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -383,7 +395,7 @@
       <div class="widget-row" style="align-items:flex-start;flex-direction:column;gap:0;border-bottom:none;padding-bottom:0">
         <div class="widget-info" style="margin-bottom:12px">
           <div class="widget-label">Embed-URLs</div>
-          <div class="widget-desc">Externe Seiten einbetten — alle aktiven URLs werden in der Auto-Rotation angezeigt</div>
+          <div class="widget-desc">Externe Seiten einbetten — alle aktiven URLs werden in der Auto-Rotation angezeigt · 🔄 = Hochkant (Portrait)</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;width:100%">
 
@@ -391,6 +403,7 @@
           <div class="embed-slot-row">
             <span class="embed-slot-num">1</span>
             <input type="text" id="embedUrl" placeholder="https://..." class="embed-slot-input">
+            <label class="toggle" title="Hochkant (Portrait)"><input type="checkbox" id="embedSlotRotate1"><span class="toggle-slider"></span></label>
             <label class="toggle"><input type="checkbox" id="embedSlotActive1" checked><span class="toggle-slider"></span></label>
           </div>
 
@@ -398,6 +411,7 @@
           <div class="embed-slot-row">
             <span class="embed-slot-num">2</span>
             <input type="text" id="embedSlotUrl2" placeholder="https://..." class="embed-slot-input">
+            <label class="toggle" title="Hochkant (Portrait)"><input type="checkbox" id="embedSlotRotate2"><span class="toggle-slider"></span></label>
             <label class="toggle"><input type="checkbox" id="embedSlotActive2"><span class="toggle-slider"></span></label>
           </div>
 
@@ -405,6 +419,7 @@
           <div class="embed-slot-row">
             <span class="embed-slot-num">3</span>
             <input type="text" id="embedSlotUrl3" placeholder="https://..." class="embed-slot-input">
+            <label class="toggle" title="Hochkant (Portrait)"><input type="checkbox" id="embedSlotRotate3"><span class="toggle-slider"></span></label>
             <label class="toggle"><input type="checkbox" id="embedSlotActive3"><span class="toggle-slider"></span></label>
           </div>
 
@@ -412,6 +427,7 @@
           <div class="embed-slot-row">
             <span class="embed-slot-num">4</span>
             <input type="text" id="embedSlotUrl4" placeholder="https://..." class="embed-slot-input">
+            <label class="toggle" title="Hochkant (Portrait)"><input type="checkbox" id="embedSlotRotate4"><span class="toggle-slider"></span></label>
             <label class="toggle"><input type="checkbox" id="embedSlotActive4"><span class="toggle-slider"></span></label>
           </div>
 
@@ -419,6 +435,7 @@
           <div class="embed-slot-row">
             <span class="embed-slot-num">5</span>
             <input type="text" id="embedSlotUrl5" placeholder="https://..." class="embed-slot-input">
+            <label class="toggle" title="Hochkant (Portrait)"><input type="checkbox" id="embedSlotRotate5"><span class="toggle-slider"></span></label>
             <label class="toggle"><input type="checkbox" id="embedSlotActive5"><span class="toggle-slider"></span></label>
           </div>
 
@@ -689,6 +706,7 @@
             </select>
             <input type="text" id="slideContent1" placeholder="URL oder Text" class="embed-slot-input">
             <a id="slideLink1" href="/tv/1" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate1"><span class="toggle-slider"></span></label>
             <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive1"><span class="toggle-slider"></span></label>
           </div>
 
@@ -704,6 +722,7 @@
             </select>
             <input type="text" id="slideContent2" placeholder="URL oder Text" class="embed-slot-input">
             <a id="slideLink2" href="/tv/2" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate2"><span class="toggle-slider"></span></label>
             <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive2"><span class="toggle-slider"></span></label>
           </div>
 
@@ -719,6 +738,7 @@
             </select>
             <input type="text" id="slideContent3" placeholder="URL oder Text" class="embed-slot-input">
             <a id="slideLink3" href="/tv/3" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate3"><span class="toggle-slider"></span></label>
             <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive3"><span class="toggle-slider"></span></label>
           </div>
 
@@ -734,6 +754,7 @@
             </select>
             <input type="text" id="slideContent4" placeholder="URL oder Text" class="embed-slot-input">
             <a id="slideLink4" href="/tv/4" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate4"><span class="toggle-slider"></span></label>
             <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive4"><span class="toggle-slider"></span></label>
           </div>
 
@@ -749,6 +770,7 @@
             </select>
             <input type="text" id="slideContent5" placeholder="URL oder Text" class="embed-slot-input">
             <a id="slideLink5" href="/tv/5" target="_blank" class="btn btn-secondary" style="width:auto;padding:5px 10px;font-size:0.8rem;text-decoration:none;flex-shrink:0">Öffnen</a>
+            <label class="toggle" title="Hochkant (Portrait)" style="flex-shrink:0"><input type="checkbox" id="slideRotate5"><span class="toggle-slider"></span></label>
             <label class="toggle" style="flex-shrink:0"><input type="checkbox" id="slideActive5"><span class="toggle-slider"></span></label>
           </div>
 
@@ -1115,24 +1137,28 @@
       state.widgets.infoboard  = document.getElementById('widgetInfoboard').checked;
       state.widgets.showPing   = document.getElementById('widgetShowPing').checked;
       state.widgets.lassoBoard = document.getElementById('widgetLassoBoard').checked;
-      state.widgets.rotate90   = document.getElementById('widgetRotate90').checked;
+      state.widgets.rotate90         = document.getElementById('widgetRotate90').checked;
+      state.widgets.calendarRotate90 = document.getElementById('widgetCalendarRotate90').checked;
       if (!state.widgets.weather) state.widgets.weather = {};
       state.widgets.weather.enabled = document.getElementById('widgetWeather').checked;
-      state.widgets.embedUrl = document.getElementById('embedUrl').value.trim();
+      state.widgets.embedUrl         = document.getElementById('embedUrl').value.trim();
       state.widgets.embedSlot1Active = document.getElementById('embedSlotActive1').checked;
+      state.widgets.embedSlot1Rotate90 = document.getElementById('embedSlotRotate1').checked;
       if (!state.calendar) state.calendar = {};
       state.calendar.icsUrl = document.getElementById('icsUrl').value.trim();
       // Embed Slots aus DOM auslesen
       if (!state.widgets.embedSlots) state.widgets.embedSlots = [];
       [2,3,4,5].forEach(id => {
-        const urlEl = document.getElementById('embedSlotUrl' + id);
+        const urlEl = document.getElementById('embedSlotUrl'    + id);
         const togEl = document.getElementById('embedSlotActive' + id);
+        const rotEl = document.getElementById('embedSlotRotate' + id);
         if (!urlEl) return;
         let slot = state.widgets.embedSlots.find(s => s.id === id);
         if (!slot) { slot = { id, label: 'Embed ' + id, url: '', active: false }; state.widgets.embedSlots.push(slot); }
-        slot.url    = urlEl.value.trim();
-        slot.label  = 'Embed ' + id;
-        slot.active = togEl.checked;
+        slot.url      = urlEl.value.trim();
+        slot.label    = 'Embed ' + id;
+        slot.active   = togEl.checked;
+        slot.rotate90 = rotEl ? rotEl.checked : false;
       });
 
       // Slides aus DOM auslesen
@@ -1142,15 +1168,17 @@
         const typeEl    = document.getElementById('slideType'    + id);
         const contentEl = document.getElementById('slideContent' + id);
         const activeEl  = document.getElementById('slideActive'  + id);
+        const rotateEl  = document.getElementById('slideRotate'  + id);
         if (!nameEl) return;
         let s = state.slides.find(s => s.id === id);
         if (!s) { s = { id, name: 'Slide ' + id, type: 'text', url: '', content: '', active: false }; state.slides.push(s); }
-        s.name   = nameEl.value.trim() || 'Slide ' + id;
-        s.type   = typeEl.value;
-        const val = contentEl.value.trim();
-        s.url     = typeEl.value === 'embed' ? val : '';
-        s.content = typeEl.value === 'text'  ? val : '';
-        s.active  = activeEl.checked;
+        s.name     = nameEl.value.trim() || 'Slide ' + id;
+        s.type     = typeEl.value;
+        const val  = contentEl.value.trim();
+        s.url      = typeEl.value === 'embed' ? val : '';
+        s.content  = typeEl.value === 'text'  ? val : '';
+        s.active   = activeEl.checked;
+        s.rotate90 = rotateEl ? rotateEl.checked : false;
       });
 
       // Smartsheet aus DOM auslesen
@@ -1341,10 +1369,12 @@
       document.getElementById('widgetInfoboard').checked = w.infoboard !== false;
       document.getElementById('widgetShowPing').checked  = !!(w.showPing);
       document.getElementById('widgetLassoBoard').checked = !!(w.lassoBoard);
-      document.getElementById('widgetRotate90').checked   = !!(w.rotate90);
+      document.getElementById('widgetRotate90').checked         = !!(w.rotate90);
+      document.getElementById('widgetCalendarRotate90').checked  = !!(w.calendarRotate90);
 
-      document.getElementById('embedUrl').value = w.embedUrl || '';
-      document.getElementById('embedSlotActive1').checked = w.embedSlot1Active !== false;
+      document.getElementById('embedUrl').value                = w.embedUrl || '';
+      document.getElementById('embedSlotActive1').checked      = w.embedSlot1Active !== false;
+      document.getElementById('embedSlotRotate1').checked      = !!(w.embedSlot1Rotate90);
       document.getElementById('icsUrl').value = (state.calendar?.icsUrl) || '';
       // Embed Slots laden
       const slots = state.widgets?.embedSlots || [];
@@ -1352,6 +1382,7 @@
         const s = slots.find(s => s.id === id) || {};
         document.getElementById('embedSlotUrl'    + id).value   = s.url    || '';
         document.getElementById('embedSlotActive' + id).checked = !!s.active;
+        document.getElementById('embedSlotRotate' + id).checked = !!s.rotate90;
       });
       // Slides laden
       const slidesData = state.slides || [];
@@ -1360,6 +1391,7 @@
         document.getElementById('slideName'    + id).value   = s.name    || 'Slide ' + id;
         document.getElementById('slideType'    + id).value   = s.type    || 'text';
         document.getElementById('slideContent' + id).value   = s.url || s.content || '';
+        document.getElementById('slideRotate'  + id).checked = !!s.rotate90;
         document.getElementById('slideActive'  + id).checked = !!s.active;
         updateSlideContentPlaceholder(id, s.type || 'text');
       });
@@ -1377,6 +1409,7 @@
         wAnimals.addEventListener('change', () => { if (!state.widgets) state.widgets = {}; state.widgets.animals = wAnimals.checked; });
         document.getElementById('widgetLassoBoard').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.lassoBoard = e.target.checked; });
         document.getElementById('widgetRotate90').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.rotate90 = e.target.checked; });
+        document.getElementById('widgetCalendarRotate90').addEventListener('change', e => { if (!state.widgets) state.widgets = {}; state.widgets.calendarRotate90 = e.target.checked; });
         document.getElementById('ssMsgEnabled').addEventListener('change', e => {
           if (!state.smartsheet) state.smartsheet = {};
           if (!state.smartsheet.messageMapping) state.smartsheet.messageMapping = {};

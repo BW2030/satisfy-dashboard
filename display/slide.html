@@ -350,7 +350,7 @@
       try {
         const data = await fetch('/api/content').then(r => r.json());
 
-        document.body.classList.toggle('display-rotate', !!data.widgets?.rotate90);
+        // Rotation wird nach dem Laden des Slide-Objekts gesetzt (siehe unten)
         // Rotation einrichten
         const active = data.pages?.active;
         if (!PREVIEW_MODE && (active === 'auto' || active === 'web')) {
@@ -372,6 +372,9 @@
           document.getElementById('slideTextBody').textContent  = 'Not configured';
           return;
         }
+
+        // Slide-spezifische Rotation
+        document.body.classList.toggle('display-rotate', !!slide.rotate90);
 
         // Tab-Titel + Slide-Titel im Kalender setzen
         document.title = 'satis\u0026fy – ' + (slide.name || 'Slide ' + SLIDE_ID);
